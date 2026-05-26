@@ -11,14 +11,10 @@
             "id": "620a098d689ac3eb",
             "type": "leaf",
             "state": {
-              "type": "markdown",
-              "state": {
-                "file": "references/database/aveva_pseudo_attributes.md",
-                "mode": "source",
-                "source": false
-              },
-              "icon": "lucide-file",
-              "title": "aveva_pseudo_attributes"
+              "type": "graph",
+              "state": {},
+              "icon": "lucide-git-fork",
+              "title": "Graph view"
             }
           }
         ]
@@ -94,7 +90,6 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "references/database/aveva_pseudo_attributes.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -104,7 +99,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "Backlinks for aveva_pseudo_attributes"
+              "title": "Backlinks"
             }
           },
           {
@@ -182,12 +177,12 @@
   },
   "active": "620a098d689ac3eb",
   "lastOpenFiles": [
+    "references/database/aveva_pseudo_attributes.md",
     "references/object-type-index.md",
     "references/utilities/AVEVA_PML_RVM_Export.md",
     "references/utilities/general_commands.md",
     "references/utilities/command-line-queries.md",
     "references/ui/forms-ui-reference.md",
-    "references/database/aveva_pseudo_attributes.md",
     "references/database/aveva_introduction_to_attributes.md",
     "references/database/database_modification.md",
     "references/database/database_navigation_query_syntax.md",

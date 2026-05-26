@@ -22,10 +22,10 @@
     },
     "examples": 5,
     "production_reference": {
-      "commands": 16,
-      "forms": 19,
-      "functions": 18,
-      "objects": 18,
+      "commands": 2,
+      "forms": 4,
+      "functions": 3,
+      "objects": 2,
       "PMLUI": 2,
       "DBListing-examples": 9
     }
