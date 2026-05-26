@@ -158,8 +158,8 @@ Over time, the vault becomes your team's ultimate competitive advantage. The AI 
 ## ─── 5. Install & Recommended Prompts ───
 
 ### Install
-* **Claude Code (Project-Local)**: Place the unzipped folder under `<project>/.claude/skills/aveva-pml-coding/`.
-* **Claude Code (Personal)**: Place the unzipped folder under `~.claude/skills/aveva-pml-coding/`.
+* **Claude Code (Project-Local)**: Place the unzipped folder under `<project>/.claude/skills/obsidian-aveva-pml-ide/`.
+* **Claude Code (Personal)**: Place the unzipped folder under `~/.claude/skills/obsidian-aveva-pml-ide/`.
 * **Claude.ai / Claude Desktop**: Zip the repository and upload the archive via the Skills UI.
 
 ### Recommended Prompts
