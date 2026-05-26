@@ -151,8 +151,8 @@ Applies to any method (`.String()`, `.Real()`, `.Substring()`, ...) and any comp
 
 - Use `DBREF` and `COLLECTION` patterns when extracting model elements.
 - Use `COLLECTION.Type`, `AddType`, `Types`, `Scope`, `AddScope`, `Filter`, `Results`, `Next`, `Index`, `Size` only as documented.
-- **Variable Navigation**: When navigating to an element stored in a variable `!ref` (of type `DBREF` or `STRING`), you must prefix the variable with the command expansion operator `$`, e.g., `$!ref`. Never use `!ref` directly.
-- **Deleting elements**: use `DELETE <Element Type>` (e.g. `DELETE PIPE`, `DELETE ZONE`, `DELETE PNOD`). For the current element dynamically: `DELETE $!!CE.Type`.
+- **Variable Navigation**: When navigating to an element stored in a variable `!ref` (of type `DBREF` or `STRING`), you must prefix the variable with the command expansion operator `$`, e.g., `$!ref`. Never use `!ref` directly. Never use the `NAVIGATE` command since it doesn't exist.
+- **Deleting elements**: use `DELETE <Element Type>` (e.g. `DELETEPIPE`, `DELETE ZONE`, `DELETE PNOD`). For the current element dynamically: `DELETE $!!CE.Type`.
 - **No `UNDOABLE` blocks**: Do not use `UNDOABLE` blocks or the `UNDOABLE` object in any PML code or deliverables. Undo/redo logic is managed externally by the host C# application.
 - Prefer string/object methods over `EXPRESSION` for filtering. Only use `EXPRESSION` when no other route works.
 
