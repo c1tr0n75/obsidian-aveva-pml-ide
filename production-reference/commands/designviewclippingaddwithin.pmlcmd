@@ -1,0 +1,107 @@
+----------------------------------------------------------------------
+--
+-- Copyright 1974 to current year. AVEVA Solutions Limited and its subsidiaries. All rights reserved in original code only.
+--
+--  File:            designviewclippingaddwithin.pmlcmd
+--    Type:          Command Definition
+--
+-- Group:        Design View
+-- Description:  Command object to limit the view
+--      Keyword:     Undefined
+--    Module:        Undefined
+--  Author:          Undefined
+--  Created:         Wed Sep  5 14:44:54 2012
+--
+--  Description:     Command object to Add Within clipping box
+--
+------------------------------------------------------------------------
+setup command !!designViewClippingAddWithin
+
+  member .lastViewForm    is STRING
+
+exit
+
+------------------------------------------------------------------------
+-- Method:     designViewClipping
+-- Description: Constructor
+------------------------------------------------------------------------
+define method .designViewClippingAddWithin()
+  -- initialise events and command key
+  !this.key     = 'AVEVA.DesignView.CommandViewClippingAddWithin'
+  !this.execute = 'execute'
+  !this.refresh     = 'refresh'
+  !filters          = object ARRAY()
+  !filters[1]       = 'FORM'
+  !this.refreshFilters = !filters
+  !this.lastViewForm   = ''
+endmethod
+
+------------------------------------------------------------------------
+-- Method:     execute
+-- Description: Execute event
+------------------------------------------------------------------------
+define method .execute(!unusedArgs is ARRAY)
+
+  -- get name of view that last had focus
+  if(!this.lastViewForm.empty()) then
+    return
+  endif
+  !block    = object BLOCK(!this.lastViewForm)
+  !form     = !block.evaluate()
+  handle any
+    return
+  endhandle
+  if( not defined(!form.view) ) then
+    return
+  endif
+   -- set clipping for form view that last had focus
+  !form.clipBox.addWithinClipBox()
+  handle any
+  endhandle
+
+endmethod
+------------------------------------------------------------------------
+-- Method:     refresh
+-- Description: Refresh event
+--              THIS METHOD TRACKS THE CURRENT GRAPHICAL VIEW FOR ALL
+--              VIEWS - TAKE CARE IF MODIFYING THIS METHOD
+------------------------------------------------------------------------
+define method .refresh(!args is ARRAY)
+
+  if( !args.size() eq 0 ) then
+    return
+  endif
+
+  if( !args[0] neq 'FORM' or !args[1] neq 'ACTIVATE') then
+    -- not a form activate event
+    return
+  endif
+
+  -- is this is a form with a GM3D view
+  !block    = object BLOCK(!args[2])
+  !form     = !block.evaluate()
+  handle ANY
+    return
+  endhandle
+
+  if( not defined(!form.view) ) then
+    return
+  endif
+  !type = !form.view.type()
+  handle any
+    !type = ''
+  endhandle
+  if( !type neq 'GM3D' ) then
+    return
+  endif
+  if( not defined(!form.clipBox) ) then
+    return
+  endif
+
+  -- set last view activated
+  !this.lastViewForm = !args[2]
+  -- check that clip box is defined for this form
+  !defined = !form.clipBox.hasClipBox()
+  !this.enabled(!defined)
+
+endmethod

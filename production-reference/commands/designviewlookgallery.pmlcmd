@@ -1,0 +1,111 @@
+----------------------------------------------------------------------
+--
+-- Copyright 1974 to current year. AVEVA Solutions Limited and its subsidiaries. All rights reserved in original code only.
+--
+--  File:            designviewlookgallery.pmlcmd
+--    Type:          Command Definition
+--      Keyword:     Undefined
+--    Module:        Undefined
+--  Author:          Undefined
+--  Created:         Undefined
+--
+-- Group:        Design General
+-- Description:  Command object for look direction gallery
+--   This is a gallery command supporting the standard command interface
+--
+------------------------------------------------------------------------
+setup command !!designViewLookGallery
+
+  -- identifiers for view directions
+  member .viewDirection   is ARRAY
+  -- view direction commands
+  member .viewCommand    is ARRAY
+  -- True for marine project: False for other (Plant) project
+  member .marineProject   is BOOLEAN
+
+exit
+
+------------------------------------------------------------------------
+-- Method:     genPrimitivesCreate
+-- Description: Constructor
+------------------------------------------------------------------------
+define method .designViewLookGallery()
+  -- initialise events and command key
+  !this.key            = 'AVEVA.DesignGeneral.CommandGalleryLook'
+  !this.execute        = 'execute'
+  !this.list           = 'list'
+
+  !this.marineProject = ( !!module().projectType.upcase().eq('MARINE') )
+
+  -- initialise orthogonal and isometric view directions
+  !this.viewDirection[1]  = 'SW'
+  !this.viewDirection[2]  = 'SE'
+  !this.viewDirection[3]  = 'NE'
+  !this.viewDirection[4]  = 'NW'
+  !this.viewDirection[5]  = 'N'
+  !this.viewDirection[6]  = 'S'
+  !this.viewDirection[7]  = 'E'
+  !this.viewDirection[8]  = 'W'
+  !this.viewDirection[9]  = 'U'
+  !this.viewDirection[10] = 'D'
+
+  -- Interpret arrow icon to point North (Y) in a Plant project and point
+  -- East (X) in a Marine project
+  if( !this.marineProject ) then
+    !this.viewCommand[1]    = 'AVEVA.CIE.CommandViewIsoNW'
+    !this.viewCommand[2]    = 'AVEVA.CIE.CommandViewIsoSW'
+    !this.viewCommand[3]    = 'AVEVA.CIE.CommandViewIsoSE'
+    !this.viewCommand[4]    = 'AVEVA.CIE.CommandViewIsoNE'
+  else
+    !this.viewCommand[1]    = 'AVEVA.CIE.CommandViewIsoSW'
+    !this.viewCommand[2]    = 'AVEVA.CIE.CommandViewIsoSE'
+    !this.viewCommand[3]    = 'AVEVA.CIE.CommandViewIsoNE'
+    !this.viewCommand[4]    = 'AVEVA.CIE.CommandViewIsoNW'
+  endif
+  !this.viewCommand[5]    = 'AVEVA.CIE.CommandViewOrthoN'
+  !this.viewCommand[6]    = 'AVEVA.CIE.CommandViewOrthoS'
+  !this.viewCommand[7]    = 'AVEVA.CIE.CommandViewOrthoE'
+  !this.viewCommand[8]    = 'AVEVA.CIE.CommandViewOrthoW'
+  !this.viewCommand[9]    = 'AVEVA.CIE.CommandViewOrthoU'
+  !this.viewCommand[10]   = 'AVEVA.CIE.CommandViewOrthoD'
+
+endmethod
+
+------------------------------------------------------------------------
+-- Method:     execute
+-- Description: Execute event
+------------------------------------------------------------------------
+define method .execute(!args is ARRAY)
+
+  -- avoid bug when accessing args by copying the array
+  !dummyArgs = !args
+  if( !dummyArgs.size() eq 0) then
+    return
+  endif
+  !type    = !args[0]
+  !preview = !args[1]
+  if( !preview.boolean() ) then
+    return
+  endif
+
+  -- look up command linked with the primitive type
+  !index = !this.viewDirection.findFirst(!type)
+  if( !index.unset() ) then
+    return
+  else
+    !command = !this.viewCommand[!index]
+  endif
+  -- execute the command
+  !!cmsys.executeCommand(!command)
+
+endmethod
+
+--------------------------------------------------------------------------
+---- Method:     list
+---- Description: List event
+--------------------------------------------------------------------------
+define method .list(!args is ARRAY)
+
+  !args[0] = !this.viewDirection
+
+endmethod

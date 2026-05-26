@@ -1,0 +1,123 @@
+$* Filename: exportpipestocsv.pmlfnc
+$* Exports all PIPE elements under /SITE-PIPING-AREA02 to a CSV file.
+$* Columns: Name, Bore, Length, Specification
+
+define function !!ExportPipesToCSV()
+
+    $* Define the output file path
+    !outputPath = 'C:\temp\PipeExport_SITE-PIPING-AREA02.csv'
+
+    $* Navigate to the target SITE element
+    !siteRef = '/SITE-PIPING-AREA02'
+    !scopeElement = !siteRef.DBRef()
+    handle any
+        !!Alert.Error('Cannot find element /SITE-PIPING-AREA02. Check the element exists.')
+        return
+    endhandle
+
+    $* Validate the scope element
+    if (!scopeElement.Unset()) then
+        !!Alert.Error('Element /SITE-PIPING-AREA02 is unset.')
+        return
+    endif
+
+    if (!scopeElement.BadRef()) then
+        !!Alert.Error('Element /SITE-PIPING-AREA02 is a bad reference.')
+        return
+    endif
+
+    $* Collect all PIPE elements under the scope
+    !coll = object COLLECTION()
+    !coll.Type('PIPE')
+    !coll.Scope(!scopeElement)
+
+    !pipes = !coll.Results()
+    handle any
+        !!Alert.Error('Error collecting PIPE elements: ' & !!error.text)
+        return
+    endhandle
+
+    if (!pipes.Unset() OR !pipes.Size() EQ 0) then
+        !!Alert.Warning('No PIPE elements found under /SITE-PIPING-AREA02.')
+        return
+    endif
+
+    !pipeCount = !pipes.Size()
+    $p Found $!pipeCount PIPE elements under /SITE-PIPING-AREA02
+
+    $* Build CSV lines
+    !csvLines = ARRAY()
+    !csvLines.Append('Name,Bore,Length,Specification')
+
+    do !pipe values !pipes
+
+        $* Get pipe name
+        !pipeName = !pipe.Name
+        handle any
+            !pipeName = 'N/A'
+        endhandle
+
+        $* Get pipe bore
+        !pipeBore = ''
+        !boreVal = !pipe.Bore
+        handle any
+            !pipeBore = 'N/A'
+        endhandle
+        if (!pipeBore NE 'N/A') then
+            !pipeBore = !boreVal.String()
+            handle any
+                !pipeBore = 'N/A'
+            endhandle
+        endif
+
+        $* Get pipe length (XLEN = overall pipe length)
+        !pipeLength = ''
+        !lengthVal = !pipe.Xlen
+        handle any
+            !pipeLength = 'N/A'
+        endhandle
+        if (!pipeLength NE 'N/A') then
+            !pipeLength = !lengthVal.String()
+            handle any
+                !pipeLength = 'N/A'
+            endhandle
+        endif
+
+        $* Get pipe specification (SPREF = specification reference)
+        !pipeSpec = ''
+        !specVal = !pipe.PSPE.namn
+        handle any
+            !pipeSpec = 'N/A'
+        endhandle
+        if (!pipeSpec NE 'N/A') then
+            !pipeSpec = !specVal.String()
+            handle any
+                !pipeSpec = 'N/A'
+            endhandle
+        endif
+
+        $* Sanitise values: remove commas to avoid CSV corruption
+        !pipeName = !pipeName.Replace(',', ';')
+        !pipeBore = !pipeBore.Replace(',', ';')
+        !pipeLength = !pipeLength.Replace(',', ';')
+        !pipeSpec = !pipeSpec.Replace(',', ';')
+
+        $* Build CSV row
+        !row = !pipeName & ',' & !pipeBore & ',' & !pipeLength & ',' & !pipeSpec
+        !csvLines.Append(!row)
+
+    enddo
+
+    $* Write to file
+    !file = object FILE(!outputPath)
+    !file.WriteFile('WRITE', !csvLines)
+    handle any
+        !!Alert.Error('Error writing CSV file: ' & !!error.text)
+        return
+    endhandle
+
+    !exportCount = !csvLines.Size() - 1
+    $p CSV export complete: $!exportCount pipes exported to $!outputPath
+    !!Alert.Message('Export complete. ' & !exportCount.String() & ' pipes exported to: ' & !outputPath)
+
+endfunction

@@ -1,0 +1,26 @@
+$* Filename: safewritelinestofile.pmlfnc
+$* Writes an ARRAY of STRING lines to a file with basic error handling.
+
+define function !!SafeWriteLinesToFile(!path is STRING, !lines is ARRAY) is BOOLEAN
+    if (!path.Unset() OR !path EQ '') then
+        !!Alert.Error('File path is required.')
+        return FALSE
+    endif
+
+    if (!lines.Unset()) then
+        !lines = ARRAY()
+    endif
+
+    !file = object FILE(!path)
+    !file.Open('WRITE')
+    do !line values !lines
+        !file.WriteLine(!line.String())
+    enddo
+    !file.Close()
+    return TRUE
+
+handle any
+    $p Error writing file: $!!error.text
+    return FALSE
+endhandle
+endfunction

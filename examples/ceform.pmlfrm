@@ -1,0 +1,68 @@
+$* ============================================================
+$* File   : ceform.pmlfrm
+$* Form   : !!CEForm
+$* Purpose: Selection dialog with CE load, list select, OK / Cancel
+$* Reload : pml rehash form !!CEForm
+$* Show   : show !!CEForm
+$*
+$* Layout (form width 32, height 16, units = char cells):
+$*
+$*   +--------------------------------+
+$*   |          [   CE   ]            |   y = 0.5
+$*   |                                |
+$*   |   +------------------------+   |
+$*   |   |                        |   |
+$*   |   |        ItemList        |   |   y = 2  (height 10)
+$*   |   |                        |   |
+$*   |   +------------------------+   |
+$*   |                                |
+$*   |  [  OK  ]        [ Cancel ]    |   y = 13
+$*   +--------------------------------+
+$* ============================================================
+
+setup form !!CEForm dialog size 32 16
+    title 'CE Selector'
+
+    $* CE button (top, centered) -> triggers .load()
+    button .CEButton 'CE' at x 2 y 0.5 callback '!this.load()' width 6
+
+    $* Selection list (middle) -> triggers .select()
+    list .ItemList at x 2 y 2 callback '!this.select()' width 28 height 10
+
+    $* OK button (bottom-left) -> triggers .ok()
+    button .OKButton 'OK' at x 2 y 13 callback '!this.ok()' width 8
+
+    $* Cancel button (bottom-right) -> triggers .close()
+    button .CancelButton 'Cancel' at x 22 y 13 callback '!this.close()' width 8
+
+exit
+
+$* ============================================================
+$* Form constructor (must share the form's name)
+$* ============================================================
+define method .CEForm()
+endmethod
+
+$* ============================================================
+$* Callback: CE button -> load current element into the form
+$* ============================================================
+define method .load()
+endmethod
+
+$* ============================================================
+$* Callback: list selection changed
+$* ============================================================
+define method .select()
+endmethod
+
+$* ============================================================
+$* Callback: OK button
+$* ============================================================
+define method .ok()
+endmethod
+
+$* ============================================================
+$* Callback: Cancel button -> close the form
+$* ============================================================
+define method .close()
+endmethod

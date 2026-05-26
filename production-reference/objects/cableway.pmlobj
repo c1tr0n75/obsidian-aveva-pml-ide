@@ -1,0 +1,3492 @@
+--
+-----------------------------------------------------------------------
+--
+-- Copyright 1974 to current year. AVEVA Solutions Limited and its subsidiaries. All rights reserved in original code only.
+--
+-- File:            cableway.pmlobj
+--   Type:          Object Definition
+--   Group:
+--   Keyword:
+--   Module:        Design
+--   Replaces:
+--
+-- Author:          Anand Kalathil & David Nolan
+-- Created:         Fri Dec 29 2006
+--
+-- Description:
+--
+------------------------------------------------------------------------
+--
+-- Methods defined:
+--
+--  Method call                      Return              Description
+--  ===========                      ======              ===========
+--  cableway(DBREF)                  -                   Constructor
+--  calculateFradAdjust(DBREF)       REAL                Calculate amount to adjust fradius by based on justification
+--  changeName(DBREF,STRING)         -                   Change elements name
+--  checkExistingComponents (DBREF,STRING) BOOLEAN
+--  connect()                        -
+--  connectBranches()                -                   connects two branches
+--  create(STRING)                   -
+--  create(STRING,BOOLEAN)           -                   Creates cableway elements
+--  createBendRiser(ARRAY)           -                   creates bends and risers for all direction change points
+--  createBendRiserAndReducer(ARRAY) -                   creates bends and risers for all direction change points
+--  createOrthogonal(DBREF)          -                   creates orthogonal points
+--  createOrthogonal(DBREF,STRING)   -                   creates orthogonal points
+--  createTeeAndCross(DBREF)         -                   creates tees and crosses
+--  delete(STRING)                   -                   Delete Element
+--  disconnect(STRING)               -                   Disconnect Branch head and tail
+--  disconnectBranches()             -                   connects two branches
+--  dress()                          -                   Dress the branch with material
+--  dressBetweenComponents(ARRAY)    -                   creates straights between components
+--  dressBranchWithStraights(DBREF,REAL) -                   creates straights between components
+--  dressMultipleSegments(DBREF,DBREF,REAL) -                   creates straights between multiple segments
+--  dressPoint(DBREF)                -                   creates straights between components
+--  dressPoints(DBREF,BOOLEAN)       -
+--  dressRatta(DBREF)                -                   dresses ratta
+--  dressSegment(DBREF,REAL)         -                   dresses the whole segment
+--  dressSegmentAll(DBREF)           -                   dresses the whole segment with bends risers tees
+--  dressSegmentAll(DBREF,REAL)      -                   dresses the whole segment with bends risers tees with passed length
+--  fill(DBREF)                      BOOLEAN             fills material
+--  fill(DBREF,BOOLEAN)              BOOLEAN             fills material
+--  fill(DBREF,REAL)                 -                   fills material using user defined length
+--  fill(DBREF,REAL,BOOLEAN)         -                   fills material using user defined length
+--  fillBranchWithStraights(DBREF,REAL) -                   fill Branch With Straights
+--  fillStraights(DBREF)             -                   fills straights between elements for whole of CTMTRL
+--  getBendRadius(DBREF)             REAL                Bend radius is a special attribute that can be interpreted
+--  getFixedBendState()              BOOL                Whether to use fixed bends for risers when dressing a branch.
+--  getWarnings()                    ARRAY               Return warning messages
+--  isCounterClockwiseRiser(DBREF)   BOOLEAN             Determine if bend is clockise or counter-clockwise riser
+--  isLeftBend(DBREF)                BOOLEAN             Determine if bend is left or right bend
+--  isOnTheSameSegment(DBREF,DBREF)  BOOLEAN
+--  isRiser(DBREF)                   BOOLEAN             Determine if passed POINTR is riser or bend
+--  loadSpecDimensions(DBREF)        -
+--  loadTmplDimensions(DBREF)        -
+--  merge()                          -                   merge picked branches
+--  modify(STRING)                   -
+--  pick(STRING)                     -                   edg to pick branches for connection or merge
+--  pick2(STRING)                    -                   edg to pick second branch for connection or merge
+--  readRattaRnodePositions()        -                   read Rattas and Rnodes Positions
+--  removeMaterial(DBREF)            -                   remove material
+--  reorderCableTray (DBREF)         -
+--  repositionsRattaRnode()          -                   repositions Rattas and Rnodes
+--  setRadius(DBREF,REAL)            -                   Set fillet or bend radius allowing for units
+--  split(DBREF,STRING)              -                   split branches
+--  tryNameRatta(STRING)             -                   Tries to name the ratta.
+--  undress(DBREF)                   -                   remove all material members
+--  undress(DBREF,BOOLEAN)           -                   remove all material members
+--  unfillStraights(DBREF)           -                   Removes straights
+--  updateBranchPointrs()            -                   Update FRAD values of pointrs
+--  updateData(STRING)               -
+--  updateMaterial()                 -                   Update material
+--  updateMaterialSpec()             -                   Update material specification only
+--  validateRadii(ARRAY)             -                   Iterates through members of CTMTRL and if not matching material is found, asks user to leave or delete
+--  validateRattaName(STRING)        STRING              Tries to name the ratta.
+--  verifyComponentRadius(DBREF)     BOOLEAN             Verifies, whether CTBEND or CTRISE radius matches BRAD of branch
+--
+
+define object CABLEWAY
+
+  --Cableway branch manager object
+  member .cwbm                              is CABLEWAYMANAGER
+  member .cwtm                              is CABLETRAYMANAGER
+  member .mdrconnect                        is MDRCONNECTIONMANAGER
+
+  member .activeElement                     is DBREF
+  member .element                           is DBREF
+  member .material                          is ARRAY
+
+  --Element/s
+  member .zone                              is DBREF
+  member .cway                              is DBREF
+  member .cwbran                            is DBREF
+  member .cwbrans                           is ARRAY
+  member .rpath                             is DBREF
+  member .pointr                            is DBREF
+  member .pointrs                           is ARRAY
+  member .rtfeat                            is DBREF
+  member .rnode                             is DBREF
+  member .conseq                            is DBREF
+  member .curve                             is DBREF
+  member .curves                            is ARRAY
+  member .extgeo                            is DBREF
+  member .extgeos                           is ARRAY
+  member .rsect                             is DBREF
+  member .rsects                            is ARRAY
+  member .ctmtrl                            is DBREF
+  member .ctstra                            is DBREF
+  member .ctbend                            is DBREF
+  member .cttee                             is DBREF
+  member .ctrise                            is DBREF
+  member .ctredu                            is DBREF
+  member .ctcros                            is DBREF
+  member .ctcoup                            is DBREF
+  member .ratta                             is DBREF
+  member .cwseg                             is DBREF
+
+  --Attributes
+  member .description                       is STRING
+  member .function                          is STRING
+  member .purpose                           is STRING
+  member .spref                             is DBREF
+  member .bangle                            is REAL
+  member .rllogical                         is STRING
+  member .cexs                              is REAL
+  member .maxfil                            is REAL
+  member .pointrpos                         is POSITION
+  member .name                              is STRING
+  member .fixedBend                         is BOOLEAN
+  member .bradius                           is REAL
+  member .maxcab                            is REAL
+  member .maxLay                            is REAL
+  member .cablay                            is STRING
+  member .width                             is REAL
+  member .trayw                             is REAL
+  member .trayh                             is REAL
+  member .pkdis                             is REAL
+  member .fgap                              is REAL
+  member .igap                              is REAL
+  member .lgap                              is REAL
+  member .ydir                              is DIRECTION
+  member .frad                              is REAL
+  member .vwidth                            is REAL
+  member .vheight                           is REAL
+  member .vshape                            is REAL
+  member .zdis                              is REAL
+  member .posref                            is DBREF
+  member .xoffset                           is REAL
+  member .yoffset                           is REAL
+  member .zoffset                           is REAL
+  member .rntype                            is STRING
+  member .olength                           is REAL
+  member .trayrw                            is REAL
+  member .traysw                            is REAL
+  member .trayow                            is REAL
+  member .tierheight                        is ARRAY
+  member .alength                           is REAL
+  member .llength                           is REAL
+  member .slength                           is REAL
+  member .sslength                          is REAL
+  member .radius                            is REAL
+  member .angle                             is REAL
+  member .cttype                            is STRING
+  member .redtype                           is REAL
+  member .connref                           is ARRAY
+  member .jusl                              is STRING
+  member .level                             is ARRAY
+  member .iclass                            is STRING
+  member .materialVolume                    is REAL
+  member .accessHeight                      is REAL
+  member .resvoll                           is REAL
+  member .resvolr                           is REAL
+  member .resvolb                           is REAL
+  member .resvolt                           is REAL
+  member .usemat                            is BOOLEAN
+  member .materialType                      is STRING
+
+  --Member for type of branch connection. Used for core creation method selection
+  --value of 0 means  do not connect / reconnect
+  --value of 1 means  Start / End From free point
+  --value of 2 means  Start / End From another branch Head
+  --value of 3 means  Start / End From another branch Tail
+  --value of 4 means  Start / End From point in another branch
+  --value of 5 means  Start / End From route attachment point
+  --value of 6 means  Start / End From junction box / pull pit
+
+  member .start                             is REAL
+  member .end                               is REAL
+
+  member .branchheadposition                is POSITION
+  member .branchtailposition                is POSITION
+  member .headconnectionbranch              is DBREF
+  member .tailconnectionbranch              is DBREF
+  member .headbranchingbranch               is DBREF
+  member .tailbranchingbranch               is DBREF
+  member .referenceheadpoint                is DBREF
+  member .referencetailpoint                is DBREF
+
+  --dressing option
+  member  .optimum                          is BOOLEAN
+
+  --template option
+  member  .template                         is BOOLEAN
+
+  -- picked element
+  member .pickedelements                    is ARRAY
+  member .rattaRnodeList                    is ARRAY
+  member .rattaRnodeOldPos                  is ARRAY
+
+  member .warnings                          is ARRAY
+
+endobject
+-- End of object definition
+
+------------------------------------------------------------------------
+--
+-- Method:      cableway
+--
+-- Description: Constructor
+--
+-- Method Type: Procedure
+--   [#] [R/RW] [Data Type] [Description]
+--    1   R      DBREF       Element to get data from
+-- Return:
+--   [Data Type] [Description]
+--
+------------------------------------------------------------------------
+
+--define method .cableway()
+-- constructor method
+--!!cableway  = !this
+--endmethod
+-- End of object definition
+
+------------------------------------------------------------------------
+--
+-- Method:      cableway
+--
+-- Description: Constructor
+--
+-- Method Type: Procedure
+--   [#] [R/RW] [Data Type] [Description]
+--    1   R      DBREF       Element to get data from
+-- Return:
+--   [Data Type] [Description]
+--
+------------------------------------------------------------------------
+
+define method .cableway(!dbelement is DBREF)
+
+  !elelist = object ARRAY()
+  !elelist.append('POINTR')
+  !elelist.append('CURVE')
+  !elelist.append('RSECT')
+  !elelist.append('EXTGEO')
+
+  !material  = object ARRAY()
+  !material.append('CTSTRA')
+  !material.append('CTBEND')
+  !material.append('CTRISE')
+  !material.append('CTTEE')
+  !material.append('CTCROS')
+  !material.append('CTREDU')
+  !material.append('CTCOUP')
+
+  !this.material      = !material
+  !this.element       = !dbelement
+  !this.activeElement = !dbelement
+
+  if (!this.element.type.eq('ZONE')) then
+    !this.zone = !this.element
+  elseif (!this.element.type.eq('CWAY')) then
+    !this.cway = !this.element
+    !this.zone = !this.element.owner
+  elseif (!this.element.type.eq('CWBRAN')) then
+    !this.cwbran = !this.element
+    !this.cway   = !this.element.owner
+    !this.zone   = !this.element.owner.owner
+  elseif (!this.element.type.eq('RNODE')) then
+    !this.rnode  = !this.element
+    !this.rtfeat = !this.element.owner
+    !this.cwbran = !this.element.owner.owner
+    !this.cway   = !this.element.owner.owner.owner
+    !this.zone   = !this.element.owner.owner.owner.owner
+
+  elseif (!this.element.type.eq('RATTA')) then
+    !this.ratta  = !this.element
+    !this.conseq = !this.element.owner
+    !this.cwbran = !this.element.owner.owner
+    !this.cway   = !this.element.owner.owner.owner
+    !this.zone   = !this.element.owner.owner.owner.owner
+  elseif (!this.element.type.eq('RPATH') or !this.element.type.eq('CTMTRL')) then
+    !type  = !this.element.type
+    !this.$!<type>  = !this.element
+    !this.cwbran = !this.element.owner
+    !this.cway   = !this.element.owner.owner
+    !this.zone   = !this.element.owner.owner.owner
+  elseif (!elelist.findFirst(!this.element.type).unset().not()) then
+    !type  = !this.element.type
+    !this.$!<type>  = !this.element
+    !this.rpath     = !this.element.owner
+    !this.cwbran    = !this.element.owner.owner
+    !this.cway      = !this.element.owner.owner.owner
+    !this.zone      = !this.element.owner.owner.owner.owner
+  elseif (!material.findFirst(!this.element.type).unset().not()) then
+    !type  = !this.element.type
+    !this.$!<type>  = !this.element
+    !this.ctmtrl    = !this.element.owner
+    !this.cwbran    = !this.element.owner.owner
+    !this.cway      = !this.element.owner.owner.owner
+    !this.zone      = !this.element.owner.owner.owner.owner
+  elseif (!this.element.owner.type.eq('CWBRAN')  ) then
+    !this.cwbran = !this.element.owner
+    !this.cway   = !this.element.owner.owner
+    !this.zone   = !this.element.owner.owner.owner
+
+  elseif (!this.element.type.eq('CTRAY')  ) then
+    !this.ctmtrl    = !this.element.owner.owner
+    !this.cwbran    = !this.element.owner.owner.owner
+    !this.cway      = !this.element.owner.owner.owner.owner
+    !this.zone      = !this.element.owner.owner.owner.owner.owner
+  endif
+
+endmethod
+-- End of object definition
+
+------------------------------------------------------------------------
+--
+-- Method: create
+--
+-- Description: Creates cableway elements
+--
+-- Method Type: Procedure
+-- [#] [R/RW] [Data Type] [Description]
+--  1    R     STRING      Element Type
+-- Return:
+-- [Data Type] [Description]
+--
+------------------------------------------------------------------------
+
+define method .create(!elementType is STRING)
+
+  !this.create(!elementType, true)
+
+endmethod
+------------------------------------------------------------------------
+--
+-- Method: create
+--
+-- Description: Creates cableway elements
+--
+-- Method Type: Procedure
+-- [#] [R/RW] [Data Type] [Description]
+--  1    R     STRING      Element Type
+--  2    R     BOOLEAN     Undo or not
+-- Return:
+-- [Data Type] [Description]
+--
+------------------------------------------------------------------------
+
+define method .create(!elementType is STRING, !undoTest is BOOLEAN)
+
+  if (!undoTest) then
+    -- Mark database
+    !undo               = object UNDOABLE()
+    !undo.description('Create $!elementType')
+    !undo.add()
+  endif
+
+  if (!elementType.upcase().eq('CWAY')) then
+    !!ce = !this.activeElement
+    NEW CWAY
+
+    !this.cway           = !!ce
+    !this.activeElement  = !!ce
+
+  elseif (!elementType.upcase().eq('CWBRAN')) then
+    !!ce = !this.activeElement
+    NEW CWBRAN
+    !!ce.pos = !this.branchheadposition
+
+    !this.cwbran          = !!ce
+    !this.activeElement   = !!ce
+    !this.cwbrans.clear()
+    !this.cwbrans   = !!ce.own.members
+    --!this.rpath     = !!ce.members[3]
+    !this.connect()
+    !this.rpath     = !!ce.members[3]
+  elseif (!elementType.upcase().eq('POINTR')) then
+    !!ce = !this.activeElement
+
+    !this.readRattaRnodePositions()
+
+    NEW POINTR
+    !this.pointr = !!ce
+  elseif (!elementType.upcase().eq('RNODE')) then
+    !!ce = !this.cwbran
+    first rtfeat
+    handle ANY
+      -- no rtfeat so create one
+      new rtfeat
+      !this.rtfeat = !!ce
+    endhandle
+
+    NEW RNODE
+    !this.rnode = !!ce
+
+  elseif (!elementType.upcase().eq('RATTA')) then
+
+    !!ce = !this.cwbran
+    FIRST CONSEQ
+    handle ANY
+      -- no CONSEQ so create one
+      NEW CONSEQ
+      !this.conseq = !!ce
+    endhandle
+    new RATTA
+    !this.ratta   = !!ce
+  elseif (!elementType.upcase().eq('CTMTRL')) then
+    !!ce = !this.cwbran
+    new CTMTRL
+    !this.ctmtrl = !!ce
+
+  elseif (!this.material.findFirst(!elementType.upcase()).unset().not()) then
+
+    NEW $!elementType
+    !this.$!<elementType> = !!ce
+
+  endif
+
+  !this.updateData(!elementType)
+  if (!elementType.upcase().eq('POINTR') )then
+    !this.repositionsRattaRnode()
+  endif
+
+  if (!undoTest) then
+    -- End undo mark
+    !undo.endUndoable()
+  endif
+
+endmethod
+--End of method definition
+
+------------------------------------------------------------------------
+--
+-- Method: modify
+--
+-- Description: Modify cableway elements
+--
+-- Method Type: Procedure
+-- [#] [R/RW] [Data Type] [Description]
+-- Return:
+-- [Data Type] [Description]
+--
+------------------------------------------------------------------------
+
+define method .modify(!elementType is STRING)
+
+  -- Mark database
+  !undo               = object UNDOABLE()
+  !undo.description('Modify $!elementType')
+  !undo.add()
+
+  !!ce = !this.activeElement
+  if (!elementType.eq('CWBRAN')) then
+    !this.connect()
+  endif
+  if (!elementType.eq('POINTR')) then
+    !this.readRattaRnodePositions()
+  endif
+
+  !this.updateData(!elementType)
+
+  if (!elementType.upcase().eq('POINTR') )then
+    !this.repositionsRattaRnode()
+  endif
+
+  -- End undo mark
+  !undo.endUndoable()
+
+endmethod
+--End of method definition
+
+-----------------------------------------------------------------------
+--
+-- Method:      delete
+--
+-- Description: Delete cableway elements
+--
+-- Method Type: Procedure
+-- [#] [R/RW] [Data Type] [Description]
+-- Return:
+-- [Data Type] [Description]
+--
+------------------------------------------------------------------------
+define method .delete(!elementType is STRING)
+
+  -- Mark database
+  !undo               = object UNDOABLE()
+  !undo.description('Delete $!elementType')
+  !undo.add()
+
+  if (!elementType.eq('CWBRAN')) then
+    !this.cwbm.disconnectbranch(!this.cwbran)
+  endif
+
+  if (!elementType.upcase().eq('POINTR') )then
+    !this.readRattaRnodePositions()
+  endif
+
+  delete $!elementType
+
+  if (!elementType.upcase().eq('POINTR') )then
+    !this.repositionsRattaRnode()
+  endif
+
+  -- End undo mark
+  !undo.endUndoable()
+
+endmethod
+--End of method definition
+
+------------------------------------------------------------------------
+--
+-- Method: connect
+--
+-- Description: Connect CWBRAN using different options
+--
+-- Method Type: Procedure
+-- [#] [R/RW] [Data Type] [Description]
+-- Return:
+-- [Data Type] [Description]
+--
+------------------------------------------------------------------------
+
+define method .connect()
+
+  --connect /reconnect head
+
+  if (!this.start.eq(1)) then
+    !this.cwbm.startFromFreePoint(!this.cwbran, !this.branchheadposition)
+  elseif (!this.start.eq(2)) then
+    !this.cwbm.startFromBranchHead(!this.cwbran, !this.headconnectionbranch)
+  elseif (!this.start.eq(3)) then
+    !this.cwbm.startFromBranchTail(!this.cwbran, !this.headconnectionbranch)
+  elseif (!this.start.eq(4)) then
+    !this.cwbm.startFromPointInBranch(!this.cwbran, !this.headbranchingbranch, !this.branchheadposition)
+  elseif (!this.start.eq(5)) then
+    !this.cwbm.startFromFreePoint(!this.cwbran, !this.branchheadposition)
+    -- head connection branch member is same as picked route attachment point for head
+    !this.cwbran.hcref[1] = !this.headconnectionbranch
+  elseif (!this.start.eq(6)) then
+    !this.cwbm.startFromFreePoint(!this.cwbran, !this.branchheadposition)
+
+    !headNodeCollection = object COLLECTION()
+    if (!this.headConnectionBranch.type.eq(|JNTBOX|)) then
+      !nodeType = |JNODE|
+    elseif (!this.headConnectionBranch.type.eq(|PULLP|)) then
+      !nodeType = |PULLN|
+    endif
+    !headNodeCollection.type(!nodeType)
+    !headNodeCollection.scope(!this.headConnectionBranch)
+    !hNodeREF = !headNodeCollection.results()
+    !this.cwbran.hcref[1] = !hNodeREF[1]
+
+  endif
+
+  --connect /reconnect tail
+
+  if (!this.end.eq(1)) then
+    !this.cwbm.endFromFreePoint(!this.cwbran, !this.branchtailposition)
+  elseif (!this.end.eq(2)) then
+    !this.cwbm.endFromBranchHead(!this.cwbran, !this.tailconnectionbranch)
+  elseif (!this.end.eq(3)) then
+    !this.cwbm.endFromBranchTail(!this.cwbran, !this.tailconnectionbranch)
+  elseif (!this.end.eq(4)) then
+    !this.cwbm.endFromPointInBranch(!this.cwbran, !this.tailbranchingbranch, !this.branchtailposition)
+  elseif (!this.end.eq(5)) then
+    !this.cwbm.endFromFreePoint(!this.cwbran, !this.branchtailposition)
+    -- tail connection branch member is same as picked route attachment point for tail
+    !this.cwbran.tcref[1] = !this.tailconnectionbranch
+  elseif (!this.end.eq(6)) then
+    !this.cwbm.endFromFreePoint(!this.cwbran, !this.branchtailposition)
+
+    !tailNodeCollection = object COLLECTION()
+    if (!this.tailConnectionBranch.type.eq(|JNTBOX|)) then
+      !nodeType = |JNODE|
+    elseif (!this.tailConnectionBranch.type.eq(|PULLP|)) then
+      !nodeType = |PULLN|
+    endif
+    !tailNodeCollection.type(!nodeType)
+    !tailNodeCollection.scope(!this.tailConnectionBranch)
+    !tNodeREF = !tailNodeCollection.results()
+    !this.cwbran.tcref[1] = !tNodeREF[1]
+
+  endif
+
+endmethod
+
+------------------------------------------------------------------------
+--
+-- Method: updateData
+--
+-- Description: Updates the modified data
+--
+-- Method Type: Procedure
+-- [#] [R/RW] [Data Type] [Description]
+-- Return:
+-- [Data Type] [Description]
+--
+------------------------------------------------------------------------
+
+define method .updateData(!elementType is STRING)
+
+  if (!elementType.eq('CWAY')) then
+    if (not !!dbRefUpdatable(!this.cway))then
+      !stringMessage  = !!error.text
+      !!alert.error(!stringMessage )
+      return
+    endif
+    !this.cway.name        = !this.name
+    handle ANY
+    endhandle
+
+    !this.cway.description = !this.description
+    !this.cway.function    = !this.function
+    !this.cway.purpose     = !this.purpose
+    !this.cway.maxcab      = !this.maxcab
+    !this.cway.cablay      = !this.cablay
+    !this.cway.maxLay      = !this.maxLay
+    handle ANY
+      !!alert.warning('Purpose value not correct')
+    endhandle
+
+  elseif (!elementType.eq('CWBRAN')) then
+
+    if (not !!dbRefUpdatable(!this.cwbran))then
+      !stringMessage  = !!error.text
+      !!alert.error(!stringMessage )
+      return
+    endif
+
+    !this.cwbran.name         = !this.name
+    handle ANY
+    endhandle
+    !this.cwbran.description  = !this.description
+    !this.cwbran.function     = !this.function
+    !this.cwbran.purpose      = !this.purpose
+    handle ANY
+      !!alert.warning('Purpose value not correct')
+    endhandle
+
+    !this.cwbran.bangle       = !this.bangle
+    !this.cwbran.maxcab       = !this.maxcab
+    !this.cwbran.maxLay       = !this.maxLay
+    !this.cwbran.cablay       = !this.cablay
+
+    !this.cwbran.fixedBend    = !this.fixedBend
+    !this.cwbran.bradius      = !this.bradius
+    !this.cwbran.cexs         = !this.cexs
+    !this.cwbran.maxfil       = !this.maxfil
+    !this.cwbran.usemat       = !this.usemat
+    !this.cwbran.matType      = !this.materialType
+    --set the rpath
+    !this.rpath               = rpath 1 of $!this.cwbran
+    !this.rpath.ydir          = !this.ydir
+    !this.cwbran.vwidth       = !this.vwidth
+    !this.cwbran.vheight      = !this.vheight
+    !this.cwbran.vshape       = !this.vshape
+    !this.cwbran.cwjusline    = !this.jusl
+    --Set the ICLASS first, so not to override values being assigned to RLLO on purpose.
+    !this.cwbran.iclass       = !this.iclass
+    !this.cwbran.extvol       = !this.materialVolume
+    !this.cwbran.aheight      = !this.accessHeight
+    !this.cwbran.resvol[1]    = !this.resvoll
+    handle ANY
+      !stringMessage  = !!error.text
+      !!alert.error(!stringMessage )
+    endhandle
+    !this.cwbran.resvol[2]    = !this.resvolr
+    handle ANY
+      !stringMessage  = !!error.text
+      !!alert.error(!stringMessage )
+    endhandle
+    !this.cwbran.resvol[3]    = !this.resvolb
+    handle ANY
+      !stringMessage  = !!error.text
+      !!alert.error(!stringMessage )
+    endhandle
+    !this.cwbran.resvol[4]    = !this.resvolt
+    handle ANY
+      !stringMessage  = !!error.text
+      !!alert.error(!stringMessage )
+    endhandle
+    -- temporary syntax. to be fixed in core
+    !!ce = !this.cwbran
+
+
+    !this.updateBranchPointrs()
+
+
+
+  elseif (!elementType.eq('CTMTRL')) then
+
+    if (not !!dbRefUpdatable(!this.ctmtrl))then
+      !stringMessage  = !!error.text
+      !!alert.error(!stringMessage )
+      return
+    endif
+
+    !this.ctmtrl.name         = !this.name
+    handle ANY
+    endhandle
+    !this.ctmtrl.description  = !this.description
+    !this.ctmtrl.purpose      = !this.purpose
+    !this.ctmtrl.function     = !this.function
+    !this.ctmtrl.fgap         = !this.fgap
+    !this.ctmtrl.igap         = !this.igap
+    !this.ctmtrl.lgap         = !this.lgap
+    !this.ctmtrl.trayw        = !this.trayw
+    !this.ctmtrl.trayh        = !this.trayh
+    !this.ctmtrl.tierheight   =  !this.tierheight
+    if (!this.spref.set()) then
+      !this.ctmtrl.ctspe        = !this.spref
+    else
+      !dbelement = !!ce
+      !!ce  = !this.ctmtrl
+      ctspe nulref
+      !!ce = !dbelement
+    endif
+
+  elseif (!elementType.eq('POINTR')) then
+    if (not !!dbRefUpdatable(!this.pointr))then
+      !stringMessage  = !!error.text
+      !!alert.error(!stringMessage )
+      return
+    endif
+
+    !this.pointr.position     = !this.pointrpos
+    -- set the connection mode to change the ZDIS of RATTA and RNODE
+    !this.cwbm.setConnectingMode(TRUE)
+    !fradAdjust = !this.calculateFradAdjust(!this.pointr)
+    !this.setRadius(!this.pointr, !this.frad + !fradAdjust )
+    --!this.pointr.fradius      = !this.frad
+
+  elseif (!elementType.eq('RNODE')) then
+    if (not !!dbRefUpdatable(!this.rnode))then
+      !stringMessage  = !!error.text
+      !!alert.error(!stringMessage )
+      return
+    endif
+
+    !this.rnode.name         = !this.name
+    handle ANY
+    endhandle
+    !this.rnode.description   = !this.description
+    !this.rnode.function      = !this.function
+    !this.rnode.purpose       = !this.purpose
+    !this.rnode.posref        = !this.posref
+    !this.rnode.pkdis         = !this.pkdis
+    !this.rnode.zdis          = !this.zdis
+    !this.rnode.xoffset       = !this.xoffset
+    !this.rnode.yoffset       = !this.yoffset
+    !this.rnode.zoffset       = !this.zoffset
+    !this.rnode.rntype        = !this.rntype
+    !this.rnode.connref       = !this.connref
+    handle ANY
+      --CONNREF not available
+      !ce = !!ce
+      !!ce = !this.rnode
+      connref nulref
+      !!ce = !ce
+    endhandle
+    !this.rnode.spref        = !this.spref
+    handle ANY
+      --SPREF not available
+      !ce = !!ce
+      !!ce = !this.rnode
+      spref nulref
+      !!ce = !ce
+    endhandle
+
+  elseif (!elementType.eq('RATTA')) then
+    if (not !!dbRefUpdatable(!this.ratta))then
+      !stringMessage  = !!error.text
+      !!alert.error(!stringMessage )
+      return
+    endif
+
+    !this.ratta.posref        = !this.posref
+    --       !lineFirst  = object LINE(!this.posref.pos,!this.posref.fend)
+    --       !this.ratta.zdis          = !this.zdis - !lineFirst.length()
+    !this.ratta.zdis          = !this.zdis
+    !this.ratta.pkdis         = !this.pkdis
+
+    --elseif !elementType.eq('CTSTRA') then
+  elseif (  !this.material.findFirst(!elementType.upcase()).unset().not()) then
+    !this.$!<elementType>.posref      =  !this.posref
+    !this.$!<elementType>.zdis        =  !this.zdis
+    !this.$!<elementType>.pkdis       =  !this.pkdis
+    !this.$!<elementType>.xoffset     =  !this.xoffset
+    !this.$!<elementType>.zoffset     =  !this.zoffset
+    !this.$!<elementType>.bangle      =  !this.bangle
+    !this.$!<elementType>.trayw       =  !this.trayw
+    !this.$!<elementType>.trayh       =  !this.trayh
+    !this.$!<elementType>.tierheight  =  !this.tierheight
+    !this.$!<elementType>.level       =  !this.level
+
+    if (!elementType.eq('CTSTRA')) then
+
+      -- Special case for CTSTRA as it is the only element where ZDIST does not account for FRAD on POINTR
+
+      -- !this.$!<elementType>.zdis        =  !this.zdis + !this.posref.pos.distance(!this.posref.fend)
+      !this.$!<elementType>.zdis        =  !this.zdis
+      !this.$!<elementType>.olength     =  !this.olength
+      -- Special case where the CTRAY element need their height setting to the OLENGTH as the catalogues use this
+      var !coll coll all ctray for $!this.ctstra
+      do !setHeight values !coll
+        !setHeight.dbref().height = !this.olength
+      enddo
+    elseif (!elementType.upcase().eq('CTBEND') or !elementType.upcase().eq('CTRISE')) then
+      !this.$!<elementType>.alength   =   !this.alength
+      !this.$!<elementType>.llength   =   !this.llength
+      !this.$!<elementType>.radius    =   !this.radius
+      !this.$!<elementType>.angle     =   !this.angle
+      !this.$!<elementType>.cttype    =   !this.cttype
+    elseif (!elementType.upcase().eq('CTREDU')) then
+      !this.$!<elementType>.olength   =   !this.olength
+      -- Special case where the CTRAY element need their height setting to the OLENGTH as the catalogues use this
+      var !coll coll all ctray for $!this.ctredu
+      do !setHeight values !coll
+        !setHeight.dbref().height = !this.olength
+      enddo
+      !this.$!<elementType>.trayrw    =   !this.trayrw
+      !this.$!<elementType>.cttype    =   !this.cttype
+    elseif (!elementType.upcase().eq('CTTEE')) then
+      !this.$!<elementType>.alength   =   !this.alength
+      !this.$!<elementType>.llength   =   !this.llength
+      !this.$!<elementType>.slength   =   !this.slength
+      !this.$!<elementType>.trayw     =   !this.trayw
+      !this.$!<elementType>.traysw    =   !this.traysw
+      !this.$!<elementType>.radius    =   !this.radius
+      !this.$!<elementType>.angle     =   !this.angle
+      !this.$!<elementType>.cttype    =   !this.cttype
+    elseif (!elementType.upcase().eq('CTCROS')) then
+      !this.$!<elementType>.alength   =   !this.alength
+      !this.$!<elementType>.llength   =   !this.llength
+      !this.$!<elementType>.slength   =   !this.slength
+      !this.$!<elementType>.sslength  =   !this.sslength
+      !this.$!<elementType>.trayw     =   !this.trayw
+      !this.$!<elementType>.traysw    =   !this.traysw
+      !this.$!<elementType>.trayow    =   !this.trayow
+      !this.$!<elementType>.radius    =   !this.radius
+      !this.$!<elementType>.angle     =   !this.angle
+      !this.$!<elementType>.cttype    =   !this.cttype
+    endif
+
+  endif
+
+endmethod
+--End of method definition
+------------------------------------------------------------------------
+--
+-- Method:      tryNameRatta()
+--
+-- Description: Tries to name the ratta.
+--
+-- Method Type: Function/Procedure
+-- Method Type: Procedure
+--   [#] [R/RW] [Data Type] [Description]
+--    1   R      STRING      New element name
+--
+------------------------------------------------------------------------
+define method .tryNameRatta(!name is STRING)
+
+  !validName = !name
+
+  !validName = !this.validateRattaName(!name)
+  if(!validName.unset() OR !validName eq '') then
+    unName !this.ratta
+    return
+  endif
+
+  !this.ratta.name = !validName
+
+endmethod
+------------------------------------------------------------------------
+--
+-- Method:      validateRattaName()
+--
+-- Description: Tries to name the ratta.
+--
+-- Method Type: Function/Procedure
+-- Method Type: Procedure
+--   [#] [R/RW] [Data Type] [Description]
+--    1   R      STRING      New element name
+-- Return:
+--   [Data Type] [Description]
+--    STRING      Validated name
+--
+------------------------------------------------------------------------
+define method .validateRattaName(!name is STRING) is STRING
+
+  if(!this.ratta.unset() OR !name eq !this.ratta.flnn) then
+    if(!name.substring(1,1) neq '/')then
+      return '/' & !name
+    endif
+    return !name
+  endif
+
+  if(!name.unset() OR !name eq '') then
+    return !name
+  endif
+
+  !validName = !!checkName(!name, 'NEW')
+
+  return !validName
+
+endmethod
+
+---------------------------------------------------------------------------
+--
+-- Method:      changeName
+--
+-- Description: Change elements name
+--
+-- Method Type: Procedure
+-- [#] [R/RW] [Data Type] [Description]
+-- Return:
+-- [Data Type] [Description]
+--
+---------------------------------------------------------------------------
+
+define method .changeName(!element is DBREF, !name is STRING)
+
+  -- Mark database
+  !undo               = object UNDOABLE()
+  !undo.description('Change Name')
+  !undo.add()
+
+  !oldName = !element.name
+  !newName = '/' & !name
+  !!ce     = !element
+
+  RENAME ALL $!oldName $!newName
+  handle ANY
+  endhandle
+
+  -- End undo mark
+  !undo.endUndoable()
+
+endmethod
+--End of method definition
+
+---------------------------------------------------------------------------
+--
+-- Method:      dress
+--
+-- Description: Dress the branch with material
+--
+-- Method Type: Procedure
+-- [#] [R/RW] [Data Type] [Description]
+-- Return:
+-- [Data Type] [Description]
+--
+---------------------------------------------------------------------------
+
+define method .dress()
+
+  -- Mark database
+  !undo               = object UNDOABLE()
+  !undo.description('Dress')
+  !undo.add()
+
+  if (!this.element.type.eq('CWBRAN')) then
+    !!ce = !this.cwbran
+    first CTMTRL
+    handle ANY
+      new CTMTRL
+    elsehandle NONE
+      DELETE CTMTRL MEM
+    endhandle
+    !!ce.ctspe      = !this.spref
+    !!ce.fgap       = !this.fgap
+    !!ce.igap       = !this.igap
+    !!ce.lgap       = !this.lgap
+    !!ce.trayw      = !this.trayw
+    !!ce.trayh      = !this.trayh
+    !!ce.tierheight = !this.tierheight
+
+    !this.fill(!this.cwbran)
+  endif
+
+  -- End undo mark
+  !undo.endUndoable()
+
+endmethod
+--End of method definition
+
+---------------------------------------------------------------------------
+--
+-- Method:      undress
+--
+-- Description: remove all material members
+--
+-- Method Type: Procedure
+-- [#] [R/RW] [Data Type] [Description]
+--  1     R     DBREF      Element to Undress
+-- Return:
+-- [Data Type] [Description]
+--
+---------------------------------------------------------------------------
+
+define method .undress(!element is DBREF)
+
+  !this.undress(!element, true)
+
+endmethod
+--End of method definition
+---------------------------------------------------------------------------
+--
+-- Method:      undress
+--
+-- Description: remove all material members
+--
+-- Method Type: Procedure
+-- [#] [R/RW] [Data Type] [Description]
+--  1     R     DBREF      Element to Undress
+--  2     R     BOOLEAN    No Undo is required when using Multiple Dressing Form
+-- Return:
+-- [Data Type] [Description]
+--
+---------------------------------------------------------------------------
+
+define method .undress(!element is DBREF, !undoTest is BOOLEAN)
+
+  if (!undoTest) then
+    -- Mark database
+    !undo               = object UNDOABLE()
+    !undo.description('Dress')
+    !undo.add()
+  endif
+
+  !!ce = !element
+  CTMTRL 1
+  handle ANY
+  elsehandle NONE
+    delete CTMTRL mem
+    !layoutManager = object CABLELAYOUTMANAGER()
+    !layoutManager.updateLayoutAfterDressing(!element)
+  endhandle
+
+  if (!undoTest) then
+    -- End undo mark
+    !undo.endUndoable()
+  endif
+
+endmethod
+--End of method definition
+---------------------------------------------------------------------------
+--
+-- Method:      removeMaterial
+--
+-- Description: remove material
+--
+-- Method Type: Procedure
+-- [#] [R/RW] [Data Type] [Description]
+-- Return:
+-- [Data Type] [Description]
+--
+---------------------------------------------------------------------------
+
+define method .removeMaterial(!element is DBREF)
+
+  -- Mark database
+  !undo               = object UNDOABLE()
+  !undo.description('Dress')
+  !undo.add()
+
+  !!ce = !element
+  CTMTRL 1
+  handle ANY
+  elsehandle NONE
+    delete CTMTRL
+  endhandle
+
+  -- End undo mark
+  !undo.endUndoable()
+
+endmethod
+--End of method definition
+------------------------------------------------------------------------
+--
+-- Method: unfillStraights
+--
+-- Description: Removes straights
+--
+--
+-- Method Type: method
+-- [#] [R/RW] [Data Type] [Description]
+-- Return:
+-- [Data Type] [Description]
+--
+------------------------------------------------------------------------
+
+define method .unfillStraights(!element is DBREF)
+
+  -- Mark database
+  !undo               = object UNDOABLE()
+  !undo.description('Delete trays')
+  !undo.add()
+
+  !col  = object COLLECTION()
+  !col.scope(!element)
+  !col.type('CTSTRA')
+  do !i values !col.results()
+    !!ce = !i
+    delete ctstra
+  enddo
+
+  -- End undo mark
+  !undo.endUndoable()
+
+endmethod
+--End of method definition
+---------------------------------------------------------------------------
+--
+-- Method:      fill
+--
+-- Description: fills material
+--
+-- Method Type: Procedure
+-- [#] [R/RW] [Data Type] [Description]
+--  1    R     DBREF       Element to Fill
+-- Return:
+-- [Data Type] [Description]
+-- BOOLEAN      Pass or Fail
+--
+---------------------------------------------------------------------------
+
+define method .fill(!element is DBREF) is BOOLEAN
+
+  return !this.fill(!element, true)
+
+endmethod
+--End of method definition
+---------------------------------------------------------------------------
+--
+-- Method:      fill
+--
+-- Description: fills material
+--
+-- Method Type: Procedure
+-- [#] [R/RW] [Data Type] [Description]
+--  1    R     DBREF       Element to Fill
+--  2    R     BOOLEAN     No Undo required when using Multiple Dressing Form
+-- Return:
+-- [Data Type] [Description]
+-- BOOLEAN      Pass or Fail
+--
+---------------------------------------------------------------------------
+
+define method .fill(!element is DBREF, !undoTest is BOOLEAN) is BOOLEAN
+
+  if (!undoTest) then
+    -- Mark database
+    !undo               = object UNDOABLE()
+    !undo.description('Dress')
+    !undo.add()
+  endif
+  !this.warnings.clear()
+  !!ce = !element
+  CTMTRL 1
+  handle (2,113)
+    !!alert.warning('Material has been deleted. Dressing cannot be done.')
+    return false
+    --new CTMTRL
+    --!this.cableway(!!ce)
+  elsehandle NONE
+    delete CTMTRL members
+  endhandle
+
+  if (!element.type.eq('CWBRAN')) then
+
+    if (!this.optimum) then
+
+      !this.warnings = ARRAY()
+      !this.cwtm.setconduct(1)
+      !this.cwtm.dressbranch(!element, !this.warnings)
+      handle (2, 563)
+        !!alert.error(!!error.text)
+        return false
+      endhandle
+    elseif (!this.template) then
+      !this.cwtm.setconduct(2)
+      !this.cwtm.dressbranch(!element, !this.warnings)
+      handle (2, 563)
+        !!alert.error(!!error.text)
+        return false
+      endhandle
+      -- execute template rules
+      !!ce = !element
+      CTMTRL 1
+      !mem = !!ce.members
+      --RULE EXECUTE ALL
+      do !tray value !mem
+        !!ce = !tray
+        RULE REXECUTE
+      enddo
+    else
+
+      !this.cwtm.setconduct(0)
+      !this.cwtm.dressbranch(!element, !this.warnings)
+      handle (2, 563)
+        !!alert.error(!!error.text)
+        return false
+      endhandle
+    endif
+    if (!undoTest) then
+      do !warning value !this.warnings
+        if (!warning.match('bend could not be created') gt 0) then
+          !!alert.warning('One or more bends could not be created as the specification does not contain a suitable size.')
+          break
+        endif
+      enddo
+    else
+      do !warning value !this.warnings
+        !!messageFile.softMessage(62, 405, !warning)
+      enddo
+    endif
+  endif
+
+  !!ce = !element
+  CTMTRL 1
+  !this.validateRadii(!!ce.members)
+
+  if (!undoTest) then
+    -- End undo mark
+    !undo.endUndoable()
+  endif
+
+  return true
+
+endmethod
+--End of method definition
+
+---------------------------------------------------------------------------
+--
+-- Method:      fill
+--
+-- Description: fills material using user defined length
+--
+-- Method Type: Procedure
+-- [#] [R/RW] [Data Type] [Description]
+-- Return:
+-- [Data Type] [Description]
+--
+---------------------------------------------------------------------------
+
+define method .fill(!element is DBREF, !length is REAL)
+
+  !this.fill(!element, !length, true)
+
+endmethod
+--End of method definition
+
+---------------------------------------------------------------------------
+--
+-- Method:      fill
+--
+-- Description: fills material using user defined length
+--
+-- Method Type: Procedure
+-- [#] [R/RW] [Data Type] [Description]
+-- Return:
+-- [Data Type] [Description]
+--
+---------------------------------------------------------------------------
+
+define method .fill(!element is DBREF, !length is REAL, !setUndo is BOOLEAN)
+
+  -- Mark database
+  if( !setUndo ) then
+    !undo               = object UNDOABLE()
+    !undo.description('Dress')
+    !undo.add()
+  endif
+
+  !!ce = !element
+  CTMTRL 1
+  handle ANY
+    new CTMTRL
+  elsehandle NONE
+    delete CTMTRL mem
+  endhandle
+
+  if !element.type.eq('CWBRAN') then
+
+    !this.cwtm.setconduct(2)
+    !this.cwtm.dressbranchuserdefinestralength(!element, !length)
+    -- execute template rules
+    !!ce = !element
+    CTMTRL 1
+    !mem = !!ce.members
+    --RULE EXECUTE ALL
+    do !tray value !mem
+      !!ce = !tray
+      RULE REXECUTE
+    enddo
+
+  endif
+
+
+  -- End undo mark
+  if( !setUndo ) then
+    !undo.endUndoable()
+  endif
+
+endmethod
+--End of method definition
+
+---------------------------------------------------------------------------
+--
+-- Method:      fillStraights
+--
+-- Description: fills straights between elements for whole of CTMTRL
+--
+-- Method Type: Procedure
+-- [#] [R/RW] [Data Type] [Description]
+-- Return:
+-- [Data Type] [Description]
+--
+---------------------------------------------------------------------------
+
+define method .fillStraights(!element is DBREF)
+
+  -- Mark database
+  !undo               = object UNDOABLE()
+  !undo.description('Dress')
+  !undo.add()
+
+  -- add a dummy straight at first and last point
+  !pointcol = object COLLECTION()
+  !pointcol.scope(!element)
+  !pointcol.type('POINTR')
+  !points = !pointcol.results()
+  !dbelement = !!ce
+  !!ce = !element
+  FIRST CTMTRL
+  NEW CTSTRA
+  OLENGTH 0
+  !firststra = !!ce
+  !!ce.posref = !points[1]
+  -- create a straight if the last member is referring to second last point
+  own
+  last mem
+  if (!!ce.posref.eq(!points[!points.size() - 1])) then
+    new ctstra
+    olength 0
+    !laststra = !!ce
+    !!ce.posref = !points[!points.size()]
+  endif
+
+  !col = object COLLECTION()
+  !col.scope(!element)
+  !items = !col.results()
+  do !i from 2 to (!items.size() - 1)
+    !this.cwtm.dressstraightsbetweencomponents(!items[!i],!items[!i + 1])
+  enddo
+  -- delete dummy straights
+  !!ce = !firststra
+  delete ctstra
+  if (defined(!laststra)) then
+    !!ce = !laststra
+    delete ctstra
+  endif
+
+  -- reset dbpos
+  !!ce = !dbelement
+
+  -- End undo mark
+  !undo.endUndoable()
+
+endmethod
+--End of method definition
+
+---------------------------------------------------------------------------
+--
+-- Method:      fillBranchWithStraights
+--
+-- Description: fill Branch With Straights
+--
+-- Method Type: Procedure
+-- [#] [R/RW] [Data Type] [Description]
+-- Return:
+-- [Data Type] [Description]
+--
+---------------------------------------------------------------------------
+define method .fillBranchWithStraights(!element is DBREF, !length is REAL)
+
+  -- Mark database
+  !undo               = object UNDOABLE()
+  !undo.description('Dress')
+  !undo.add()
+
+  !this.cwtm.fillBranchWithStraights(!element, !length)
+
+  -- End undo mark
+  !undo.endUndoable()
+
+endmethod
+--End of method definition
+
+---------------------------------------------------------------------------
+--
+-- Method:      createBendRiser
+--
+-- Description: creates bends and risers for all direction change points
+--
+-- Method Type: Procedure
+-- [#] [R/RW] [Data Type] [Description]
+-- Return:
+-- [Data Type] [Description]
+--
+---------------------------------------------------------------------------
+
+define method .dressPoints(!element is DBREF, !includeReducers is BOOLEAN)
+  -- Mark database
+  !undo               = object UNDOABLE()
+  !undo.description('Dress')
+  !undo.add()
+
+  if (!element.type.eq('CWBRAN')) then
+    if (!this.optimum) then
+      !this.cwtm.setconduct(1)
+    elseif (!this.template) then
+      !this.cwtm.setconduct(2)
+    else
+      !this.cwtm.setconduct(0)
+    endif
+
+    !col = object COLLECTION()
+    !col.scope(!element)
+    !col.type('POINTR')
+    !points = !col.results()
+
+    if(!includeReducers) then
+      !this.createBendRiserAndReducer(!points)
+    else
+      !this.createBendRiser(!points)
+    endif
+
+  endif
+
+  !!ce = !this.cwbran
+  CTMTRL 1
+  !this.validateRadii(!!ce.members)
+
+  -- End undo mark
+  !undo.endUndoable()
+endmethod
+--End of method definition
+
+---------------------------------------------------------------------------
+--
+-- Method:      createBendRiser
+--
+-- Description: creates bends and risers for all direction change points
+--
+-- Method Type: Procedure
+-- [#] [R/RW] [Data Type] [Description]
+-- Return:
+-- [Data Type] [Description]
+--
+---------------------------------------------------------------------------
+
+define method .createBendRiser(!points is ARRAY)
+
+  do !i from 1 to (!points.size())
+    !this.cwtm.dressPoint(!points[!i], FALSE)
+    if (!this.template) then
+      -- execute template rules
+      !!ce = !element
+      CTMTRL 1
+      !mem = !!ce.members
+      --RULE EXECUTE ALL
+      do !tray value !mem
+        !!ce = !tray
+        RULE REXECUTE
+      enddo
+    endif
+  enddo
+
+endmethod
+--End of method definition
+
+---------------------------------------------------------------------------
+--
+-- Method:      createBendRiserAndReducer
+--
+-- Description: creates bends and risers for all direction change points
+--
+-- Method Type: Procedure
+-- [#] [R/RW] [Data Type] [Description]
+-- Return:
+-- [Data Type] [Description]
+--
+---------------------------------------------------------------------------
+
+define method .createBendRiserAndReducer(!points is ARRAY)
+
+  do !i from 1 to (!points.size())
+    !this.cwtm.dressPoint(!points[!i])
+    if (!this.template) then
+      -- execute template rules
+      !!ce = !element
+      CTMTRL 1
+      !mem = !!ce.members
+      --RULE EXECUTE ALL
+      do !tray value !mem
+        !!ce = !tray
+        RULE REXECUTE
+      enddo
+    endif
+  enddo
+
+endmethod
+--End of method definition
+
+---------------------------------------------------------------------------
+--
+-- Method:      createTeeAndCross
+--
+-- Description: creates tees and crosses
+--
+-- Method Type: Procedure
+-- [#] [R/RW] [Data Type] [Description]
+-- Return:
+-- [Data Type] [Description]
+--
+---------------------------------------------------------------------------
+
+define method .createTeeAndCross(!element is DBREF)
+
+  -- Mark database
+  !undo               = object UNDOABLE()
+  !undo.description('Dress')
+  !undo.add()
+
+  if (!element.type.eq('CWBRAN')) then
+    !col = object COLLECTION()
+    !col.scope(!element)
+    !col.type('RATTA')
+    !points = !col.results()
+    do !i from 1 to (!points.size())
+      if (!this.optimum) then
+        !this.cwtm.setconduct(1)
+        !this.cwtm.dressroutattachment(!points[!i])
+      elseif (!this.template) then
+        !this.cwtm.setconduct(2)
+        !this.cwtm.dressroutattachment(!points[!i])
+        -- execute template rules
+        !!ce = !element
+        CTMTRL 1
+        !mem = !!ce.members
+        --RULE EXECUTE ALL
+        do !tray value !mem
+          !!ce = !tray
+          RULE REXECUTE
+        enddo
+      else
+        !this.cwtm.setconduct(0)
+        !this.cwtm.dressroutattachment(!points[!i])
+      endif
+    enddo
+  endif
+
+  -- End undo mark
+  !undo.endUndoable()
+
+  !!ce = !this.cwbran
+  CTMTRL 1
+  !this.validateRadii(!!ce.members)
+
+endmethod
+--End of method definition
+
+---------------------------------------------------------------------------
+--
+-- Method:      dressRatta
+--
+-- Description: dresses ratta
+--
+-- Method Type: Procedure
+-- [#] [R/RW] [Data Type] [Description]
+-- Return:
+-- [Data Type] [Description]
+--
+---------------------------------------------------------------------------
+
+define method .dressRatta(!ratta is DBREF)
+
+  -- Mark database
+  !undo               = object UNDOABLE()
+  !undo.description('Dress')
+  !undo.add()
+
+  if (!this.optimum) then
+    !this.cwtm.setconduct(1)
+    !this.cwtm.dressroutattachment(!ratta)
+  elseif (!this.template) then
+    !this.cwtm.setconduct(2)
+    !this.cwtm.dressroutattachment(!ratta)
+  else
+    !this.cwtm.setconduct(0)
+    !this.cwtm.dressroutattachment(!ratta)
+  endif
+
+  -- End undo mark
+  !undo.endUndoable()
+
+endmethod
+--End of method definition
+
+---------------------------------------------------------------------------
+--
+-- Method:      dressBetweenComponents
+--
+-- Description: creates straights between components
+--
+-- Method Type: Procedure
+-- [#] [R/RW] [Data Type] [Description]
+-- Return:
+-- [Data Type] [Description]
+--
+---------------------------------------------------------------------------
+
+define method .dressBetweenComponents(!elements is ARRAY)
+
+  -- Mark database
+ 
+  !undo               = object UNDOABLE()
+  !undo.description('Dress')
+  !undo.add()
+  
+  if (!this.optimum) then
+    !this.cwtm.setconduct(1)
+    !this.cwtm.dressstraightsbetweencomponents(!elements[1],!elements[2])
+		handle (2, 563)
+        !!alert.error(!!error.text)
+    endhandle  
+  elseif (!this.template) then
+    !this.cwtm.setconduct(2)
+    !this.cwtm.dressstraitsbetweencomponents(!elements[1],!elements[2])
+    handle (2, 563)
+        !!alert.error(!!error.text)
+     endhandle
+    -- execute template rules
+    !!ce = !element[1].owner
+    !mem = !!ce.members
+    --RULE EXECUTE ALL
+    do !tray value !mem
+      !!ce = !tray
+      RULE REXECUTE
+    enddo
+  else
+    !this.cwtm.setconduct(0)
+    !this.cwtm.dressstraightsbetweencomponents(!elements[1],!elements[2])
+    handle (2, 563)
+        !!alert.error(!!error.text)
+    endhandle
+  endif
+
+  -- End undo mark
+  !undo.endUndoable()
+endmethod
+--End of method definition
+
+---------------------------------------------------------------------------
+--
+-- Method:      dressMultipleSegments
+--
+-- Description: creates straights between multiple segments
+--
+-- Method Type: Procedure
+-- [#] [R/RW] [Data Type] [Description]
+-- Return:
+-- [Data Type] [Description]
+--
+---------------------------------------------------------------------------
+
+define method .dressMultipleSegments(!first is DBREF, !second is DBREF, !length is REAL)
+
+  -- Mark database
+  !undo               = object UNDOABLE()
+  !undo.description('Dress')
+  !undo.add()
+
+  if (!this.optimum) then
+    !this.cwtm.setconduct(1)
+    !this.cwtm.dressMultipleSegments(!first, !second, !length)
+  elseif (!this.template) then
+    !this.cwtm.setconduct(2)
+    !this.cwtm.dressMultipleSegments(!first, !second, !length)
+    -- execute template rules
+    !!ce = !this.ctmtrl
+    !mem = !!ce.members
+    do !tray value !mem
+      !!ce = !tray
+      RULE REXECUTE
+    enddo
+  else
+    !this.cwtm.setconduct(0)
+    !this.cwtm.dressMultipleSegments(!first, !second, !length)
+  endif
+
+  !!ce = !this.cwbran
+  CTMTRL 1
+  !this.validateRadii(!!ce.members)
+
+  -- End undo mark
+  !undo.endUndoable()
+
+endmethod
+--End of method definition
+
+---------------------------------------------------------------------------
+--
+-- Method:      dressBranchWithStraights
+--
+-- Description: creates straights between components
+--
+-- Method Type: Procedure
+-- [#] [R/RW] [Data Type] [Description]
+-- Return:
+-- [Data Type] [Description]
+--
+---------------------------------------------------------------------------
+
+define method .dressBranchWithStraights(!branch is DBREF, !trayLength is REAL)
+
+  -- Mark database
+  !undo               = object UNDOABLE()
+  !undo.description('Dress')
+  !undo.add()
+  if (!this.optimum) then
+    !this.cwtm.setconduct(1)
+    !this.cwtm.dressbranchinstraights(!branch, !trayLength)
+  elseif (!this.template) then
+    !this.cwtm.setconduct(2)
+    !this.cwtm.dressbranchinstraights(!branch, !trayLength)
+    -- execute template rules
+    !!ce = !branch
+    CTMTRL 1
+    !mem = !!ce.members
+    --RULE EXECUTE ALL
+    do !tray value !mem
+      !!ce = !tray
+      RULE REXECUTE
+    enddo
+  else
+    !this.cwtm.setconduct(0)
+    !this.cwtm.dressbranchinstraights(!branch, !trayLength)
+  endif
+  -- End undo mark
+  !undo.endUndoable()
+
+endmethod
+--End of method definition
+
+---------------------------------------------------------------------------
+--
+-- Method:      dressPoint
+--
+-- Description: creates straights between components
+--
+-- Method Type: Procedure
+-- [#] [R/RW] [Data Type] [Description]
+-- Return:
+-- [Data Type] [Description]
+--
+---------------------------------------------------------------------------
+
+define method .dressPoint(!point is DBREF)
+
+  -- Mark database
+  !undo               = object UNDOABLE()
+  !undo.description('Dress Point')
+  !undo.add()
+
+  if (!this.optimum) then
+    !this.cwtm.setconduct(1)
+    !this.cwtm.dressPoint(!point)
+  elseif (!this.template) then
+    !this.cwtm.setconduct(2)
+    !this.cwtm.dressPoint(!point)
+  else
+    !this.cwtm.setconduct(0)
+    !this.cwtm.dressPoint(!point)
+  endif
+
+  !!ce = !this.cwbran
+  CTMTRL 1
+  !this.validateRadii(!!ce.members)
+
+  -- End undo mark
+  !undo.endUndoable()
+
+endmethod
+--End of method definition
+
+---------------------------------------------------------------------------
+--
+-- Method:      dressSegment
+--
+-- Description: dresses the whole segment
+--
+-- Method Type: Procedure
+-- [#] [R/RW] [Data Type] [Description]
+-- Return:
+-- [Data Type] [Description]
+--
+---------------------------------------------------------------------------
+
+define method .dressSegment(!point is DBREF, !length is REAL)
+
+  -- Mark database
+  !undo               = object UNDOABLE()
+  !undo.description('Dress Point')
+  !undo.add()
+
+  if (!this.optimum) then
+    !this.cwtm.setconduct(1)
+    !this.cwtm.dresssegmentinstraights(!point, !length)
+  elseif (!this.template) then
+    !this.cwtm.setconduct(2)
+    !this.cwtm.dresssegmentinstraights(!point, !length)
+    -- execute template rules
+    !!ce = !point.owner.owner
+    CTMTRL 1
+    !mem = !!ce.members
+    --RULE EXECUTE ALL
+    do !tray value !mem
+      !!ce = !tray
+      RULE REXECUTE
+    enddo
+  else
+    !this.cwtm.setconduct(0)
+    !this.cwtm.dresssegmentinstraights(!point, !length)
+  endif
+
+  -- End undo mark
+  !undo.endUndoable()
+
+endmethod
+--End of method definition
+
+---------------------------------------------------------------------------
+--
+-- Method:      dressSegmentAll
+--
+-- Description: dresses the whole segment with bends risers tees
+--
+-- Method Type: Procedure
+-- [#] [R/RW] [Data Type] [Description]
+-- Return:
+-- [Data Type] [Description]
+--
+---------------------------------------------------------------------------
+
+define method .dressSegmentAll(!point is DBREF)
+
+  -- Mark database
+  !undo               = object UNDOABLE()
+  !undo.description('Dress Point')
+  !undo.add()
+
+  if (!this.optimum) then
+    !this.cwtm.setconduct(1)
+    !this.cwtm.dressSegment(!point)
+    handle (2, 563)
+      !!alert.error(!!error.text)
+    endhandle
+  elseif (!this.template) then
+    !this.cwtm.setconduct(2)
+    !this.cwtm.dressSegment(!point)
+    handle (2, 563)
+      !!alert.error(!!error.text)
+    endhandle
+    -- execute template rules
+    !!ce = !point.owner.owner
+    CTMTRL 1
+    !mem = !!ce.members
+    --RULE EXECUTE ALL
+    do !tray value !mem
+      !!ce = !tray
+      RULE REXECUTE
+    enddo
+  else
+    !this.cwtm.setconduct(0)
+    !this.cwtm.dressSegment(!point)
+    handle (2, 563)
+      !!alert.error(!!error.text)
+    endhandle
+  endif
+
+  !!ce = !this.cwbran
+  CTMTRL 1
+  !this.validateRadii(!!ce.members)
+
+  -- End undo mark
+  !undo.endUndoable()
+
+endmethod
+--End of method definition
+
+---------------------------------------------------------------------------
+--
+-- Method:      dressSegmentAll
+--
+-- Description: dresses the whole segment with bends risers tees with passed length
+--
+-- Method Type: Procedure
+-- [#] [R/RW] [Data Type] [Description]
+-- Return:
+-- [Data Type] [Description]
+--
+---------------------------------------------------------------------------
+
+define method .dressSegmentAll(!point is DBREF, !length is REAL)
+
+  -- Mark database
+  !undo               = object UNDOABLE()
+  !undo.description('Dress Point')
+  !undo.add()
+
+  !this.cwtm.setconduct(2)
+  !this.cwtm.dresssegmentinstraights(!point, !length)
+  -- execute template rules
+  !!ce = !point.owner.owner
+  CTMTRL 1
+  !mem = !!ce.members
+  --RULE EXECUTE ALL
+  do !tray value !mem
+    !!ce = !tray
+    RULE REXECUTE
+  enddo
+
+  -- End undo mark
+  !undo.endUndoable()
+
+endmethod
+--End of method definition
+
+------------------------------------------------------------------------
+--
+-- Method: disconnect
+--
+-- Description: Disconnect Branch head and tail
+--
+--
+-- Method Type: Procedure
+-- [#] [R/RW] [Data Type] [Description]
+-- Return:
+-- [Data Type] [Description]
+--
+------------------------------------------------------------------------
+
+define method .disconnect(!location is STRING)
+
+  -- Mark database
+  !undo               = object UNDOABLE()
+  !undo.description('Disconnect')
+  !undo.add()
+
+  if (!location.upcase().eq('HEAD')) then
+    !this.cwbm.disconnecthead(!this.cwbran)
+  elseif (!location.upcase().eq('TAIL')) then
+    !this.cwbm.disconnecttail(!this.cwbran)
+  endif
+
+  -- End undo mark
+  !undo.endUndoable()
+endmethod
+--End of method definition
+
+---------------------------------------------------------------------------
+--
+-- Method:      Is on the same segment
+--
+-- Description: merge picked branches
+--
+-- Method Type: Procedure
+-- [#] [R/RW] [Data Type] [Description]
+-- Return:
+-- [Data Type] [Description]
+--
+------------------------------------------------------------------------
+define method .isOnTheSameSegment(!firstElement is DBREF, !secondElement is DBREF)  is BOOLEAN
+
+  !pointrFirst = object DBREF()
+  !pointrSecond = object DBREF()
+
+  if (!firstElement.type.eq('POINTR'))then
+    !pointrFirst = !firstElement
+  else
+    !pointrFirst = !firstElement.posref
+  endif
+
+  if (!secondElement.type.eq('POINTR'))then
+    !pointrSecond = prev of $!secondElement
+  else
+    if (!secondElement.type.eq('CTBEND') or !secondElement.type.eq('CTRISE')) then
+      !pointrSecond = !secondElement.posref
+      !pointrSecond = prev of $!pointrSecond
+    else
+      !pointrSecond = !secondElement.posref
+    endif
+  endif
+
+  if (!pointrFirst.neq(!pointrSecond)) then
+    return false
+  endif
+  return true
+
+endmethod
+--End of method definition
+
+
+---------------------------------------------------------------------------
+--
+-- Method:      merge
+--
+-- Description: merge picked branches
+--
+-- Method Type: Procedure
+-- [#] [R/RW] [Data Type] [Description]
+-- Return:
+-- [Data Type] [Description]
+--
+------------------------------------------------------------------------
+
+define method .merge()
+
+  -- Mark database
+  !undo               = object UNDOABLE()
+  !undo.description('Merge Branches')
+  !undo.add()
+
+  !firstBranch  = !this.pickedelements[1].item
+  !secondBranch = !this.pickedelements[2].item
+
+  if (not (!!dbRefUpdatable(!firstBranch) and !!dbRefUpdatable(!secondBranch) ))then
+    !stringMessage  = !!error.text
+    !!alert.error(!stringMessage )
+    return
+  endif
+
+  !confirm = !!alert.confirm('Cables passed by $!secondBranch.namn will be Unrouted. Do you want merge $!firstBranch.namn and $!secondBranch.namn ?')
+  if (!confirm.eq('YES')) then
+    !this.mdrconnect.mergebranches(!firstBranch, !secondBranch)
+    handle any
+      !!alert.error( !!error.text )
+      return
+    endhandle
+  endif
+  -- End undo mark
+  !undo.endUndoable()
+endmethod
+--End of method definition
+
+---------------------------------------------------------------------------
+--
+-- Method:      reorderCableTray
+--
+-- Description: Reorder Cable Tray
+--
+-- Method Type: Procedure
+-- [#] [R/RW] [Data Type] [Description]
+-- Return:
+-- [Data Type] [Description]
+--
+
+define method .reorderCableTray (!branch is DBREF)
+
+  !undo = object UNDOABLE()
+  !undo.description('Reorder Cable Tray')
+  !undo.add()
+
+  !this.cwtm.sortCableTray(!branch)
+
+  -- End undo mark
+  !undo.endUndoable()
+
+endmethod
+--End of method definition
+
+---------------------------------------------------------------------------
+--
+-- Method:      readRattaRnodePositions
+--
+-- Description: read Rattas and Rnodes Positions
+--
+-- Method Type: Procedure
+-- [#] [R/RW] [Data Type] [Description]
+-- Return:
+-- [Data Type] [Description]
+--
+define method .readRattaRnodePositions()
+
+  --Collect all elements dependent on this route point
+  !dependencyList = !this.pointr.depref
+  if (!this.pointr.sequence.neq(1)) then
+    !pointrBefore = prev of $!this.pointr
+    !dependencyList.appendArray(!pointrBefore.depref)
+  endif
+
+  --Collect all Ratta and Rnode associated with this route point
+  do !index indices !dependencyList
+    if (!dependencyList[!index].type eq 'RATTA' or !dependencyList[!index].type eq 'RNODE' ) then
+      !this.rattaRnodeList.append(!dependencyList[!index])
+    endif
+  enddo
+
+  --Take position of associated Ratta and Rnode
+  do !index indices !this.rattaRnodeList
+    !this.rattaRnodeOldPos[!index] = !this.rattaRnodeList[!index].pos
+  enddo
+
+endmethod
+--End of method definition
+
+---------------------------------------------------------------------------
+--
+-- Method:      repositionsRattaRnode
+--
+-- Description: repositions Rattas and Rnodes
+--
+-- Method Type: Procedure
+-- [#] [R/RW] [Data Type] [Description]
+-- Return:
+-- [Data Type] [Description]
+--
+define method .repositionsRattaRnode()
+
+  !rattaRnodeMoved  = ARRAY()
+  do !index indices !this.rattaRnodeList
+    if (!this.rattaRnodeList[!index].type eq 'RATTA') then
+      !resultBool = !this.cwbm.repositionAttachmentPoint(!this.rattaRnodeList[!index], !this.rattaRnodeOldPos[!index])
+      handle any
+        !resultBool = false
+      endhandle
+    else
+      !resultBool = !this.cwbm.repositionRoutNode(!this.rattaRnodeList[!index], !this.rattaRnodeOldPos[!index])
+      handle any
+        !resultBool = false
+      endhandle
+    endif
+    if (not !resultBool) then
+      !rattaRnodeMoved.append (!this.rattaRnodeList[!index])
+    endif
+  enddo
+  if ( not !rattaRnodeMoved.empty()) then
+    !nameRattaRnodeMoved = ' '
+    do !index indices !rattaRnodeMoved
+      !nameRattaRnodeMoved =  !nameRattaRnodeMoved & !rattaRnodeMoved[!index].flnm & ', '
+    enddo
+    !!alert.warning('Cannot maintain position of' & !nameRattaRnodeMoved )
+  endif
+endmethod
+--End of method definition
+
+---------------------------------------------------------------------------
+--
+-- Method:      split
+--
+-- Description: split branches
+--
+-- Method Type: Procedure
+-- [#] [R/RW] [Data Type] [Description]
+-- Return:
+-- [Data Type] [Description]
+--
+------------------------------------------------------------------------
+
+define method .split(!seg is DBREF, !where is STRING)
+
+  !branch = !seg.owner.owner
+  if (!where.upcase().eq('POINT')) then
+    !answer = !!alert.question('Do you want to split at the start point of segment ?')
+    if (!answer.eq('NO')) then
+      !sAnswer =  !!alert.question('Do you want to split at the end point of segment ?')
+      if (!sAnswer.eq('YES')) then
+        !point = 'endref'
+      else
+        -- delete temporary global variable
+        !!where.delete()
+        handle ANY
+        endhandle
+        return
+      endif
+    elseif (!answer.eq('YES')) then
+      !point = 'staref'
+    else
+      -- delete temporary global variable
+      !!where.delete()
+      handle ANY
+      endhandle
+      return
+
+    endif
+
+    !splitpoint = !seg.$!<point>.sequence
+
+    !undo               = object UNDOABLE()
+    !undo.description('Split')
+    !undo.add()
+    !this.cwbm.splitatpoint(!branch,!splitpoint)
+    -- End undo mark
+    !undo.endUndoable()
+
+  elseif (!where.upcase().eq('SEGMENT')) then
+    !sequence = !seg.sequence
+    unenhance $!seg
+    enhance $!seg colour red
+    !confirm = !!alert.confirm('Do you want to split at the segment highlighted in Red?')
+    if (!confirm.eq('YES')) then
+      !undo               = object UNDOABLE()
+      !undo.description('Split')
+      !undo.add()
+      !this.cwbm.splitatseg(!branch,!sequence)
+      -- End undo mark
+      !undo.endUndoable()
+    else
+      unenhance $!seg
+    endif
+
+  endif
+
+  -- delete temporary global variable
+  !!where.delete()
+  handle ANY
+  endhandle
+
+endmethod
+--End of method definition
+
+
+---------------------------------------------------------------------------
+--
+-- Method:      createOrthogonal
+--
+-- Description: creates orthogonal points
+--
+-- Method Type: Procedure
+-- [#] [R/RW] [Data Type] [Description]
+-- Return:
+-- [Data Type] [Description]
+--
+------------------------------------------------------------------------
+
+define method .createOrthogonal(!bran is DBREF)
+
+  if (!bran.hpos.eq(!bran.tpos)) then
+    return
+  endif
+  !ce = !!ce
+  !col = object COLLECTION()
+  !col.scope(!bran)
+  !col.type('POINTR')
+  !points  = !col.results()
+  !firstPoint = object DBREF()
+  !secondPoint  = object DBREF()
+
+  if (!points.size().neq(2)) then
+    !!alert.error('Not able to create orthogonal route. Number of points is not equal to 2')
+    return
+  endif
+
+  -- change the start and end numbers if the connections are rattas
+  if (!this.start.eq(5)) then
+    !this.start = 4
+  endif
+
+  if (!this.end.eq(5)) then
+    !this.end = 4
+  endif
+
+  -- explicit start
+  if (!this.start.eq(1)) then
+    !firstPoint = !points[1]
+  endif
+
+  -- start from branch head
+  if (!this.start.eq(2)) then
+    -- create point in same line as connection branch
+    !!ce = POINTR 1 of RPATH 1 of $!this.headconnectionbranch
+    !pdir = !!ce.pdir[2].opposite()
+    !ppos = !!ce.pos
+    !newpos = !ppos.offset(!pdir,500mm)
+    !!ce = !points[1]
+    NEW POINTR
+    !!ce.pos = !newpos
+    !firstPoint = !!ce
+  endif
+
+  -- start from branch tail
+  if (!this.start.eq(3)) then
+    -- create point in same line as connection branch
+    !!ce = LAST POINTR of RPATH 1 of $!this.headconnectionbranch
+    !pdir = !!ce.pdir[1]
+    !ppos = !!ce.pos
+    !newpos = !ppos.offset(!pdir,500mm)
+    !!ce = !points[1]
+    NEW POINTR
+    !!ce.pos = !newpos
+    !firstPoint = !!ce
+  endif
+
+  if (!this.start.eq(4)) then
+    -- create point vector at hpos of connecting branch
+    !pointvect = object POINTVECTOR()
+    !!ce  = !points[1]
+    !pointvect.position = !!ce.position
+    !pointvect.direction = !this.referenceheadpoint.pdir[2]
+    -- get the orthogonal direction from plane
+    !orthdir = !pointvect.plane().orientation.ydir()
+
+    -- see if the direction is towards tail. if not take the direction towards tail
+    !pointvect.direction = !orthdir
+    !pvplane = !pointvect.plane()
+    !pvplane.position = !points[2].position
+    !pvline  = !pointvect.line(1000)
+    !dirline = !pvline.extendEnd(!pvplane)
+    if (!dirline.length().neq(0)) then
+      !orthdir = !dirline.direction()
+    else
+      !orthdir = !points[2].pdir[1]
+    endif
+    !ppos = !!ce.pos
+    !newpos = !ppos.offset(!orthdir,500mm)
+    NEW POINTR
+    !!ce.pos = !newpos
+    !firstPoint = !!ce
+  endif
+
+  -- explicit end
+  if (!this.end.eq(1)) then
+    !secondPoint  = !points[2]
+  endif
+
+  -- end from branch head
+  if (!this.end.eq(2)) then
+    -- create point in same line as connection branch
+    !!ce = POINTR 1 of RPATH 1 of $!this.tailconnectionbranch
+    !pdir = !!ce.pdir[2].opposite()
+    !ppos = !!ce.pos
+    !newpos = !ppos.offset(!pdir,500mm)
+    !!ce = !points[2]
+    PREV
+    NEW POINTR
+    !!ce.pos = !newpos
+    !secondPoint = !!ce
+  endif
+
+  -- end from branch tail
+  if (!this.end.eq(3)) then
+    -- create point in same line as connection branch
+    !!ce = LAST POINTR of RPATH 1 of $!this.tailconnectionbranch
+    !pdir = !!ce.pdir[1]
+    !ppos = !!ce.pos
+    !newpos = !ppos.offset(!pdir,500mm)
+    !!ce = !points[2]
+    PREV
+    NEW POINTR
+    !!ce.pos = !newpos
+    !secondPoint = !!ce
+  endif
+
+  -- branch off
+  if (!this.end.eq(4)) then
+    -- create point vector at hpos of connecting branch
+    !pointvect = object POINTVECTOR()
+    !!ce  = !points[2]
+    !pointvect.position = !!ce.position
+    !pointvect.direction = !this.referencetailpoint.pdir[2]
+    -- get the orthogonal direction from plane
+    !orthdir = !pointvect.plane().orientation.ydir()
+
+    -- see if the direction is towards head. if not take the direction towards tail
+    !pointvect.direction = !orthdir
+    !pvplane = !pointvect.plane()
+    !pvplane.position = !points[1].position
+    !pvline  = !pointvect.line(1000mm)
+    !dirline = !pvline.extendEnd(!pvplane)
+    if (!dirline.length().neq(0)) then
+      !orthdir = !dirline.direction()
+    else
+      !orthdir = !points[1].pdir[2]
+    endif
+
+    !ppos = !!ce.pos
+    !newpos = !ppos.offset(!orthdir,500mm)
+    PREV
+    NEW POINTR
+    !!ce.pos = !newpos
+    !secondPoint = !!ce
+  endif
+
+  -- construct route
+
+  -- construct a point vector at first point
+  if (!this.start.eq(1)) then
+    !dir = object DIRECTION('E')
+  else
+    !dir = !firstPoint.pdir[1]
+  endif
+
+  !pvect  = object POINTVECTOR(!firstPoint.pos, !dir)
+  !fline  = !pvect.line(1000mm)
+  !pvplane = !pvect.plane()
+  --change the plane origin to second point
+  !pvplane.position  = !secondPoint.position
+  !sline   = !fline.extendEnd(!pvplane)
+  if (!sline.length().eq(0)) then
+    --points are in line
+    return
+  endif
+  if (!fline.direction().eq(!sline.direction())) then
+    --points are in the same direction. so extend first point to plane
+    if (!sline.endposition.string(!!distanceFMT).neq(!secondPoint.position.wrt(worl).string(!!distanceFMT))) then
+      !!ce = !firstPoint
+      if (!this.start.eq(1)) then
+        NEW POINTR
+        !!ce.pos = !sline.endposition
+        !firstPoint = !!ce
+      else
+        !!ce.pos = !sline.endposition
+      endif
+    endif
+
+    if (!this.end.eq(4)) then
+      -- see if the secondPoint, newPoint and lastPoint are in same line
+      !checkLine = object LINE(!sline.endposition, !points[2].position)
+      if (!checkLine.on(!secondPoint.position)) then
+        !cepoint = !!ce
+        !!ce     = !secondPoint
+        delete POINTR
+        if (!cepoint.badref().not()) then
+          !!ce   = !cepoint
+        endif
+        return
+      endif
+    endif
+
+    if (!sline.endposition.string(!!distanceFMT).eq(!secondPoint.position.wrt(worl).string(!!distanceFMT))) then
+      -- points are in same line. delete unwanted points
+      if (!this.start.neq(1)) then
+        !!ce = !firstPoint
+        DELETE POINTR
+      endif
+      if (!this.end.neq(1)) then
+        !!ce = !secondPoint
+        DELETE POINTR
+      endif
+      !!ce = !ce
+      return
+    endif
+    -- define point vector in orthogonal DIRECTION
+    !pvect  = object POINTVECTOR(!firstPoint.pos, !dir)
+    !pvplane = !pvect.plane()
+    !dir     = !pvplane.orientation.ydir()
+    !pvect  = object POINTVECTOR(!firstPoint.pos, !dir)
+    !fline  = !pvect.line(1000mm)
+    !pvplane = !pvect.plane()
+    !pvplane.position  = !secondPoint.position
+    !sline   = !fline.extendEnd(!pvplane)
+    if (!sline.endposition.neq(!secondPoint.position)) then
+      -- see if the secondPoint, newPoint and lastPoint are in same line
+      if (!this.end.eq(2) or !this.end.eq(3)) then
+        !checkLine = object LINE(!sline.endposition, !secondPoint.position)
+        if (!checkLine.on(!points[2].position)) then
+          !cepoint = !!ce
+          !!ce     = !secondPoint
+          delete POINTR
+          !!ce   = !cepoint
+        endif
+      endif
+      NEW POINTR
+      !!ce.pos = !sline.endposition
+    endif
+
+  else
+    -- points are not in same direction . so create point in orthogonal direction
+    -- define point vector in orthogonal DIRECTION
+    !pvect  = object POINTVECTOR(!firstPoint.pos, !dir)
+    !pvplane = !pvect.plane()
+    !dir     = !pvplane.orientation.ydir()
+    !pvect  = object POINTVECTOR(!firstPoint.pos, !dir)
+    !fline  = !pvect.line(1000mm)
+    !pvplane = !pvect.plane()
+    !pvplane.position  = !secondPoint.position
+    !sline   = !fline.extendEnd(!pvplane)
+    if (!sline.length().eq(0)) then
+      -- points are in same line. delete unwanted points
+      if (!this.start.neq(1)) then
+        !!ce = !firstPoint
+        DELETE POINTR
+      endif
+      if (!this.end.neq(1)) then
+        !!ce = !secondPoint
+        DELETE POINTR
+      endif
+      !!ce = !ce
+      return
+    endif
+
+    !!ce = !firstPoint
+    if (!sline.endposition.neq(!secondPoint.position)) then
+      NEW POINTR
+      !!ce.pos = !sline.endposition
+    endif
+
+    --create next orthogonal point
+    !dir = !!ce.pdir[1]
+    !pvect  = object POINTVECTOR(!!ce.pos, !dir)
+    !pvplane = !pvect.plane()
+    !dir     = !pvplane.orientation.ydir()
+    !pvect  = object POINTVECTOR(!!ce.pos, !dir)
+    !fline  = !pvect.line(1000mm)
+    !pvplane = !pvect.plane()
+    !pvplane.position  = !secondPoint.position
+    !sline   = !fline.extendEnd(!pvplane)
+    if (!sline.endposition.neq(!secondPoint.position)) then
+      -- see if the secondPoint, newPoint and lastPoint are in same line
+      if (!this.end.eq(2) or !this.end.eq(3)) then
+        !checkLine = object LINE(!sline.endposition, !secondPoint.position)
+        if (!checkLine.on(!points[2].position)) then
+          !cepoint = !!ce
+          !!ce     = !secondPoint
+          delete POINTR
+          !!ce   = !cepoint
+        endif
+      endif
+
+      NEW POINTR
+      !!ce.pos = !sline.endposition
+    endif
+  endif
+
+  !!ce = !ce
+
+endmethod
+--End of method definition
+
+---------------------------------------------------------------------------
+--
+-- Method:      createOrthogonal
+--
+-- Description: creates orthogonal points
+--
+-- Method Type: Procedure
+-- [#] [R/RW] [Data Type] [Description]
+-- Return:
+-- [Data Type] [Description]
+--
+------------------------------------------------------------------------
+
+define method .createOrthogonal(!bran is DBREF, !route is STRING)
+
+  --return if hpos and tpos are same
+  if (!bran.hpos.eq(!bran.tpos)) then
+    return
+  endif
+
+  -- collect points
+  !dbelement = !!ce
+  !col = object COLLECTION()
+  !col.scope(!bran)
+  !col.type('POINTR')
+  !points  = !col.results()
+
+  if (!points.size().neq(2)) then
+    !!alert.error('Not able to create orthogonal route. Number of points is not equal to 2')
+    return
+  endif
+
+  !headPosition = !points[1].position.wrt(worl)
+  !tailPosition = !points[2].position.wrt(worl)
+
+  -- get the orthogonal points
+  !manager = object CABLEMANAGER()
+  !pos = !manager.createOrthogonalRoute(!headPosition,!tailPosition, !route)
+
+  if (!pos.unset()) then
+    -- no orthogonal route derived
+    return
+  endif
+
+  -- remove first and last positions
+  !pos.removeFirst()
+  !pos.removeLast()
+
+  -- store point in a variable
+  !ce = !points[1]
+
+  do !point values !pos
+    !!ce = !ce
+    NEW POINTR
+    !!ce.position = !point
+    !ce = !!ce
+  enddo
+
+  -- reset to original
+  !!ce = !dbelement
+
+endmethod
+--End of method definition
+
+---------------------------------------------------------------------------
+--
+-- Method:      pick
+--
+-- Description: edg to pick branches for connection or merge
+--
+-- Method Type: Procedure
+-- [#] [R/RW] [Data Type] [Description]
+-- Return:
+-- [Data Type] [Description]
+--
+---------------------------------------------------------------------------
+
+define method .pick(!action is STRING)
+
+  -- define pick elements
+  !element = 'TYPE inset (|CWBRAN|)'
+
+  -- define packet
+  !firstPacket                = object EDGPACKET()
+  !firstPacket.initialisation = '!!cableway.pickedelements  = object ARRAY()'
+  !firstPacket.elementPick('Pick First Branch')
+  !firstPacket.action         = '!!cableway.pickedelements.append(!this.return[1])'
+  !firstPacket.pickPacket.picks[1].pick.input[3] = !element
+  !firstPacket.pickPacket.picks[1].pick.modifiable = FALSE
+  !firstPacket.priority       = 2
+  !firstPacket.remove         = TRUE
+  !firstPacket.escape         = ''
+
+  !firstPacket.continue      = '!!cableway.pick2(|$!action|)'
+
+  !!edgCntrl.add(!firstPacket)
+
+endmethod
+--End of method definition
+
+---------------------------------------------------------------------------
+--
+-- Method:      pick2
+--
+-- Description: edg to pick second branch for connection or merge
+--
+-- Method Type: Procedure
+-- [#] [R/RW] [Data Type] [Description]
+-- Return:
+-- [Data Type] [Description]
+--
+---------------------------------------------------------------------------
+
+define method .pick2(!action is STRING)
+
+  !firstPick = !!cableway.pickedelements[1].item
+  !element = 'TYPE inset (|CWBRAN|) AND REF NEQ $!firstPick'
+
+  !secondPacket               = object EDGPACKET()
+  !secondPacket.elementPick('Pick Second Branch')
+  !secondPacket.action        = '!!cableway.pickedelements.append(!this.return[1])'
+  !secondPacket.pickPacket.picks[1].pick.input[3] = !element
+  !secondPacket.pickPacket.picks[1].pick.modifiable = FALSE
+  !secondPacket.priority      = 3
+  !secondPacket.remove        = TRUE
+
+  if (!action.upcase().eq('CONNECT')) then
+    !secondPacket.continue      = '!!cableway.connectBranches()'
+  elseif (!action.upcase().eq('DISCONNECT')) then
+    !secondPacket.continue      = '!!cableway.disconnectBranches()'
+  elseif (!action.upcase().eq('MERGE')) then
+    !secondPacket.continue      = '!!cableway.merge()'
+  endif
+
+  !!edgCntrl.add(!secondPacket)
+
+endmethod
+--End of method definition
+
+
+
+---------------------------------------------------------------------------
+--
+-- Method:      checkDBClaimtype
+--
+-- Description: check the DB Claim type ad who has claimed the CE and current User.
+--
+-- Method Type: Procedure
+-- [#] [R/RW] [Data Type] [Description]
+-- Return:
+-- [Data Type] [Description]
+--
+---------------------------------------------------------------------------
+
+define method .checkDBClaimtype (!bran is DBREF) is BOOLEAN
+
+
+--check the DB Claim type ad who has claimed the CE and current User.
+--If it's an EXPLICIT claim DB then it compares who has claimed the CE against the current user, and gives an error if they don't match method return false.
+-- That will cover items that are unclaimed or claimed by another user.
+
+!dbelement = !!ce
+!!ce = !bran
+
+var !dbclaim DBCLAIM
+var !userclaim USERCLAIM
+var !user USER
+
+!!ce = !dbelement
+
+if ( !dbclaim eq 'EXPLICIT' ) then
+  if ( !userclaim neq '$!user' ) then
+    !!alert.error('The element  $!bran.name is not claimed by the user, and is held in a database that requires Explicit Claims.')
+  	return false
+  endif
+endif
+return true
+
+
+endmethod
+--End of method definition
+
+---------------------------------------------------------------------------
+--
+-- Method:      connectBranches
+--
+-- Description: connects two branches
+--
+-- Method Type: Procedure
+-- [#] [R/RW] [Data Type] [Description]
+-- Return:
+-- [Data Type] [Description]
+--
+---------------------------------------------------------------------------
+
+define method .connectBranches()
+
+  -- Mark database
+
+  !firstBranch  = !this.pickedelements[1].item
+  !secondBranch = !this.pickedelements[2].item
+
+--before connecting branches check the DB Claim type ad who has claimed the CE and current User.
+if ( !this.checkDBClaimtype(!firstBranch) eq false) then
+  return
+endif
+
+if ( !this.checkDBClaimtype(!secondBranch) eq false) then
+  return
+endif
+
+
+ 
+  if (!!cblconnectioncheck(!firstBranch, !secondBranch)) then
+    !confirm = !!alert.confirm('These branches are already connected. Do you want to continue?')
+    if (!confirm.eq('NO')) then
+      return
+    endif
+  else
+    !confirm = !!alert.confirm('OK to connect $!firstBranch.namn and $!secondBranch.namn ?')
+  endif
+  if (not !!dbRefUpdatable(!firstBranch) )then
+    !stringMessage  = !!error.text
+    !!alert.error(!stringMessage )
+    return
+  endif
+
+  !undo               = object UNDOABLE()
+  !undo.description('Connect Branches')
+  !undo.add()
+
+  if (!confirm.eq('YES')) then
+    !ok = !this.cwbm.connectBranches(!firstBranch, !secondBranch)
+    handle any
+      !!alert.error('Failed to connect branches: ' & !!error.text)
+    elsehandle none
+      if (!ok.not()) then
+        if (!firstBranch.vwidth.gt(!secondBranch.vwidth)) then
+          !bigerWidth = !firstBranch.vwidth
+        else
+          !bigerWidth = !secondBranch.vwidth
+        endif
+        do !index from 1 to 3
+          !tempBigerWidth = !index * !bigerWidth
+          !confirm = !!alert.confirm('Ends of branches that you want to connect do not coincide. Do you want to extend tolerance to $!tempBigerWidth   and try to connect them again?')
+          if (!confirm.eq('YES')) then
+            !connectBranches = !this.cwbm.connectBranchesEnforced(!firstBranch, !secondBranch, !tempBigerWidth )
+            if (!connectBranches.not()) then
+              !!alert.error('Failed to connect branches for $!tempBigerWidth  tolerance.' )
+            else
+              !!alert.message(' Connection establish for $!tempBigerWidth  tolerance.' )
+              break
+            endif
+          endif
+         enddo
+      endif
+    endhandle
+  endif
+
+  -- End undo mark
+  !undo.endUndoable()
+
+endmethod
+--End of method definition
+
+---------------------------------------------------------------------------
+--
+-- Method:      disconnectBranches
+--
+-- Description: connects two branches
+--
+-- Method Type: Procedure
+-- [#] [R/RW] [Data Type] [Description]
+-- Return:
+-- [Data Type] [Description]
+--
+---------------------------------------------------------------------------
+
+define method .disconnectBranches()
+
+  !firstBranch  = !this.pickedelements[1].item
+  !secondBranch = !this.pickedelements[2].item
+  if (!!cblconnectioncheck(!firstBranch, !secondBranch) eq false ) then
+    !confirm = !!alert.confirm('These branches are already disconnected. Do you want to continue?')
+    if (!confirm.eq('NO')) then
+      return
+    endif
+  else
+    !confirm = !!alert.confirm('OK to disconnect $!firstBranch.namn and $!secondBranch.namn ?')
+  endif
+
+  if (not !!dbRefUpdatable(!firstBranch))then
+    !stringMessage  = !!error.text
+    !!alert.error(!stringMessage )
+    return
+  endif
+
+  -- Mark database
+  !undo               = object UNDOABLE()
+  !undo.description('Connect Branches')
+  !undo.add()
+
+  if (!confirm.eq('YES')) then
+    !this.cwbm.disconnectBranches(!firstBranch, !secondBranch)
+    -- make sure that the connections are removed both ways
+    !this.cwbm.disconnectBranches(!secondBranch, !firstBranch)
+  endif
+
+  -- End undo mark
+  !undo.endUndoable()
+
+endmethod
+
+
+-- End of object definition
+
+------------------------------------------------------------------------
+--
+-- Method:      checkExistingComponents
+--
+-- Description: Check whether an element contains specific component types
+--
+-- Method Type: Procedure
+--   [#] [R/RW] [Data Type] [Description]
+--    1   R      DBREF       Element to get data from
+--    2   R      STRING      Type of element to check for
+-- Return:
+--   [Data Type] [Description]
+--
+------------------------------------------------------------------------
+
+define method .checkExistingComponents (!dbelement is DBREF, !cttype is STRING) is BOOLEAN
+
+  !memo = !!ce
+  !!ce = !dbelement
+  CTMTRL 1
+  handle (2,113)
+    !!alert.warning('Material has been deleted. Dressing cannot be done.')
+    !!ce = !memo
+    return false
+  elsehandle NONE
+    !collection = object COLLECTION()
+    !collection.type(!cttype )
+
+    !collection.scope(!!ce)
+    !results = !collection.results()
+    if (!results.size() gt (0)) then
+
+      if(!!cblAreElementsSupported(!results)) then
+        !message = |Supported |& !cttype & | already exists in branch. Continuing with this operation will redress the branch and 'Orphan' the support. Do you want to continue? |
+      else
+        !message = !cttype & | already exists in branch. Do you want to delete them and redress branch? |
+      endif
+
+      !answer = !!alert.confirm(!message)
+      if (!answer eq 'YES') then
+
+        --If removing straights, also remove couplings
+        if (!cttype eq 'CTSTRA') then
+          !collection.addType('CTCOUP')
+          !results = !collection.results()
+        endif
+
+        !undo = object UNDOABLE()
+        !undo.description('Redress Branches')
+        !undo.add()
+
+        do !temp values !results
+          !!ce = !temp
+          delete $!!ce.type
+          handle any
+            !!alert.warning('Problem with deleting.' & !!error.text   )
+          endhandle
+        enddo
+        !undo.endUndoable()
+        return  true
+      else
+        !!ce = !memo
+        return false
+      endif
+    else
+      !!ce = !memo
+      return true
+    endif
+
+  endhandle
+  !!ce = !memo
+  return true
+endmethod
+
+--End of method definition
+
+------------------------------------------------------------------------
+--
+-- Method:      getBendRadius
+--
+-- Description: Bend radius is a special attribute that can be interpreted
+--              as a factor (e.g. 1.5*OD) or as a distance. When stored as
+--              a distance it is in mm
+--
+-- Method Type: Procedure
+--   [#] [R/RW] [Data Type] [Description]
+--    1   R      DBREF       Element to get data from
+-- Return:
+--   [Data Type] [Description]
+--    REAL        Bend radius in current units
+------------------------------------------------------------------------
+
+define method .getBendRadius(!dbelement is DBREF) is REAL
+
+  !realRadius = !dbelement.bradius.currentUnits('mm')
+  return !realRadius
+
+endmethod
+--End of method definition
+
+------------------------------------------------------------------------
+--
+-- Method:      getFixedBendState
+--
+-- Description: Whether to use fixed bends for risers when dressing a branch.
+--
+-- Method Type: Procedure
+-- Return:
+--   [Data Type] [Description]
+--    BOOL        Use fixed bends
+------------------------------------------------------------------------
+define method .getFixedBendState() is BOOL
+
+  var !ctmtrlCollection coll all CTMTRL for $!this.cwbran
+  if (!ctmtrlCollection.size() gt 0) then
+    !specification = !ctmtrlCollection[1].ctspe
+    if(!specification.set()) then
+      return !specification.fixedBend
+    endif
+  endif
+
+  return !this.cwbran.fixedBend
+
+endmethod
+--End of method definition
+
+------------------------------------------------------------------------
+--
+-- Method:      setRadius
+--
+-- Description: Set fillet or bend radius allowing for units
+--
+-- Method Type: Procedure
+--   [#] [R/RW] [Data Type] [Description]
+--    1   R      DBREF       Element to store radius data
+--    2   R      REAL        Radius
+-- Return:
+--   [Data Type] [Description]
+------------------------------------------------------------------------
+
+define method .setRadius(!dbelement is DBREF, !radius is REAL)
+
+  !existingOffset = !dbelement.pos.distance(!dbelement.fend)
+
+  -- mm value required by cable way manager
+  !mmRadius = !radius.dbunits().value()
+
+  -- check that radius does not exceed available space
+  !available = true
+  !xce = !!ce
+  !!ce = !dbelement
+  var !distToNex construct distance P0 to PA of NEXT
+  handle (2, 113)
+  elsehandle none
+    !mmDDistToNex = !distToNex.real().dbunits().value()
+    if (!mmRadius.gt(!mmDDistToNex)) then
+      !available = false
+    endif
+  endhandle
+  !!ce = !xce
+  if (!available.not()) then
+    !mmRadius = !distToNex.real().dbunits().value()
+    !!alert.error('Insufficient distance after $!dbelement.type $!dbelement.tysequ - Fradius not set')
+  else
+    !this.cwbm.setFiletRadiusOnPoint(!dbelement, !mmRadius)
+  endif
+
+  -- move any existing dressing on the branch by the change in radius
+  !newOffset = !dbelement.pos.distance(!dbelement.fend)
+  !offsetChange = !existingOffset - !newOffset
+
+  do !material values !dbelement.depref
+    if (!material.type inset('CTSTRA', 'RNODE', 'RATTA', 'CTBEND', 'CTRISE')) then
+      -- ignore as RNODEs and RATTAs are already moved by core
+      -- ignore CTSTRA as it is measured from the POINTR rather than the end of the bend
+      skip
+    endif
+    !material.zdist = !material.zdist + !offsetChange
+    handle (2,805)
+      -- ignore if element does not have zdist attribute
+    endhandle
+  enddo
+
+endmethod
+--End of method definition
+
+----------------------------------------------------------------------
+--
+-- Method:      calculateFradAdjust
+--
+-- Description: Calculate amount to adjust fradius by based on justification
+--
+----------------------------------------------------------------------
+define method .calculateFradAdjust(!point is DBREF) is REAL
+
+  !pposEqual = !point.ppos[1].eq(!point.ppos[2])
+  !fradNonZero = !point.frad.gt(0)
+
+  !unusedAydirExists = !point.aydir
+  handle any
+    return 0.0
+  endhandle
+
+  !unusedLydirExists = !point.lydir
+  handle any
+    return 0.0
+  endhandle
+
+  if (!pposEqual.and(!fradNonZero)) then
+    return 0.0
+  endif
+
+  !dimension = 0.0
+  if(!this.isRiser(!point) and (!this.vshape.unset() or !this.VShape.eq(0))) then
+    if(!point.owner.owner.fixedb.not()) then
+      !dimension = !this.vheight
+      if !dimension.set().not() then
+        !dimension = !this.cwbran.vheight
+      endif
+    endif
+  else
+    !dimension = !this.vwidth
+    if !dimension.set().not() then
+      !dimension = !this.cwbran.vwidth
+    endif
+  endif
+
+  !justification = object STRING()
+  !justification = !this.jusl
+  if (!justification.empty()) then
+    !justification = !this.cwbran.cwjusl
+  endif
+  handle any
+    !justification = !this.cwbran.cwjusl
+  endhandle
+
+  if(!this.isRiser(!point).not()) then
+
+    if (!justification inset('LEFT','CENL','TOPL')) then
+      if (!this.isLeftBend(!point).not()) then
+        return !dimension
+      else
+        return 0.0
+      endif
+    elseif(!justification inset('RIGH','CENR','TOPR')) then
+      if (!this.isLeftBend(!point).not()) then
+        return 0.0
+      else
+        return !dimension
+      endif
+    elseif(!justification inset('CENT','CENC','TOPC')) then
+      return !dimension / 2
+    endif
+
+  else
+
+    if (!point.owner.owner.fixedb AND !this.isCounterClockwiseRiser(!point)) then
+      return 0.0
+    endif
+
+    if (!justification inset('LEFT','CENT','RIGH')) then
+      if (!this.isCounterClockwiseRiser(!point)) then
+        return !dimension
+      else
+        return 0.0
+      endif
+    elseif(!justification inset('TOPL','TOPC','TOPR')) then
+      if (!this.isCounterClockwiseRiser(!point)) then
+        return 0.0
+      else
+        return !dimension
+      endif
+    elseif(!justification inset('CENL','CENC','CENR')) then
+      return !dimension / 2
+    endif
+
+  endif
+
+  return 0.0
+
+endmethod
+--End of method definition
+----------------------------------------------------------------------
+--
+-- Method:      isRiser
+--
+-- Description: Determine if passed POINTR is riser or bend
+--
+----------------------------------------------------------------------
+define method .isRiser(!point is DBREF) is BOOLEAN
+
+  --if the POINTR has the same ydir for arrive and leave then it is a bend, otherwise it is a riser
+  !check = !point.aydir.eq(!point.lydir)
+  handle any
+    return false
+  endhandle
+  if (!check) then
+    !result = false
+  else
+    !result = true
+  endif
+
+  return !result
+endmethod
+----------------------------------------------------------------------
+--
+-- Method:      isLeftBend
+--
+-- Description: Determine if bend is left or right bend
+--
+----------------------------------------------------------------------
+define method .isLeftBend(!point is DBREF) is BOOLEAN
+
+  --arrive direction
+  !dir1 = !point.pdir[1]
+  !dir1IsZero = !dir1.north.eq(0).and(!dir1.east.eq(0).and(!dir1.up.eq(0)))
+
+  --leave direction
+  !dir2 = !point.pdir[2]
+  !dir2IsZero = !dir2.north.eq(0).and(!dir2.east.eq(0).and(!dir2.up.eq(0)))
+
+
+  if (!dir1IsZero.or(!dir2IsZero)) then
+    return false
+  endif
+
+  --arrive cross leave
+
+  !dir3 = !dir1.cross(!dir2)
+
+  --leave y direction
+  !dir4 = !point.lydir.wrt(world)
+
+  --if arrive cross leave is same direction as leave y direction, bend is left
+  if (!dir3.string().before(' WRT').eq(!dir4.string().before(' WRT'))) then
+    !result = true
+  else
+    !result = false
+  endif
+
+  return !result
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      isCounterClockwiseRiser
+--
+-- Description: Determine if bend is at clockwise or counter-clockwise riser
+--
+----------------------------------------------------------------------
+define method .isCounterClockwiseRiser(!point is DBREF) is BOOLEAN
+
+  !isRiser = !this.isRiser(!point)
+  handle any
+    -- directions not yet available
+    !isRiser = false
+  endhandle
+  if (!isRiser.not()) then
+    return false
+  endif
+
+  --arrive Y direction
+  !arriveDir = !point.pdir[!point.arrive]
+  handle any
+    return false
+  endhandle
+  !aydir = !point.aydir
+  --leave direction
+  !leaveDir = !point.pdir[!point.leave]
+
+  !orthogonalArrive = !arriveDir.orthogonal(!aydir)
+  !orthogonalLeave = !arriveDir.orthogonal(!leaveDir)
+
+  -- Check  includes angled risers.
+  return !orthogonalArrive.eq(!orthogonalLeave)
+
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      updateMaterial
+--
+-- Description: Update material
+--
+----------------------------------------------------------------------
+define method .updateMaterial()
+
+  if (not !!dbRefUpdatable(!this.ctmtrl))then
+    !stringMessage  = !!error.text
+    !!alert.error(!stringMessage )
+    return
+  endif
+
+  !this.ctmtrl.description  = !this.description
+  !this.ctmtrl.function     = !this.function
+  !this.ctmtrl.fgap         = !this.fgap
+  !this.ctmtrl.igap         = !this.igap
+  !this.ctmtrl.lgap         = !this.lgap
+  !this.ctmtrl.trayw        = !this.trayw
+  !this.ctmtrl.trayh        = !this.trayh
+  !this.ctmtrl.tierheight   =  !this.tierheight
+  if (!this.spref.set()) then
+    !this.ctmtrl.ctspe        = !this.spref
+  else
+    !dbelement = !!ce
+    !!ce  = !this.ctmtrl
+    ctspe nulref
+    !!ce = !dbelement
+  endif
+
+endmethod
+----------------------------------------------------------------------
+--
+-- Method:      updateMaterialSpec
+--
+-- Description: Update material specification only
+--
+----------------------------------------------------------------------
+define method .updateMaterialSpec()
+
+  if (not !!dbRefUpdatable(!this.ctmtrl))then
+    !stringMessage  = !!error.text
+    !!alert.error(!stringMessage )
+    return
+  endif
+
+  if (!this.spref.set()) then
+    !this.ctmtrl.ctspe        = !this.spref
+  else
+    !dbelement = !!ce
+    !!ce  = !this.ctmtrl
+    ctspe nulref
+    !!ce = !dbelement
+  endif
+
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      verifyComponentRadius
+--
+-- Description: Verifies, whether CTBEND, CTRISE, CTTEE or CTCROS radius matches BRAD of branch
+--
+----------------------------------------------------------------------
+define method .verifyComponentRadius(!materialElement is DBREF) is BOOLEAN
+
+  !bore1 = !materialElement.radi.nearestBore()
+  !bore2 =  !this.cwbran.brad.nearestBore()
+  if(!materialElement.type eq 'CTRISE' AND !materialElement.cttype eq 'INSI' AND !this.cwbran.fixedBend.not()) then
+    !insideRadius = !materialElement.posref.insrad
+    !insideBore = !insideRadius.nearestBore()
+    return !bore1.eq(!insideBore)
+  endif
+
+  return !bore1.eq(!bore2)
+
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      validateRadii
+--
+-- Description: Iterates through members of CTMTRL and if not matching material is found, asks user to leave or delete
+--
+----------------------------------------------------------------------
+define method .validateRadii(!materialElements is ARRAY)
+
+  !alreadyPromptedRadiuses = object ARRAY()
+  !answers = object ARRAY()
+  do !i from 1 to !materialElements.size()
+    if(!materialElements[!i].type inset ('CTBEND', 'CTRISE', 'CTTEE', 'CTCROS')) then
+      !!ce = !materialElements[!i]
+      !matchIndex = !alreadyPromptedRadiuses.findFirst(!materialElements[!i].radi.string(!!distanceFMT))
+      if (!matchIndex.set()) then
+        if (!answers[!matchIndex].eq('NO')) then
+          delete $!!ce.type
+        endif
+        skip
+      endif
+
+      if (!this.verifyComponentRadius(!materialElements[!i]).not()) then
+        var !elementName CUTNMN 11
+
+        !targetRadius = !this.cwbran.brad.string(!!distanceFMT)
+        if(!this.cwbran.fixedBend.not() AND !materialElements[!i].type eq 'CTRISE') then
+          !targetRadius = !materialElements[!i].posref.insrad.string(!!distanceFMT)
+        endif
+
+        !announcement = 'Could not find dressing with radius ' & !targetRadius & ' for ' & !elementName & '.'
+        !question = 'Apply the closest possible (' & !materialElements[!i].radi.string(!!distanceFMT) & ')?'
+        !confirm = !!alert.confirm(!announcement & ' ' & !question)
+
+        !alreadyPromptedRadiuses.append(!materialElements[!i].radi.string(!!distanceFMT))
+        !answers.append(!confirm)
+
+        if !confirm.eq('NO') then
+          delete $!!ce.type
+        endif
+      endif
+    endif
+  enddo
+
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      getWarnings
+--
+-- Description: Fetch warning messages
+--
+----------------------------------------------------------------------
+define method .getWarnings() is ARRAY
+
+  return !this.warnings
+
+endmethod
+
+------------------------------------------------------------------------
+--
+-- Method:      updatebranchPointrs
+--
+-- Description: Update FRAD values of pointrs
+--
+----------------------------------------------------------------------
+define method .updateBranchPointrs()
+
+  !col = object COLLECTION()
+  !col.scope(!this.cwbran)
+  !col.type('POINTR')
+  if (!col.results().size().gt(0)) then
+    if (!col.results().size()eq(2)) then
+      if (!col.results()[1].pos.eq(!col.results()[2].pos)) then
+        --this Branch is two points which are in the same position
+        return
+      endif
+    endif
+
+    -- set the connection mode to change the ZDIS of RATTA and RNODE
+    !this.cwbm.setConnectingMode(TRUE)
+
+    !bendRadius = !this.brad
+    handle ANY
+      !bendRadius = !this.cwbran.brad
+    endhandle
+
+    do !point values !col.results()
+      if (!bendRadius.leq(0.0)) then
+        !this.setRadius(!point, 0.0)
+      else
+        !fradAdjust = !this.calculateFradAdjust(!point)
+        !this.setRadius(!point, (!bendRadius + !fradAdjust))
+      endif
+    enddo
+  endif
+
+endmethod
+
+
+define method .loadTmplDimensions(!currentSpecification is DBREF)
+  --units
+  !savedUnits = object COMUNITS(true)
+  UNITS MM DIST
+  UNITS MM BORE
+
+  -- bends
+  !valueArray  = !!cbltraydimensionsfromtemplate(!currentSpecification, 'CTBEND')
+  !this.cwtm.readdefaulttemplatesdimforctbend(!valueArray[1], !valueArray[2])
+
+  -- straights
+  !valueArray  = !!cbltraydimensionsfromtemplate(!currentSpecification, 'CTSTRA')
+  !this.cwtm.readdefaulttemplatesdimforctstra(!valueArray[1], !valueArray[2])
+
+  -- reducer
+  !valueArray  = !!cbltraydimensionsfromtemplate(!currentSpecification, 'CTREDU')
+  !this.cwtm.readdefaulttemplatesdimforctredu(!valueArray[1], !valueArray[2])
+
+  -- tee
+  !valueArray  = !!cbltraydimensionsfromtemplate(!currentSpecification, 'CTTEE')
+  !this.cwtm.readdefaulttemplatesdimforcttee(!valueArray[1], !valueArray[2])
+
+  -- riser
+  !valueArray  = !!cbltraydimensionsfromtemplate(!currentSpecification, 'CTRISE')
+  !this.cwtm.readdefaulttemplatesdimforctrise(!valueArray[1], !valueArray[2])
+
+  -- cross
+  !valueArray  = !!cbltraydimensionsfromtemplate(!currentSpecification, 'CTCROS')
+  !this.cwtm.readdefaulttemplatesdimforctcros(!valueArray[1], !valueArray[2])
+
+  --reset units
+  !savedUnits.restoreSavedUnitsByPtype('DIST')
+  !savedUnits.restoreSavedUnitsByPtype('BORE')
+
+endmethod
+
+
+define method .loadSpecDimensions(!currentSpecification is DBREF)
+  -- units
+  !savedUnits = object COMUNITS(true)
+  UNITS MM DIST
+  UNITS MM BORE
+
+  --Pass the specification to the core CABLE TRAY MATERIAL object, which will deal with loading the specs.
+  --This can also be done by loading the specification dimensions for each cable tray component, and passing them to the
+  --CABLE TRAY MATERIAL object per component as an array of an array of doubles.
+  !this.cwtm.readDefaultDimensions(!currentSpecification)
+
+  -- reset units
+  !savedUnits.restoreSavedUnitsByPtype('DIST')
+  !savedUnits.restoreSavedUnitsByPtype('BORE')
+
+
+endmethod

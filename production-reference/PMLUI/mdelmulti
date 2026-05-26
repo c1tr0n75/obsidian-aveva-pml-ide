@@ -1,0 +1,95 @@
+$(H
+------------------------------------------------------------------------
+-- Copyright 1974 to current year. AVEVA Solutions Limited and its subsidiaries. All rights reserved in original code only.
+
+
+Macro:   mdelmulti
+Author:  Neil R Holmes
+
+Macro Generic Type: Results
+
+------------------------------------------------------------------------
+$)
+$(D
+Generates list of elements to be deleted.
+Arguments:
+	1 - option
+		PICK - Pick list.
+		LIST - Use currently defined list
+Global Arguments:
+Returns:
+$)
+
+$:debug$:
+
+$d1=PICK
+
+$* Start of Code
+
+$* Initialise vars
+var !MODE |$1|
+!HCOL = !!gphColOpt.highlight().code
+
+
+if (|$!MODE| eq |PICK|) then
+
+   $* Get list of elements
+   CALLIB RPICKLOOP $<Identify element to be deleted or -Escape-$>
+   if ($!!CDRTNSTATUS neq 0) then
+      return error 1 |$!!CDRTNTEXT|
+   endif
+   confirm |O.K. to delete items highlighted in $!!gphColOpt.highlight.name$N?|
+   if (not $_CALERT_USERDATA) then
+      unenhance all from !!CDPARTN
+      return
+   endif
+   var !ELEMS coll all from !!CDPARTN
+   !deleteType = 'identified elements'
+
+elseif (|$!MODE| eq |LIST|) then
+
+   CALLIB RLISTDATA
+   if ($!!CDRTNSTATUS neq 0) then
+      return error 1 |$!!CDRTNTEXT|
+   endif
+   $* Enhance all from current list
+   enhance all from !!CDLIST$!!CDINRTN col $!HCOL
+   refresh
+   confirm |O.K. to delete all items in list $!!CDLIST[$!!CDINRTN]$N?|
+   if (not $_CALERT_USERDATA) then
+      unenhance all from !!CDLIST$!!CDINRTN
+      return
+   endif
+   var !ELEMS coll all from !!CDLIST$!!CDINRTN
+   !deleteType = 'elements from list'
+
+endif
+
+$* Delete Elements
+$* Check for empty array
+if (arraysize (!ELEMS) gt 0) then
+
+   -- Mark database
+   !undo  = object UNDOABLE()
+   !undo.description('Deleted ' & !deleteType)
+   !undo.add()
+
+   do !INDX values !ELEMS
+      $* Delete !ELEM & associations but don't confirm
+      CALLIB MDELCE $!INDX true true false false
+      handle ANY
+         -- End undo mark
+         !undo.endUndoable()
+         return error 1 |$!!ERROR.TEXT|
+      endhandle
+   enddo
+
+   -- End undo mark
+   !undo.endUndoable()
+
+else
+   return error 1 |No elements to delete.|
+endif
+
+return $* >>>>>>>>>> End of Code MDELMULTI <<<<<<<<<<
+$.

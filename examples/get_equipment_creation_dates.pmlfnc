@@ -1,0 +1,59 @@
+$* Filename: get_equipment_creation_dates.pmlfnc
+$* Purpose: Outputs the creation dates of Equipment under Zone "/AI_GENERATED"
+$*          with names starting with "/31-".
+$* Usage: !!GetEquipmentCreationDates()
+
+define function !!GetEquipmentCreationDates()
+    !zoneName = '/AI_GENERATED'
+    !zoneRef = object DBREF(!zoneName)
+    
+    $* Check if the zone exists
+    if (!zoneRef.Unset()) then
+        !!Alert.Error(|Zone $!zoneName not found.|)
+        return
+    endif
+
+    $* Initialize Collection
+    !coll = object COLLECTION()
+    !coll.Scope(!zoneRef)
+    !coll.Type('EQUI')
+
+    $* Execute collection
+    !results = !coll.Results()
+
+    $* Check for results
+    if (!results.Empty()) then
+        $P No equipment found in $!zoneName
+        return
+    endif
+
+    !foundCount = 0
+    !prefix = '/31-'
+    
+    $P Checking equipment in $!zoneName starting with $!prefix ...
+    $P ----------------------------------------------------------------------
+    
+    $* Iterate and filter by name
+    do !item values !results
+        !name = !item.Name
+        
+        $* Wildcard match for the name prefix
+        if (!name.MatchWild(!prefix + '*')) then
+            !foundCount = !foundCount + 1
+            
+            $* Query pseudo-attribute CRDATE
+            !creationDate = !item.CrDate
+            
+            $P Equipment: $!name | Created: $!creationDate
+        endif
+    enddo
+    
+    $P ----------------------------------------------------------------------
+    if (!foundCount EQ 0) then
+        $P No equipment found matching the criteria.
+    else
+        $P Total matching equipment: $!foundCount
+    endif
+    $P ----------------------------------------------------------------------
+
+endfunction

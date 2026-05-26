@@ -1,0 +1,33 @@
+{
+  "name": "aveva-pml-coding-in-design",
+  "version": "2.0",
+  "description": "PML/PML2 coding for AVEVA Engineering, AVEVA E3D Design, and AVEVA Unified Engineering.",
+  "scope": {
+    "in": [
+      "PML2 functions, objects, forms, macros, callbacks",
+      "DBREF/COLLECTION navigation and queries",
+      "Database listings and modifications",
+      "Gadget definitions, form layout, alerts",
+      "File I/O, error handling, RVM export"
+    ],
+    "out": [
+      "Visual Studio projects",
+      "Generic programming unrelated to PML"
+    ]
+  },
+  "bundled_contents": {
+    "references": {
+      "top_level_files": 14,
+      "object_type_split_files": 87
+    },
+    "examples": 5,
+    "production_reference": {
+      "commands": 16,
+      "forms": 19,
+      "functions": 18,
+      "objects": 18,
+      "PMLUI": 2,
+      "DBListing-examples": 9
+    }
+  }
+}

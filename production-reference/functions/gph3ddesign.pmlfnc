@@ -1,0 +1,220 @@
+------------------------------------------------------------------------
+--
+-- Copyright 1974 to current year. AVEVA Solutions Limited and its subsidiaries. All rights reserved in original code only.
+--
+-- File:            gph3ddesign.pmlfnc
+--   Type:          Function Definition
+--   Group:         Graphic View
+--     Keyword:     VIEW
+--   Module:        common
+--  Author:          Undefined
+--  Created:         Mon Sep 17 13:32:31 2012
+--
+-- Description:
+--  Standard Design Graphic View
+
+------------------------------------------------------------------------
+--
+-- Function Type:   Function/Procedure
+-- Arguments:
+--   [#] [R/RW] [Data Type] [Description]
+--    1   R      REAL        Form number
+--    2   R      BOOLEAN     Whether form should be floating
+-- Return:
+--   [Data Type] [Description]
+--    FORM        Form created
+--
+------------------------------------------------------------------------
+
+-- Define function
+define function !!gph3DDesign(!number is REAL, !floating is BOOLEAN) is FORM
+
+    -- Initialise Variables
+    !form   = '!!gph3DDesign' & !number
+    !module = !!module()
+    !isSpooler = !module.modKey.upcase().eq('SPL')
+
+    -- disallow 3D view 1 close button
+    if( !number eq 1 ) then
+      !noQuit = 'NOQUIT'
+    else
+      !noQuit = ''
+    endif
+
+	if (!floating) then
+	  !doctype = 'DOCUMENT FLOAT'
+	else
+	   !doctype = 'DOCUMENT'
+	endif
+	
+
+  -- Define form
+  layout form $!<form> resize $!doctype $!noQuit
+
+  $!<form>.formTitle    = 'Default'
+  $!<form>.iconTitle    = '3DView'
+  $!<form>.initCall     = '$!form$n.keyboardFocus = $!form$n.view'
+  $!<form>.cancelCall   = '!!gphViews.close(' & !form & ')'
+
+  -- Body of form definition
+
+  -- Define Prompt
+  para .prompt at x-1 y-0.3  anchor T+L+R width 80 lines 1
+  path down
+  vdist 0.2
+
+  if (!module.appName.lowcase().matchwild('*design*') or !module.appName.lowcase().matchwild('*steelfabricator*') or !module.appName.lowcase().matchwild('*plateandbarnesting*')) then
+    !volumeType = 'GIVolume'
+  else
+    !volumeType = 'Volume'
+  endif
+
+-------------------------
+--  Static view buttons
+-------------------------
+
+  if( !isSpooler ) then
+
+      !autoCeIcon       = !!pml.getPathName('autoce16.png')
+      !rotateCeIcon     = !!pml.getPathName('rotatece16.png')
+      !mouseZoomIcon    = !!pml.getPathName('ng_zoominout.png')
+      !mousePanIcon     = !!pml.getPathName('ng_panmode.png')
+      !mouseRotateIcon  = !!pml.getPathName('ng_rotatemode.png')
+      !axesIconOn       = !!pml.getPathName('worldaxes16.png')
+      !axesIconOff      = !!pml.getPathName('worldaxes16.png')
+      !hide             = !!pml.getPathName('hide16.png')
+
+      -- define view control buttons
+      button .autoCe at x0 ymax.prompt+0.2 tooltip 'Limits CE' pixmap "$!<autoCeIcon>" width 16 height 16  callback |!!gphViews.limits(!this.view, !!ce)|
+      button .rotateCE tooltip 'Rotate Origin CE' pixmap "$!<rotateCeIcon>" width 16 height 16 callback |!!gphViews.rotate(!this.view, !!ce.position)|
+
+      button .mouseZoom at ymax+0.5 tooltip 'Zoom' pixmap "$!<mouseZoomIcon>" width 16 height 16 callback |!this.view.mouseMode = 'Zoom'|
+      button .mousePan tooltip 'Pan' pixmap "$!<mousePanIcon>" width 16 height 16 callback |!this.view.mouseMode = 'Pan'|
+      button .mouseRotate tooltip 'Rotate' pixmap "$!<mouseRotateIcon>" width 16 height 16 callback |!this.view.mouseMode = 'Rotate'|
+      button .drawlistButton tooltip 'Drawlist' pixmap "$!<hide>" width 16 height 16 callback |!!gphViews.drawlist(!this.view)|
+      button .axesButton toggle at ymax+0.3 tooltip 'World Axes' pixmap "$!<axesIconOff>" "$!<axesIconOn>" width 16 height 16 callback |!!gphViews.axesButton(|
+
+    !xView = 'xmax.autoCe+0.2'
+
+  else
+
+    -------------------------
+    --  Floating View buttons
+    -------------------------
+    import 'PMLNetUtilities'
+    handle any
+    endhandle
+    using namespace 'Aveva.Core.PMLNet'
+
+    !xView = 'x-1'
+  endif
+
+    -- Define graphics view
+    view .view at $!<xView> ymin.prompt prompt .prompt $!<volumeType>
+      width to max.prompt height $!!gphViewOpt.height
+      limits local s5000mm w5000mm d5000mm to n5000mm e5000mm u5000mm
+
+      -- Input Modes
+        -- Standard Element Pick
+        inmode create _cie       type |DES_PICK_CIE|
+        -- Navigate
+        inmode create _navi       type |DES_NAVIGATE|
+        -- Standard Element Pick
+        inmode create _pick       type |DES_PICK|
+        -- Pick Any (Element, Ppoint, Pline)
+        inmode create _pAny       type |DES_PICK_ANY|
+        -- Plines
+        inmode create _pLine      type |DES_PICK_PLINE|
+        -- Ppoints
+        inmode create _point      type |DES_PICK_POINT|
+        -- Screen Position
+        inmode create _screen     type |DES_3D_LINE|
+        -- Laser Model rays
+        inmode create _pickxgeom  type |DES_PICK_XGEOM|
+        -- Default (Navigation)
+        inmode create _pickDetail type |DES_PICK_DETAIL|
+        -- Default (Navigation)
+        inmode create _default    type |DES_PICK_CIE|
+
+    exit
+
+    -- Set Defaults for Modes
+    !this.view.cie.cursor     = 'Pointer'
+    !this.view.cie.prompt     = 'CIE : '
+
+    !this.view.navi.cursor     = 'Pointer'
+    !this.view.navi.prompt     = 'Navigate : '
+
+    !this.view.pick.cursor     = 'Pointer'
+    !this.view.pick.prompt     = 'Pick Element : '
+
+    !this.view.pAny.cursor     = 'Pointer'
+    !this.view.pAny.prompt     = 'Pick Any : '
+
+    !this.view.pLine.cursor    = 'Pointer'
+    !this.view.pLine.prompt    = 'Pick Pline : '
+
+    !this.view.point.cursor    = 'Pick'
+    !this.view.point.prompt    = 'Point Ppoint : '
+
+    !this.view.screen.cursor   = 'Crosshair'
+    !this.view.screen.prompt   = 'Pick 3D Position : '
+
+    !this.view.default.cursor  = 'Pointer'
+    !this.view.default.prompt  = 'CIE : '
+
+    -- Form Members
+    -- Clip Data
+    member .clipbox  is GPHCLIPBOX
+    member .clipPlanes is ARRAY
+
+    -- Grid Planes
+    member .isGridRefView is BOOLEAN
+    member .gridRef       is DBREF
+
+    -- Form Information
+    member .type     is STRING
+    member .number   is REAL
+    member .viewPurpose is STRING
+
+    -- Register the form
+    !formName        = $!<form>
+    !!appFormCntrl.registerForm(!formName)
+
+  exit
+  -- End of form definition
+
+  -- Initialise Form Data
+  !formName.type   = 'Design'
+  !formName.number = !number
+  !formName.isGridRefView = false
+  !formName.viewPurpose = ''
+
+  -- start form maximised in MDI window
+  !formName.maximised = true
+
+  -- Assign defaults clipbox and clip planes
+  !formName.clipbox.gphClipbox(!formName.view)
+  !formName.clipPlanes.clear()
+  do !i to 6
+    !formName.clipPlanes.append(object GPHCLIPPLANE(!formName.view, !i))
+  enddo
+
+  if( !isSpooler ) then
+
+    !formName.newMenu('drawlistMenu')
+    !formName.drawlistMenu.add('callback', 'Drawlist...', '!!gphViews.drawlist(!this.view)')
+    !formName.drawlistButton.setPopup(!formName.drawlistMenu)
+
+    -- Load bar menus with standard pull down menus
+    !!gphViews.bar(!formName)
+
+  endif
+
+  -- Set defaults
+  !!gphViewOpt.applyToView(!formName.view)
+
+  return !formName
+
+endfunction
+-- End of function definition for !!gph3DDesign

@@ -1,0 +1,212 @@
+{
+  "main": {
+    "id": "a182ebb8ee9cf303",
+    "type": "split",
+    "children": [
+      {
+        "id": "d5085096bd8b3e04",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "361d517aea1c8a99",
+            "type": "leaf",
+            "state": {
+              "type": "graph",
+              "state": {},
+              "icon": "lucide-git-fork",
+              "title": "Graph view"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "674a9556a2f4d8be",
+    "type": "split",
+    "children": [
+      {
+        "id": "80bf01acd2cbbc24",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "27669e1c046c28af",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false
+              },
+              "icon": "lucide-folder-closed",
+              "title": "Files"
+            }
+          },
+          {
+            "id": "c71babfa7e44cfa6",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "Search"
+            }
+          },
+          {
+            "id": "d399db5d35081882",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {},
+              "icon": "lucide-bookmark",
+              "title": "Bookmarks"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "2fbb2aed8952efd2",
+    "type": "split",
+    "children": [
+      {
+        "id": "63d23523474c7b34",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "80429bcce6354835",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "Backlinks"
+            }
+          },
+          {
+            "id": "01d9d44e7f5d76ac",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "Outgoing links"
+            }
+          },
+          {
+            "id": "cc0ce833d47ef344",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "Tags"
+            }
+          },
+          {
+            "id": "6a076f00cfaeba7d",
+            "type": "leaf",
+            "state": {
+              "type": "all-properties",
+              "state": {
+                "sortOrder": "frequency",
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-archive",
+              "title": "All properties"
+            }
+          },
+          {
+            "id": "c6692be78388387d",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "Outline"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 784.5
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:Open quick switcher": false,
+      "graph:Open graph view": false,
+      "canvas:Create new canvas": false,
+      "daily-notes:Open today's daily note": false,
+      "templates:Insert template": false,
+      "command-palette:Open command palette": false,
+      "bases:Create new base": false
+    }
+  },
+  "active": "361d517aea1c8a99",
+  "lastOpenFiles": [
+    "references/object-type-index.md",
+    "references/utilities/AVEVA_PML_RVM_Export.md",
+    "references/utilities/general_commands.md",
+    "references/utilities/command-line-queries.md",
+    "references/ui/forms-ui-reference.md",
+    "references/database/aveva_pseudo_attributes.md",
+    "references/database/aveva_introduction_to_attributes.md",
+    "references/database/database_modification.md",
+    "references/database/database_navigation_query_syntax.md",
+    "references/database/aveva_ue_design_database_data_model.md",
+    "references/database/database-data-model-index.md",
+    "references/language/AVEVA_PML_Error_Handling.md",
+    "references/language/methods-available-to-all-objects.md",
+    "references/language/pml2-language-reference.md",
+    "references/utilities",
+    "references/ui",
+    "references/database",
+    "references/language",
+    "production-reference/DBListing-examples/DBOutput_SUPPORTS.txt",
+    "production-reference/DBListing-examples/DBOutput_STRUCTURAL.txt",
+    "production-reference/DBListing-examples/DBOutput_PIPING.txt",
+    "production-reference/DBListing-examples/DBOutput_HVAC.txt",
+    "production-reference/DBListing-examples/DBOutput_GRIDS-and-WorkPacks.txt",
+    "production-reference/DBListing-examples/DBOutput_EQUIPMENT.txt",
+    "Untitled.canvas",
+    "references/database-data-model-index.md",
+    "README.md",
+    "LLM_WIKI_CONCEPT.md",
+    "SKILL.md",
+    "references/AVEVA_PML_Error_Handling.md",
+    "log.md"
+  ]
+}

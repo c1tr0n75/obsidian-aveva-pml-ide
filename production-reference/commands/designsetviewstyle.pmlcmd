@@ -1,0 +1,166 @@
+----------------------------------------------------------------------
+--
+-- Copyright 1974 to current year. AVEVA Solutions Limited and its subsidiaries. All rights reserved in original code only.
+--
+--  File:            designsetviewstyle.pmlcmd
+--  Type:            Command Definition
+--  Keyword:         Undefined
+--  Module:          Undefined
+--  Author:          Undefined
+--  Created:         Tue Aug 14 11:15:32 2012
+--
+-- Group:        Design General
+-- Description:  Command object for changing the graphical view style in design
+--   This is a button command supporting the standard command interface
+--
+------------------------------------------------------------------------
+setup command !!designSetViewStyle
+
+exit
+
+------------------------------------------------------------------------
+-- Method:      designSetViewStyle
+-- Description: Constructor
+------------------------------------------------------------------------
+define method .designSetViewStyle()
+  -- initialise events and command key
+  !this.key     = 'AVEVA.DesignGeneral.CommandDesignSetViewStyle'
+  !this.execute = 'execute'
+endmethod
+
+------------------------------------------------------------------------
+-- Method:     execute
+-- Description: Execute event
+------------------------------------------------------------------------
+define method .execute(!args is ARRAY)
+
+  -- Initialise variables
+  !style = !args[0]
+
+  -- Check if the View Settings form is displayed
+  if (defined(!!viewSettings)) then
+    if(!!viewSettings.shown()) then
+      !!viewSettings.hide()
+    endif
+  endif
+
+    -- Get form containing view to act on
+    if (!args.size() gt 1) then
+      !form = $!<args[1]>
+    else
+      !form = !!fmSys.currentDocument()
+    endif
+
+    if (!form.unset()) then
+      return
+    endif
+
+    if (not defined(!form.view)) then
+      return
+    endif
+
+    !graphicalView =  !form.view
+
+  	-- Check is a 3D form	
+  	if (not !graphicalView.type().eq('GM3D')) then
+      return
+    endif
+
+  		
+      -- Set the view style
+      if (!style.eq('WIRELINE')) then
+
+        !graphicalView.shaded = false
+
+      elseif (!style.eq('SHADED')) then
+
+      -- Set shading on
+      !graphicalView.shaded = true
+
+      $T8+
+
+        -- Edges off
+        system sgl /effect_hlr off
+
+        -- Shadows on
+        system sgl /effect_ao off
+
+      $T8-
+
+        -- Set the global view settings
+        !!gphViewOpt.edges   = false
+        !!gphViewOpt.shadows = false
+
+      elseif (!style.eq('SHADEDS')) then
+
+      -- Set shading on
+      !graphicalView.shaded = true
+
+      $T8+
+
+        -- Edges off
+        system sgl /effect_hlr off
+
+        -- Shadows on
+        system sgl /effect_ao on
+
+      $T8-
+
+        -- Set the global view settings
+        !!gphViewOpt.edges   = false
+        !!gphViewOpt.shadows = true
+
+      elseif (!style.eq('SHADEDE')) then
+
+      -- Set shading on
+      !graphicalView.shaded = true
+
+      $T8+
+
+        -- Edges on
+        system sgl /effect_hlr on
+
+        -- Shadows off
+        system sgl /effect_ao off
+
+      $T8-
+
+      -- Set the global view settings
+     !!gphViewOpt.edges   = true
+     !!gphViewOpt.shadows = false
+
+      else
+
+      -- Set shading on
+      !graphicalView.shaded = true
+
+      $T8+
+
+        -- Edges on
+        system sgl /effect_hlr on
+
+        -- Shadows on
+        system sgl /effect_ao on
+
+      $T8-
+
+      -- Set the global view settings
+     !!gphViewOpt.edges   = true
+     !!gphViewOpt.shadows = true
+
+      endif
+
+      -- Reset the drawlist from monochrome if set
+      if (!style.neq('MONOCHROME')) then
+        !!gphdrawlists.controlMonochrome(false)
+
+      endif
+
+      -- Refresh the view settings form
+      if (defined(!!viewSettings)) then
+        !!viewSettings.display3DView()
+      endif
+  		
+
+endmethod
+-- End of method .execute(ARRAY)

@@ -1,0 +1,1179 @@
+$(H
+------------------------------------------------------------------------
+-- Copyright 1974 to current year. AVEVA Solutions Limited and its subsidiaries. All rights reserved in original code only.
+
+
+Macro:   mdelce
+Author:  Neil R Holmes
+
+Macro Generic Type: Results
+
+------------------------------------------------------------------------
+$)
+$(D
+General element delete. This macro if required delete all directly related
+elements to the deleted item, example SCTNs' connected joins will be deleted,
+HANGs' attachment point and fittings will also be deleted.
+
+NOTE - ALL deletion routines should use this as the means to delete elements.
+
+Arguments: <gid> <flag> <flag> <flag> <flag>
+  1 - General Identity.
+  2 - Association delete flag.
+  3 - Routine flag, in this mode undeleted associations are passed back
+      via a global variable
+  4 - Retain CE, delete its members
+  5 - Confirm deletion
+Global Arguments:
+Returns:
+  !!CDPARTN  - Undeletable associations
+        !!CDWARTN       - Undeletable type
+  !!CDCARTN  - Reason for not being deleted
+$)
+
+$:debug$:
+$d1=CE
+$d2=false
+$d3=false
+$d4=false
+$d5=true
+
+$* Initialise Variables
+ var !GID |$1|
+ var !AFLG $2
+ var !RFLG $3
+ var !CFLG $4
+ var !PFLG $5
+ var !EFLG false
+ var !CREF REFE
+ var !!CDPARTN delete
+ var !!CDCARTN delete
+ var !!CDWARTN delete
+
+ var !CNAM (NAME of $!GID )
+ var !OREF (REFE of OWNE of $!GID )
+
+!needConfirmation = TRUE
+
+!hvacEleToDel = 0
+
+if (defined(!!ALERTONCEDELSEL)) then
+  if(not (!!alertOnceDelSel.ShowAgain()) AND not(!!isDeleteSelection)) then
+    !!alertOnceDelSel.confirm = TRUE
+  endif
+endif
+
+if (undefined(!!runningUnitlTest)) then
+  if (undefined(!!CDCERRMESS)) then
+    CALLIB FERRMESS
+  endif
+endif
+
+if (undefined(!!runningUnitlTest)) then
+  var pane _CDCERRMESS_LIST clear
+  exit
+endif
+
+$* If GID is CE, change to REFE
+ if(|$!GID| eq |CE|) then
+   var !GID REFE
+ endif
+
+$* Check for world
+ if(TYPE of $!GID eq |WORL|) then
+    error |Unable to delete World.|
+    return
+  endif
+
+ --Group elements but ignoring GPITEM elements as these are hidden from users
+ var !TYPE TYPE of $!GID
+ if (!TYPE EQ 'GPITEM') then
+   -- Just do not touch it
+   return
+ endif
+ if (!TYPE INSET('GPWL','GPSET','GROU')) then
+   -- Only consider deleting these and not the element they reference
+   var !groupElements collect all (GPWL GPSET GROU) for $!GID
+   !groupElement = !GID.dbref()
+   !groupElementName = !GID.dbref().fullname
+   var !notLocked collect all (GPWL GPSET GROU) with (not(LOCK)) from !groupElements
+   !testActualElement = !!dbrefUpdatable(!GID.dbref())
+   if (!testActualElement.not()) then
+     return error 1 |$!!error.text|
+   endif
+   if (!groupElements.size() neq !notLocked.size()) then
+     return error 1 |$!CNAM has Locked offspring.|
+   endif
+   if ($!CFLG) then
+     if (!GID.dbref().type eq 'GROU') then
+       !answer = !!alert.confirm(|Ok to attempt deletion of 'All Members' of GROU | & !groupElementName & | ...BEWARE! - referenced elements WILL be deleted!|)
+     else
+       !answer = !!alert.confirm(|Ok to attempt deletion of 'All Members' of 'Groups' element | & !groupElementName & | ...referenced elements will not be deleted|)
+     endif
+   else
+     !answer = !!alert.confirm(|Ok to attempt deletion of 'Groups' element | & !groupElementName & | ...referenced elements will not be deleted|)
+   endif
+   if (!answer.boolean()) then
+     !!ce = !groupElement
+     if ($!CFLG) then
+       -- If retain flag delete members of element but not the element itself
+       !members = !GID.dbref().members
+       !numberErrors = 0
+       do !i indices !members
+         !memberType = !members[!i].type
+         !!ce = !members[!i]
+         DELETE $!memberType
+         handle ANY
+           !numberErrors = !numberErrors + 1
+         endhandle
+       enddo
+       if (!numberErrors gt 0) then
+         !!alert.message(|It was not possible to delete | & !numberErrors.string() & | of 'All Members' |)
+       endif
+     else
+       DELETE $!TYPE
+       handle ANY
+         !!alert.error('Unable to Delete ' & !groupElementName & ' ' & !!error.text.after(')'))
+       endhandle
+     endif
+   endif
+   return
+ endif
+
+$* Check for Spooling site/network/drawing or associated texts and boundaries
+  if ( TYPE of $!GID eq |SITE| and FUNC of $!GID eq |Network| ) then
+    error |Use Spooling Application Delete > Network Site... to delete SITE $!CNAM|
+    return
+  elseif ( TYPE of $!GID eq |ZONE| and FUNC of $!GID eq |Network| ) then
+    error |Use Spooling Application Delete > Network... to delete NETWORK $!CNAM|
+    return
+  elseif ( TYPE of $!GID eq |BOUN| ) then
+    if ( FUNC of OWNE of $!GID eq |Network| ) then
+      error |Use Spooling Application Delete > Network... to delete NETWORK owning BOUN $!CNAM|
+      return
+    endif
+  elseif ( TYPE of $!GID eq |DRAWI| ) then
+    if ( FUNC of OWNE of $!GID eq |Network| ) then
+      error |Use Spooling Application Delete > Drawing... to delete DRAWING $!CNAM|
+      return
+    endif
+  elseif ( TYPE of $!GID eq |TEXT| ) then
+    if ( TYPE of OWNE of $!GID eq |ZONE| and FUNC of OWNE of $!GID eq |Network| ) then
+      error |Use Spooling Application Delete > Network... to delete NETWORK owning TEXT $!CNAM|
+      return
+    elseif ( TYPE of OWNE of $!GID eq |BOUN| and FUNC of OWNE of OWNE of $!GID eq |Network| ) then
+      error |Use Spooling Application Delete > Network... to delete NETWORK owning BOUN owning TEXT $!CNAM|
+      return
+    elseif ( TYPE of OWNE of $!GID eq |DRAWI| and FUNC of OWNE of OWNE of $!GID eq |Network| ) then
+      error |Use Spooling Application Delete > Drawing... to delete DRAWING owning TEXT $!CNAM|
+      return
+    endif
+  endif
+
+  !haveSupports = FALSE
+
+--If CE is member of SUPPO, then return error message.------------------------------------
+  !supportMember = false
+  do !owner values !GID.dbref().ownlst
+    if !owner.type.eq('SUPPO') then
+      -- Check that we're not deleting a member of a special
+      STRU
+      handle NONE
+        !mdsstype = !!ce.:MDSSuppType
+        handle (99,532)
+          --cannot find the :MDSSuppType UDA
+        elsehandle NONE
+          !!ce = !GID.dbref()
+          if (!GID.dbref().type inset ('STRU','FRMW')) then
+            return error 1 |Unable to delete an associated SUPPORTS element. Use SUPPORTS application Delete Supports...|
+          else
+            if (!mdsstype.neq('SPECIAL')) then
+              return error 1 |Unable to delete an associated SUPPORTS element. Use SUPPORTS application Delete Supports...|
+            else
+              break
+            endif
+          endif
+        endhandle
+      elsehandle ANY
+      endhandle
+      !supportMember = true
+      break
+    endif
+  enddo
+
+$* SUPPORTS check - Do not delete a ZONEs members if it is a SUPPORTS storage area
+--If CE is a ZONE or SITE, and it has SUPPO elements in it, then return error message.
+  if !GID.dbref().type inset('ZONE','SITE') then
+    var !zoneSupportMembers collect all SUPPO for $!GID
+    if !zoneSupportMembers.size().neq(0) then
+      !supportMember = true
+    endif
+  endif
+
+  if !supportMember or !GID.dbref().type.eq('SUPPO') then
+    return error 1 |Unable to delete an associated SUPPORTS element. Use SUPPORTS application Delete Supports...|
+  endif
+------------------------------------------------------------------------------------------
+
+$* SUPPORTS check - Do not delete a RESTRAINT if associated with a support
+  if ( (hardtype of $!GID eq |REST| or hardtype of $!GID eq |SUPP|) and hspec neq nulref) then
+      !restRef = !GID.dbref()
+      if(!restRef.purp.eq(|MDS|)) then
+         return error 1 |Unable to delete an associated SUPPORTS element. Use SUPPORTS application Delete Supports...|
+      endif
+  endif
+
+$* SUPPORTS Check for a trunnion
+  TRUNNI
+  handle NONE
+    return error 1 |Unable to delete an associated SUPPORTS element. Use SUPPORTS application Delete Supports...|
+  elsehandle any
+  endhandle
+
+  !getOwnerType = !!ce.owner.type
+  handle any
+    !getOwnerType = 'unset'
+  endhandle
+
+  if (!!ce.type inset ('PIPE','ZONE','SITE','BRAN')) then
+    var !supAncilArr coll all BRAN with not(unset(supallancis)) for ce
+    if !supAncilArr.size().gt(0) then
+      !haveSupports = true
+    endif
+  endif
+
+  if !getOwnerType.eq('BRAN')  then
+    !getSuprfArray = !!ce.suprfArray
+    handle any
+    elsehandle none
+      if !getSuprfArray.size().gt(0) then
+        !haveSupports = true
+      endif
+    endhandle
+  endif
+
+  if(!haveSupports) then
+    if(!!alertOnceDelSel.ShowAgain() AND !!isDeleteSelection.not()) then
+      var !TXT |Ok to delete $!!ce.fullname? This component has associated Support(s) |
+      !!alertOnceDelSel.question.val = |$!TXT|
+      waiton !!alertOnceDelSel
+      if(!!alertOnceDelSel.confirm.not()) then
+        return
+      endif
+    endif
+    !needConfirmation = FALSE
+  endif
+-------------------------------------------------------------------------------------------------------------------------
+$* Check for trying to partially delete support
+  if ( TYPE of $!GID eq |REST| or TYPE of $!GID eq |SUPP|) then
+    if (not badref (STLREF of $!GID )) then
+      var !SUPFLAG true
+    else
+      var !SUPFLAG false
+    endif
+  elseif ( TYPE of $!GID eq |FRMW| ) then
+    if (not badref (SUPREF of $!GID )) then
+      var !SUPFLAG true
+    else
+      var !SUPFLAG false
+    endif
+  else
+    var !SUPFLAG false
+  endif
+  if ($!SUPFLAG and $!PFLG) then
+    error |Use H&S Application Delete > Support to delete support|
+    return
+  endif
+
+-- Special case for CABLING application
+  !elementRequestedDelete     = object DBREF(!GID)
+  !elementRequestedDeleteType = !elementRequestedDelete.type
+  var !cablewayBranches collect all CWBRAN for $!GID
+  !cabledBranchFound = false
+  do !i indices !cablewayBranches
+    -- See if there are cables running on any of the cableway branches
+    !clist = !cablewayBranches[!i].dbref().clist[0]
+    if (!clist.set()) then
+      -- what if those cables are in the hierarchy being deleted, then it would be OK
+      do !j indices !clist
+        var !cableRelationship NAME OF $!elementRequestedDeleteType OF $!clist[$!j]
+        handle ANY
+          -- Cannot possibly be in same hierarchy
+          var !cableRelationship 'Nulref'
+        endhandle
+        !testElement = object DBREF(!cableRelationship)
+        if (!elementRequestedDelete.string() neq !testElement.string()) then
+          -- We have a cableway with a cable on but the cable is not in the same hierarchy cannot delete it
+          !firstFound = !cablewayBranches[!i].dbref()
+          !cabledBranchFound = true
+          break
+        endif
+      enddo
+    endif
+  enddo
+
+  if ( !cabledBranchFound ) then
+    !!alert.message('Cannot delete ' & !elementRequestedDelete.flnn & ' because there are cables on ' & !firstFound.flnn )
+    handle ANY
+      -- Text could be too long
+      !!alert.message('Cannot delete ' & !elementRequestedDelete.flnn & ' because there are cables on it')
+      handle ANY
+        -- Text could be still too long
+        !!alert.message('Cannot delete, because there are referenced cables')
+      endhandle
+    endhandle
+    !cabledBranchFound = false
+    return
+  endif
+
+-- Special case 1 for RNODE and CNODE
+  var !nodes collect all (RNODE CNODE) for $!GID
+  !nodeFound = false
+  do !i indices !nodes
+    -- See if there are associations on any of the cableway nodes
+    !nodeList = !nodes[!i].dbref().assos
+    if (!nodeList.set()) then
+      -- We have a node with an association so cannot delete it
+      !firstNodeFound = !nodes[!i].dbref()
+      !nodeFound = true
+      break
+    endif
+  enddo
+
+  if ( !nodeFound ) then
+    if(!!alertOnceDelSel.ShowAgain() AND !!isDeleteSelection.not()) then
+      var !TXT |Confirm deletion, because node has an association |
+      !!alertOnceDelSel.question.val = |$!TXT|
+      waiton !!alertOnceDelSel
+      if(!!alertOnceDelSel.confirm.not()) then
+        !nodeFound = false
+        return
+      else
+        var !PFLG 'false'
+      endif
+    endif
+  endif
+
+-- Special case 2 for RNODE and CNODE
+  var !nodes collect all (RNODE CNODE) for $!GID
+  !nodeFound = false
+  do !i indices !nodes
+    !qualifier = object ARRAY()
+    !qualifier[1] = 3
+    if (!nodes[!i].dbref().attribute('CLIST',!qualifier).set()) then
+      -- We have a node with a reference to a cable
+      !nodeFound = true
+      break
+    endif
+  enddo
+
+  if ( !nodeFound ) then
+    if(!!alertOnceDelSel.ShowAgain() AND !!isDeleteSelection.not()) then
+      var !TXT |Confirm deletion, because node has a cable connection |
+      !!alertOnceDelSel.question.val = |$!TXT|
+      waiton !!alertOnceDelSel
+      if(!!alertOnceDelSel.confirm.not()) then
+        !nodeFound = false
+        return
+      else
+        var !PFLG 'false'
+      endif
+    endif
+  endif
+
+-- Special case 1 for RATTA HATTA TATTA
+  var !TYPE TYPE of $!GID
+  if ( !TYPE inset(|CONSEQ|,|RATTA|,|HATTA|,|TATTA|,|RTFEAT|,|RNODE|)) then
+    var !attas collect all (RATTA HATTA TATTA RNODE) for $!GID
+    !attaFound = false
+    do !i indices !attas
+      -- See if there are connections on any of the attas
+      !cableList = false
+      !cableList = !attas[!i].dbref().clist[0].size().gt(0)
+      handle ANY
+        -- not all elements may have clist or clist set
+      endhandle
+      -- Another cable list
+      !lalcab = false
+      !lalcab = !attas[!i].dbref().lalcab.size().gt(0)
+      handle ANY
+        -- not all elements may have lalcab or lalcab set
+      elsehandle none
+        if (!lalcab.not()) then
+          !cableList = false
+        endif
+      endhandle
+      if (!cableList or !lalcab) then
+        -- We have an atta with a cable going to or from it
+        !firstAttaFound = !attas[!i].dbref()
+        !attaFound = true
+        break
+      endif
+    enddo
+
+    if ( !attaFound ) then
+      if(!!alertOnceDelSel.ShowAgain() AND !!isDeleteSelection.not()) then
+        var !TXT |Confirm deletion, because referenced cables will be invalidated |
+        !!alertOnceDelSel.question.val = |$!TXT|
+        waiton !!alertOnceDelSel
+        if(!!alertOnceDelSel.confirm.not()) then
+          !attaFound = false
+          return
+        else
+          var !PFLG 'false'
+        endif
+      endif
+    endif
+  endif
+
+-- Special case 2 for RATTA HATTA TATTA
+  if ( !TYPE inset(|CONSEQ|,|RATTA|,|HATTA|,|TATTA|)) then
+    var !attas collect all (RATTA HATTA TATTA) for $!GID
+    !attaFound = false
+    do !i indices !attas
+      -- See if there are cableway connections on any of the attas
+      !connList = false
+      !connList = !attas[!i].dbref().connref.size().gt(0)
+      handle ANY
+        -- not all elements may have connref or connref set
+      endhandle
+      -- Another cableway list
+      !atconn = false
+      !atconn = !attas[!i].dbref().atconn.size().gt(0)
+      handle ANY
+        -- not all elements may have atconn or atconn set
+      endhandle
+      -- Another cableway list
+      !conats = false
+      !conats = !attas[!i].dbref().conats.size().gt(0)
+      handle ANY
+        -- not all elements may have conats or conats set
+      endhandle
+      if (!connList or !atconn or !conats) then
+        -- We have an atta with a cableway going to or from it
+        !firstAttaFound = !attas[!i].dbref()
+        !attaFound = true
+        break
+      endif
+    enddo
+
+    if ( !attaFound ) then
+      if(!!alertOnceDelSel.ShowAgain() AND !!isDeleteSelection.not()) then
+        var !TXT |Confirm deletion, because it has a cableway branch connection that will be invalidated |
+        !!alertOnceDelSel.question.val = |$!TXT|
+        waiton !!alertOnceDelSel
+        if(!!alertOnceDelSel.confirm.not()) then
+          !attaFound = false
+          return
+        else
+          var !PFLG 'false'
+        endif
+      endif
+    endif
+  endif
+
+-- Special case 3 for PULLNODE and JNODE
+  var !nodes collect all (PULLNODE JNODE) for $!GID
+
+  !nodeFound = false
+
+  do !i indices !nodes
+    -- See if there are references on any of the cableway nodes
+
+        !qualifiersArray = object ARRAY()
+        !qualifiersArray[1] = 'CWBRAN'
+        !nodeList = !nodes[!i].dbref().attribute('BACKREF',!qualifiersArray)
+    handle ANY
+      !nodeList = ARRAY()
+    endhandle
+    if !nodeList.size().gt(0) then
+      !nodeFound = true
+      break
+    endif
+
+  enddo
+
+  if ( !nodeFound ) then
+            !!alert.message('Cannot delete ' & !elementRequestedDelete.flnn & ' because there are cableway branches connected to it')
+        !nodeFound = false
+        return
+  endif
+-- End of special case for CABLING application
+
+-- Handling special case for HVAC
+
+  !deletingHvac = !!ce.ahList.findFirst('HVAC').set() AND (!!ce.owner.type eq 'BRAN' OR !!ce.owner.owner.type eq 'BRAN')
+  if (!deletingHvac) then
+    !hvacLastElementDelete = false
+    if ( ( !CFLG eq 'false') and ( !AFLG eq 'true' ) and ( !PFLG eq 'true')) then
+      !hvacEleToDel = !!deleteHvac()
+      if( !hvacEleToDel eq 0 ) then
+        if ( !!ce.hardtype.neq('SUBCOM') AND !!ce.seq.eq(!!ce.owner.mcount)) then
+          if ( !!ce.type inset('SILE','DAMP','BATT','FAN','AHU','GRIL','CAP','PCOM')) then
+            !hvacLastElementDelete = false
+          else
+            !tailDistance = !!ce.lPos.distance(!!ce.owner.tPos).convertUnits('mm').string('D0').real()
+            handle (2,779)
+
+            elsehandle none
+              if ( !tailDistance.eq(999mm)) then
+                !hvacLastElementDelete = true
+              endif
+            endhandle
+          endif
+        endif
+      endif
+      if (!hvacEleToDel.eq(1)) then
+        return
+      elseif (!hvacEleToDel.eq(2)) then
+        !zeroStrtEle = !!ce.owner
+        if (!zeroStrtEle.seq.eq(!zeroStrtEle.owner.mcount )) then
+          !tailDistance = !zeroStrtEle.lPos.distance(!zeroStrtEle.owner.tPos).convertUnits('mm').string('D0').real()
+          if ( !tailDistance.eq(999mm)) then
+            !hvacLastElementDelete = true
+          endif
+        endif
+      elseif (!hvacEleToDel.eq(5)) then
+        !zeroStrtEle = !!ce.owner
+        !p3pos = !!ce.ppos[3]
+        !branTpos = !!ce.cref.tPos
+        !distVal = !p3pos.distance(!branTpos).convertUnits('mm').string('D0').real()
+        if ( !distVal.eq(999mm) and !!ce.cref.mcount.eq(0)) then
+          !branRef = !!ce.cref
+        else
+          !hvacEleToDel = 2
+        endif
+        if (!zeroStrtEle.seq.eq(!zeroStrtEle.owner.mcount )) then
+          !tailDistance = !zeroStrtEle.lPos.distance(!zeroStrtEle.owner.tPos).convertUnits('mm').string('D0').real()
+          if ( !tailDistance.eq(999mm)) then
+            !hvacLastElementDelete = true
+          endif
+        endif
+      elseif ( !hvacEleToDel.eq(4)) then
+        !p3pos = !!ce.ppos[3]
+        if (!!ce.cref.badRef().not()) then
+          !branTpos = !!ce.cref.tPos
+        endif
+        !distVal = !p3pos.distance(!branTpos).convertUnits('mm').string('D0').real()
+        if ( !distVal.eq(999mm) and !!ce.cref.mcount.eq(0)) then
+          !branRef = !!ce.cref
+        else
+          !hvacEleToDel = 0
+        endif
+      elseif ( !hvacEleToDel.eq(3)) then
+        !branchRefList = object ARRAY()
+        !hvbrcoList = !!collectallfor(|HVBRCO|,||,!!ce)
+        if (!hvbrcoList.size().gt(0)) then
+          !branOfSubCom = !!ce.owner
+          do !hvbrcoRef values !hvbrcoList
+            if (!hvbrcoRef.cref.badRef().not()) then
+              !branRef = !hvbrcoRef.cref
+              if (!branRef.type eq 'BRAN') then
+                !p3pos = !hvbrcoRef.ppos[3]
+                !branTpos = !hvbrcoRef.cref.tPos
+                !distVal = !p3pos.distance(!branTpos).convertUnits('mm').string('D0').real()
+                if ( !distVal.eq(999mm) and !branRef.mcount.eq(0)) then
+                  !branchRefList.append(!branRef)
+                endif
+              endif
+            endif
+          enddo
+        endif
+        if ( !branchRefList.size().eq(0)) then
+          !hvacEleToDel = 0
+        endif
+        if (!!ce.seq.eq(!!ce.owner.mcount)) then
+          !tailDistance = !!ce.lPos.distance(!!ce.owner.tPos).convertUnits('mm').string('D0').real()
+          if ( !tailDistance.eq(999mm)) then
+            !hvacLastElementDelete = true
+          endif
+        endif
+      endif
+    else
+      !hvacEleToDel = 0
+      if (!!ce.ddepth.eq(5)) then
+        !tailDistance = !!ce.lPos.distance(!!ce.owner.tPos).convertUnits('mm').string('D0').real()
+        if ( !tailDistance.eq(999mm)) then
+          !hvacLastElementDelete = true
+        endif
+      endif
+    endif
+  elseif(!!ce.type.eq('HVAC') OR (( !!ce.ahList.findFirst('HVAC').set()) AND (!!ce.owner.type eq 'HVAC'))) then
+    --trigger hvacStore to update the list of branches
+    !hvacEleToDel = 6
+  endif
+
+ -- End of special case for HVAC
+
+-- special cases for hole management
+  !assocGroups = ARRAY()
+  !elementToDelete = !GID.dbref()
+  if ( !elementToDelete.type eq |ASSOWL| ) then
+    VAR !assocGroups COLL MEMBERS OF $!GID WITH (TYPE EQ 'ASSOGP' AND PURP EQ 'HOLE' )
+  else
+    !associationGroup = !!dtbFindOwnerOfType(!elementToDelete,'ASSOGP',false)
+    if ( !associationGroup.set() ) then
+      if( !associationGroup.purpose eq |HOLE| ) then
+        !assocGroups[1] = !associationGroup.string()
+      endif
+    endif
+  endif
+  if( !assocGroups.empty().not() ) then
+    do !holeAssociationGroup values !assocGroups
+      !dbHoleAssociationGroup = !holeAssociationGroup.dbref()
+      if( !dbHoleAssociationGroup.mcount gt 0 ) then
+        error |$!CNAM cannot be deleted because it is hole management association data. These must be deleted using the Hole Management utility|
+        return
+      endif
+    enddo
+  endif
+
+if (undefined(!!runningUnitlTest)) then
+  !owningZone = !!dtbFindOwnerOfType(!elementToDelete,'ZONE',false)
+  if( !owningZone.set() ) then
+    if(!!alertOnceDelSel.ShowAgain() AND !!isDeleteSelection.not()) then
+      -- check for HM zone to minimise time on ASSOS query
+      if( !owningZone.purpose eq 'HOLE' ) then
+        var !TXT |This element contains managed hole data. Deleting it may result in invalid managed holes. Do you want to continue? |
+        !!alertOnceDelSel.question.val = !TXT
+        waiton !!alertOnceDelSel
+        if(!!alertOnceDelSel.confirm.not()) then
+          return
+        endif
+      else
+        -- check for associations only below ZONE level
+        !associations = !elementToDelete.assos
+        handle any
+          !associations = ARRAY()
+        endhandle
+        -- loop through associations and warn if this is a hole management element
+        do !assocRef values !associations
+          !assocPurpose   = !assocRef.owner.purp
+          handle any
+            !assocPurpose = ''
+          endhandle
+          if( !assocPurpose eq 'HOLE' ) then
+            var !TXT |This element contains managed hole data. Deleting it may result in invalid managed holes. Do you want to continue? |
+            !!alertOnceDelSel.question.val = !TXT
+            waiton !!alertOnceDelSel
+            if(!!alertOnceDelSel.confirm.not()) then
+              return
+            else
+              break
+            endif
+          endif
+        enddo
+      endif
+    endif
+  endif
+endif
+
+-- End of special case for hole management
+
+$* Check if we can delete the element
+ var !TYPE (TYPE of $!GID )
+ var !DFLG exists $!GID $!TYPE DELETE
+ var !DFLG (substr(|$!DFLG|,1,1))
+ var !DMEM coll all with ((LOCK) and TYPE neq 'TMPL') for $!GID
+
+-- In structures templates are created locked, but this should not prevent deletion.
+-- Unlock templates and their members, but re-lock them if deletion fails.
+!lockedTemplateItems = object ARRAY()
+if ( !TYPE INSET(|FIXING|, |JLDATU|, |PLDATU|, |ENDATU|, |GENSEC|) ) then
+
+  -- unlock items in template
+  !lockedTemplateItems = !!unlockTemplateMembers($!GID)
+
+  -- Rebuild list of locked members.  We have only unlocked the members or TMPLs.  There may be more.
+  var !DMEM coll all with ((LOCK) and TYPE neq 'TMPL') for $!GID
+
+endif
+
+$* Return if we cannot delete element
+if(not $!DFLG or LOCK or (arraysize(!DMEM) gt 0)) then
+  -- First re-lock members we unlocked above
+  do !item values !lockedTemplateItems
+    !item.dbref().lock = true
+    handle (2,813)
+      -- skip if somehow the item is an invalid dbref
+    endhandle
+  enddo  
+
+  if(LOCK of $!GID ) then
+  !!deleteErrorEncountered = TRUE
+    return error 1 |$!CNAM is Locked.|
+  elseif (arraysize(!DMEM) gt 0) then
+    return error 1 |$!CNAM has Locked offspring.|
+  else
+    return error 1 |$!CNAM is in a read-only database.|
+  endif
+endif
+
+$* check for dacs
+ if ($!CFLG) then
+   -- If retain flag delete members of element but not the element itself
+   !members = !GID.dbref().members
+   do !i indices !members
+     if (!!qryDacState()) then
+       !member = !members[!i].string()
+       var !dacerr DACERR DELETE of $!member
+       if (!dacerr neq 'unset') then
+         !!alert.message(|It will not be possible to delete 'All Members'|)
+         do !item values !lockedTemplateItems
+           !item.dbref().lock = true
+           handle (2,813)
+           endhandle
+         enddo  
+         return error 1 |$!dacerr|
+       endif
+     endif
+   enddo
+ else
+   if (!!qryDacState()) then
+     var !dacerr DACERR DELETE of $!GID
+     if (!dacerr neq 'unset') then
+       do !item values !lockedTemplateItems
+         !item.dbref().lock = true
+         handle (2,813)
+         endhandle
+       enddo 
+       !!alert.error(!dacerr)
+       return
+     endif
+   endif
+ endif
+
+$* If at a group or group world don't check for associations.
+ if(TYPE of $!GID eq |GROU| or TYPE of $!GID eq |GPWL|) then
+   if(TYPE of $!GID eq |GROU| and $!CFLG) then
+     golabel /ASSOC $* IF GROU MEM then get associations etc.
+   endif
+   var !ETYP noundef $!TYPE rptx
+   if ($!CFLG) then
+     var !TYPE |$!TYPE MEMB|
+     var !TXT |Ok to delete $!ETYP[1] Members?|
+   else
+     var !TXT |Ok to delete $!ETYP[1]$N?|
+   endif
+   if(!!alertOnceDelSel.ShowAgain() AND not(!!isDeleteSelection)) then
+   $* Halts execution until an answer is selected, only works for 'Delete CE' & 'Delete CE Members'
+    !!alertOnceDelSel.question.val = |$!TXT|
+    waiton !!alertOnceDelSel
+   endif
+   if(!!alertOnceDelSel.confirm OR !!isDeleteSelection) then
+     DELETE $!TYPE
+   endif
+   return
+ endif
+
+$* SUPPORTS check - Do not delete if associated with a support
+   if(hardtype of $!GID eq |ATTA| and spref of $!GID neq nulref or hardtype of $!GID eq |CTSUPP| and spref of $!GID neq nulref) then
+      if(purp of spec of spref of $!GID eq |MDS|) then
+         return error 1 |Unable to delete an associated SUPPORTS element. Use SUPPORTS application Delete Supports...|
+      endif
+   elseif (hardtype of $!GID eq |ATTA| and spref of $!GID eq nulref) then
+      !answer = !!alert.question('This ATTA has no specification reference. This could be because of a missing database. Are you sure you want to delete?')
+      if (!answer.neq('YES')) then
+         return
+      endif
+   endif
+   if(hardtype of $!GID eq |REDU| and spref of $!GID neq nulref) then
+      if(purp of spec of spref of $!GID eq |MDS|) then
+         return error 1 |Unable to delete an associated SUPPORTS element. Use SUPPORTS application Delete Supports...|
+      endif
+   endif
+
+--<wd>25aug200
+-- SUPPORTS LUGS defined as OLET elements for FRAMATOME
+   if ( (!GID.dbref().type inset ('OLET')) and (!GID.dbref().styp.eq('LUF')) ) then
+     return error 1 |Unable to delete an OLET associated with a SUPPORTS ATTA. Use SUPPORTS application Delete Supports... or Delete ATTA|
+   endif
+--<wd>25aug2004
+
+   ZONE OF $!GID
+    handle any
+    elsehandle none
+      same
+-------------------------------------------------------------------------------
+      if(purp of zone of $!GID eq |SUPP| AND !GID.dbref().ahlist.findfirst('SUPPO').set()) then
+-- OK we have found a SUPPORTS zone, but we need to allow users to delete elements of a special
+-->**<wd>20aug2004
+-- We are located at the element we want to DELETE and it is belonging to the SUPPORTS STRUCTURE or at the SUPPORTS STRUCTURE itself!
+-- *** Users may NOT delete the SUPPORTS SPECIAL support elements listed below: ***
+-- *** STRU or FRMW (or ATTAS and their associated PLATE i.e. PNODE or its PJOI-   or any OTHER types SUPPORTS Pipe Components e.g. OLETs, PLATs etc...) ***
+--**
+-- Navigate to the SUPPORTS STRU to check its :MDSSuppType and then back to the !GID.dbref()
+        STRU
+        !mdsstype = !!ce.:MDSSuppType
+        handle (99,532)
+          --cannot find the :MDSSuppType UDA
+        elsehandle NONE
+          !!ce = !GID.dbref()
+          if (!GID.dbref().type inset ('STRU','FRMW')) then
+            return error 1 |Unable to delete an associated SUPPORTS element. Use SUPPORTS application Delete Supports...|
+          else
+            if ( !mdsstype.neq('SPECIAL') ) then
+              return error 1 |Unable to delete an associated SUPPORTS element. Use SUPPORTS application Delete Supports...|
+            else
+              -- SUPPORTS is a SPECIAL -- Check if PNOD or PJOI is associated with and MDS ATTA, e.g. a Compensating, Bearing, Partition, Packing Plate etc...
+              if (!GID.dbref().type inset ('PNOD','PJOI')) then
+                if ( (!GID.dbref().type.eq('PJOI')) and (!GID.dbref().function.eq('PLAT')) ) then
+                   return error 1 |Unable to delete a PJOI associated with a SUPPORTS ATTA. Use the "Delete Atta" icon on the SUPPORTS SPECIAL form|
+                else
+                  -- Current Element is a PNOD -- Check if it contains a PJOI with FUNCTION = 'PLAT'
+                  !pnodmem = !!ce.mem
+                  !skiptrue = false
+                  do !INDX indices !pnodmem
+                    if (!pnodmem[!INDX].function.eq('PLAT')) then
+                      !skiptrue = true
+                      break
+                    endif
+                  enddo
+                  -- PNOD if PJOI member found which is associated to a SUPPORTS ATTA.
+                  if (!skiptrue) then
+                    return error 1 |Unable to delete a PNOD containing PJOI elements associated with a SUPPORTS ATTA. Use the "Delete Atta" icon on the SUPPORTS SPECIAL form|
+                  endif
+                endif
+              endif
+            endif
+          endif
+        endhandle
+-----------------
+-- The Code BELOW Commented Out and Replaced by the Code above - <wd>20aug2004
+--         sctn
+--           handle any
+--             return error 1 |Unable to delete an associated SUPPORTS element. Use SUPPORTS application Delete Supports...|
+--           elsehandle none
+--             if !!ce.owner.owner.:MDSSuppType.neq('SPECIAL') then
+--               same
+--               return error 1 |Unable to delete an associated SUPPORTS element. Use SUPPORTS application Delete Supports...|
+--             endif
+--           endhandle
+----------------
+----------------------------------------------------------------------------------
+--<**<wd>20aug2004
+      endif
+    endhandle
+
+$* ------------------------***** connections ******* -------------------
+
+ if(Hardtype of $!GID eq |SJOI|) then
+    var !mdsSuppType :MDSSuppType of stru of cref of $!GID
+    handle (99,532)
+      !mdsSuppType = ''
+    endhandle
+    if(cref of $!GID neq nulref and purp of zone of cref of $!GID eq |ANCI| and !mdsSuppType neq |SPECIAL|) then
+      return error 1 |Unable to delete an associated SUPPORTS element. Use SUPPORTS application Delete Supports...|
+    endif
+ elseif(Hardtype of $!GID eq |SNOD|) then
+    if !GID.dbref().mcount.neq(0) then
+      !found = !!MdsIsNodeSupp(!GID.dbref())
+      handle any
+        !found = false
+      endhandle
+      if(!found) then
+        return error 1 |Unable to delete an associated SUPPORTS element. Use SUPPORTS application Delete Supports...|
+      endif
+    endif
+ endif
+
+-----------------------------------------------------------------------
+  !ceREST = !!ce
+  rest
+  handle any
+    -- not a rest member
+  elsehandle none
+    -- The element to be deleted is a rest member
+    -- check if the rest purpose is 'MDS'
+    if(!!ce.purp.eq('MDS')) then
+      return error 1 |Unable to delete an associated SUPPORTS element. Use SUPPORTS application Delete Supports...|
+    endif
+  endhandle
+  -- back to element to be deleted
+  !!ce = !ceREST
+
+-----------------------------------------------------------------------
+  !cesupp = !!ce
+  supp
+  handle any
+    -- not a supp member
+  elsehandle none
+    -- The element to be deleted is a supp member
+    return error 1 |Unable to delete an associated SUPPORTS element. Use SUPPORTS application Delete Supports...|
+  endhandle
+  -- back to element to be deleted
+  !!ce = !cesupp
+
+-----------------------------------------------------------------------
+if (undefined(!!runningUnitlTest)) then
+label /ASSOC
+
+$* Get Offspring and Association
+ CALLIB RDELCE $<$!GID$>
+$* Returns !!CDPADEL  - Offspring
+$*         !!CDPAASS  - Associated elements to be deleted
+
+
+$* Highlight ones to be deleted in the current highlight colour.
+ !hColour = !!gphColOpt.Highlight().code
+ if($!PFLG) then
+   -- DFN9997
+   -- if the elements are large , it takes time to enhance the model
+   -- so restricting the count of elements to 25000
+   -- 25000 seems to give good results
+  if !!CDPADEL.size().lt(25000) then
+   enhance all from !!CDPADEL col $!hColour
+   handle (47,15)
+     -- Error occurs in Paragon.
+   endhandle
+ endif
+ endif
+ var !CNAM (FULLNAME of $!GID )
+endif
+
+$* Members message
+ if($!PFLG) then
+   if (undefined(!!runningUnitlTest)) then
+     if($!CFLG) then
+       var !TXT |Ok to delete members of $!CNAM ?|
+     else
+       var !TXT |Ok to delete $!CNAM ?|
+     endif
+   endif
+   if(!needConfirmation) then
+     if (undefined(!!runningUnitlTest)) then
+       if(!!alertOnceDelSel.ShowAgain() AND not(!!isDeleteSelection)) then
+         $* Halts execution until an answer is selected, only works for 'Delete CE' & 'Delete CE Members'
+         !!alertOnceDelSel.question.val = |$!TXT|
+         waiton !!alertOnceDelSel
+       endif
+       if (!!isDeleteSelection) then
+         !unenhance = !!isDeleteSelection
+       else
+         !unenhance = !!alertOnceDelSel.confirm
+       endif
+       if( not(!unenhance)) then
+         unenhance all from !!CDPADEL
+         handle (47,15)
+           -- Error occurs in Paragon.
+         endhandle
+       return
+       endif
+     elseif ( !!runningUnitlTest eq true) then
+       if (!!deleteOption eq 'YES' ) then
+         !unenhance = TRUE
+       else
+         !unenhance = FALSE
+       endif
+       if( not(!unenhance)) then
+         unenhance all from !!CDPADEL
+         handle (47,15)
+           -- Error occurs in Paragon.
+         endhandle
+         return
+       endif
+     endif
+   endif
+   if (undefined(!!runningUnitlTest)) then
+     unenhance all from !!CDPADEL
+     handle (47,15)
+     -- Error occurs in Paragon.
+     endhandle
+   endif
+ endif
+
+$* Delete Origin
+ $!GID
+ var !TYPE (TYPE of $!GID )
+
+$* If retain flag delete members of element
+ if($!CFLG) then
+   var !DELETE |$!TYPE MEMB|
+ else
+   var !DELETE |$!TYPE|
+ endif
+
+-- Before deleting element make sure we delete any associated welds if a section
+
+  if !!ce.type.eq('SCTN') then
+    !MdsWeldData = !!ce.:MdsWeldData
+    handle (99,532)
+    elsehandle NONE
+      do !Loop values !MdsWeldData
+        !!ce = !Loop
+        delete ddse
+      enddo
+    endhandle
+  endif
+
+  -- 110012 - Connection elements to be deleted when deleting GENSEC/SCTN
+  $!GID
+
+  -- Unlock start and end templates first if needed
+  -- only unlock if writable and owning fixing is unlocked
+  if (!!ce.type.eq('GENSEC')) then
+    !jois = !!ce.jois
+    !joie = !!ce.joie
+    if (!jois.badref().not()) then
+      !!unlockTemplateMembers(!jois)
+    endif
+    if (!joie.badref().not()) then
+      !!unlockTemplateMembers(!joie)
+    endif
+  endif
+
+  $!GID
+  DELCONNECTIONS $!TYPE
+  handle (47,15)
+    -- Error occurs in Tags.
+  endhandle
+
+--  -- Or use pure PML solution
+--   $!GID
+--  !types = |SCTN GENSEC|
+-- --  !types = |SCTN GENSEC WALL STWALL|
+--  !collection = object COLLECTION( )
+--  !collection.types( !types.split( ) )
+--  !collection.scope( !!ce )
+--  do !elem values !collection.results( )
+--    !!steelworkgsettings.disconnect( true, !elem )
+--    !!steelworkgsettings.disconnect( false, !elem )
+--  enddo
+
+  $!GID
+-- 110012 - End
+
+-- 140874 - Fixings on GENSECS - deleting a fixing should delete PLDATU and JLDATU if empty
+   if( !!ce.type.eq(|FIXING|) or $
+       !!ce.type.eq(|PLDATU|) or $
+       !!ce.type.eq(|JLDATU|) )then
+      -- A FIXING (or similar) and have to delete it possibly up to the JLDATU
+      do
+         if( !!ce.owne.mcou.neq(1) or !!ce.owne.type.eq( |GENSEC| ) )then
+            !OREF = !!ce.owne.string()
+            break
+         endif
+         -- Climb up
+         end
+      enddo
+   endif
+   $!GID
+-- 140874 - End
+
+$* Delete Element
+ var !tmpl coll all tmpl for $!GID
+ handle any
+ elsehandle none
+   if(arraysize(!tmpl) gt 0) then
+     do !template values !tmpl
+       $!template
+       UNLOCK ALL
+     enddo
+     $!GID
+   endif
+ endhandle
+
+ DELETE $!DELETE
+ handle ANY
+   if (!DELETE.match('MEMB') gt 0) then
+     !!alert.message(|Problem deleting 'All Members'|)
+   endif
+   !ETXT = !!error.text.trim().after(')').replace('$@','$$@')
+   $* Warning message not displayed when deleting the Pipe Spools
+   !!alert.error(!ETXT)
+   return
+ endhandle
+
+$* handling a special case for HVAC to delete owner STRT of 0 len
+
+  if (!hvacEleToDel.eq(2) OR !hvacEleToDel.eq(5)) then
+    if (!hvacEleToDel.eq(5)) then
+      !!ce = !branRef
+      !curtype = !!ce.type
+      delete  $!curtype
+    endif
+    !!ce = !zeroStrtEle
+    !ownerofZeroStrt = !!ce.owner
+    !curtype = !!ce.type
+    delete  $!curtype
+    !!ce =  !ownerofZeroStrt
+    !CREF = !ownerofZeroStrt.string()
+  elseif (!hvacEleToDel.eq(4)) then
+    !!ce = !branRef
+    !curtype = !!ce.type
+    delete  $!curtype
+  elseif (!hvacEleToDel.eq(3)) then
+    do !branRef values !branchRefList
+      !!ce = !branRef
+      !curtype = !!ce.type
+      delete  $!curtype
+    enddo
+    $!branOfSubCom
+  endif
+
+  if ((!hvacEleToDel.eq(6) OR !deletingHvac) AND defined(!!hvacStore)) then
+     !!hvacStore.hvac.loadBranches()
+  endif
+
+  if (!hvacEleToDel.eq(6)) then
+    if (defined(!!hvacStore) AND defined(!!hvacEditor)) then
+      !!hvacEditor.reloadBranch()
+    endif
+  endif
+
+  if (defined(!hvacLastElementDelete) AND !hvacLastElementDelete.eq(TRUE)) then
+    !!trackTailOnDelLastMem()
+  endif
+
+$* End of handling a special case for HVAC to delete owner STRT of 0 len
+
+$* If we got this far, then delete associations
+ if($!AFLG and defined(!!CDPAASS)) then
+
+   var !TYPES eval (TYPE) for all from !!CDPAASS ignore ANY
+   !!CDCARTN = ARRAY()
+   do !INDX indices !TYPES
+     $!!CDPAASS[$!INDX]
+     handle ANY
+     elsehandle NONE
+       $* Delete it
+       DELETE $!TYPES[$!INDX]
+         handle ANY
+         var !EFLG true $* flag any errors on deleting associated elements.
+         var !!CDWARTN append TYPE
+         var !!CDPARTN append REFE
+         !errorText = !!error.text.trim().after(')').replace('$@','$$@')
+         !!CDCARTN.append(!errorText)
+       endhandle
+     endhandle
+   enddo
+ endif
+
+$* End
+
+ if(not $!RFLG) then
+   if($!EFLG) then
+     var !ASIZ (arraywidth(!!CDPARTN))
+     do !INDX indices !!CDPARTN
+       var !DPRT compose space 2 |$!!CDWARTN[$!INDX]| space 2 |$!!CDPARTN[$!INDX]| width $!ASIZ L space 2 |$!!CDCARTN[$!INDX]| width 30
+       do !IVAL indices !DPRT
+         var pane _CDCERRMESS_LIST add |$!DPRT[$!IVAL] | exit
+       enddo
+     enddo
+     show _CDCERRMESS
+   endif
+ endif
+
+$* Return to original elem/owner of deleted elem
+ $!CREF
+ handle ANY
+   $!OREF
+ endhandle
+
+ !MODULE = !!module().name                        $* block to cure pur 23209
+  if(match(upcase(|$!MODULE|), |PARAGON|) gt 0) then
+    repre update
+  endif
+
+return $* >>>>>>>>>> End of Code mdelce <<<<<<<<<<
+$.

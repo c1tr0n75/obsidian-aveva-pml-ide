@@ -1,0 +1,133 @@
+--<000-1>-- Published PML 1.0.SP1 >--
+----------------------------------------------------------------------
+--
+-- Copyright 1974 to current year. AVEVA Solutions Limited and its subsidiaries. All rights reserved in original code only.
+--
+--  File:            designviewnewlocalview.pmlcmd
+--    Type:          Command Definition
+--      Keyword:     Undefined
+--    Module:        Undefined
+--  Author:          Undefined
+--  Created:         Mon Apr 16 11:17:05 2012
+--
+-- Group:        Design View
+-- Description:  Command object to create new local view
+--   This is a button command supporting the standard command interface
+--   THIS COMMAND TRACKS THE CURRENT GRAPHICAL VIEW FOR ALL VIEW FUNCTIONS
+--   DO NOT REMOVE THIS COMMAND UNLESS THE REFRESH METHOD IS IMPLEMENTED ELSEWHERE
+--
+------------------------------------------------------------------------
+setup command !!designViewNewLocalView
+
+exit
+
+------------------------------------------------------------------------
+-- Method:     designViewNewLocalView
+-- Description: Constructor
+------------------------------------------------------------------------
+define method .designViewNewLocalView()
+  -- initialise events and command key
+  !this.key         = 'AVEVA.DesignView.CommandNewLocalView'
+  !this.execute     = 'execute'
+  !this.refresh     = 'refresh'
+  !filters          = object ARRAY()
+  !filters[1]       = 'FORM'
+  !this.refreshFilters = !filters
+ endmethod
+
+------------------------------------------------------------------------
+-- Method:     execute
+-- Description: Execute event
+------------------------------------------------------------------------
+define method .execute(!dummyArgs is ARRAY)
+
+  -- Get current selection before new created
+  !selection = object SELECTION()
+  !selection.getCurrent()
+  !members   = !selection.getSelection()
+
+  -- Get the current view
+  !sourceView = !!fmsys.currentDocument().view
+
+  handle any
+    return
+  endhandle
+
+  -- Create a new view with a new drawlist populated from the graphical selection
+  !form      = !!gphviews.addDesignForm()
+  !token     = !!gphDrawlists.createDrawlist(true, true)
+  !!gphDrawlists.attachView(!token, !form.view)
+  !!gphDrawlists.drawlist(!token).addOnlyMembers(!members)
+
+  -- set same view direction as source view
+  !form.view.direction = !sourceView.direction
+
+  -- Set view limits for selected objects, or use source view limits if this fails
+  if (!members.empty().not()) then
+
+    !volume = object VOLUME(!members)
+
+    if (!volume.unset()) then
+      !form.view.limits = !sourceView.limits
+    else
+      !limits[1] = !volume.from.east.dbUnits().value()
+      !limits[2] = !volume.to.east.dbUnits().value()
+      !limits[3] = !volume.from.north.dbUnits().value()
+      !limits[4] = !volume.to.north.dbUnits().value()
+      !limits[5] = !volume.from.up.dbUnits().value()
+      !limits[6] = !volume.to.up.dbUnits().value()
+      !form.view.limits = !limits
+    endif
+
+  else
+
+    !form.view.limits = !sourceView.limits
+
+  endif
+
+endmethod
+------------------------------------------------------------------------
+-- Method:     refresh
+-- Description: Refresh event
+--              Enable button only if a graphical view is present
+--              THIS METHOD TRACKS THE CURRENT GRAPHICAL VIEW FOR ALL
+--              VIEWS - TAKE CARE IF MODIFYING THIS METHOD
+------------------------------------------------------------------------
+define method .refresh(!args is ARRAY)
+
+  if( !args.size() eq 0 ) then
+    return
+  endif
+
+  if( !args[0] neq 'FORM' or !args[1] neq 'ACTIVATE') then
+    -- not a form activate event
+    return
+  endif
+
+  -- view settings only updated if shown
+  if (defined(!!viewSettings)) then
+    if( !!viewSettings.shown().not() ) then
+      return
+    endif
+  else
+    return
+  endif
+
+  -- is this is a form with a GM3D view
+  !block    = object BLOCK(!args[2])
+  !form     = !block.evaluate()
+  if( not defined(!form.view) ) then
+    return
+  endif
+  !type = !form.view.type()
+  handle any
+    !type = ''
+  endhandle
+  if( !type neq 'GM3D' ) then
+    return
+  endif
+
+  -- update view settings to current document
+  !!viewSettings.initialise()
+
+endmethod

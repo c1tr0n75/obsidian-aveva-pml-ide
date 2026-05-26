@@ -1,0 +1,170 @@
+----------------------------------------------------------------------
+--
+-- Copyright 1974 to current year. AVEVA Solutions Limited and its subsidiaries. All rights reserved in original code only.
+--
+--  File:            designviewenablearf.pmlcmd
+--    Type:          Command Definition
+--      Keyword:     Undefined
+--    Module:        Undefined
+--  Author:          Undefined
+--  Created:         Thurs Nove 14 14:21 2019
+--
+-- Group:        Design ARF View
+-- Description:  Command object to create new arf view
+--   This is a button command supporting the standard command interface
+--
+------------------------------------------------------------------------
+setup command !!designviewenablearf
+
+  -- shown for the first time
+  member .firstShown    is BOOLEAN
+
+exit
+
+------------------------------------------------------------------------
+-- Method:     designviewenablearf
+-- Description: Constructor
+------------------------------------------------------------------------
+define method .designviewenablearf()
+  -- initialise events and command key
+  !this.key         = 'AVEVA.DesignView.CommandEnableARF'
+  !this.execute     = 'execute'
+  !this.firstShown = true
+endmethod
+
+------------------------------------------------------------------------
+-- Method:     refreshButtonCheckedState
+-- Description: Make sure that enabled icon is in correct state
+------------------------------------------------------------------------
+define method .refreshButtonCheckedState()
+  !ArfViewPresent = FALSE
+
+  do !index indices !!gphviews.views
+    if (!!gphviews.views[!index].ENABLEEXTERNALGEOMETRY eq TRUE) then
+        !ArfViewPresent = true
+    endif
+  enddo 
+  !this.executeonchecked(false)
+  !this.checked(!ArfViewPresent)
+  !this.executeonchecked(true)    
+    
+endmethod
+
+------------------------------------------------------------------------
+-- Method:     execute
+-- Description: Execute event
+------------------------------------------------------------------------
+define method .execute(!args is ARRAY)
+  if(!!appformcntrl.showArfViewer.eq('FALSE') and !this.firstShown) then
+     -- return and create when shown
+     !this.firstShown = false
+   return
+  endif
+
+  -- reassigning arfview if form has been float
+  do !index indices !!gphviews.views
+      if (undefined(!!arfView) and !!gphviews.views[!index].ENABLEEXTERNALGEOMETRY eq TRUE) then            
+          !!arfView  = !!gphviews.views[!index].owner()  
+      endif
+  enddo
+
+  if(undefined(!!arfView)) then
+    -- Recreate a new ARF view with a new empty drawlist
+    !!arfView  = !!gphviews.addDesignForm()
+    
+    -- override cancel so we can set check state of Views>Graphical Explorer button
+    !!arfView.cancelCall      = |!!designviewenablearf.close()|
+    !token = !!gphDrawlists.createDrawlist(true, true)
+    !!gphDrawlists.attachView(!token, !!arfView.view)
+    
+    !!arfView.formtitle = !!arfView.formtitle.replace('3D', 'Graphical Explorer')
+    
+    -- Enable ARF graphics
+    !!arfView.view.enableexternalgeometry = TRUE
+    
+    -- Follow selection
+    !!gphdrawlists.drawlist(!!arfView.view).followSelection(true)
+    
+    -- View direction iso 3
+    !dir = object array()
+    !dir[1] = 0.577350269189784
+    !dir[2] = 0.577350269189784
+    !dir[3] = -0.577350269189309
+    !!arfView.view.direction = !dir
+  endif
+
+  --args are only passed when command is executed from window layout loaded event handler from drawlist addin
+  if(!args.unset().not()) then
+    if(!args[0].eq('showhide')) then
+        --show or hide graphical viewer based on what is stored in appformcntrl
+        --always show on first run so only hide if showArfViewer equals false
+        if(!!appformcntrl.showArfViewer.eq('FALSE')) then
+        -- return and recreate when reshown
+	      return
+        else
+        --align state button/ command checked with current shown status of viewer
+        !!designviewenablearf.executeonchecked(false)
+        !!designviewenablearf.checked(true)
+        !!designviewenablearf.executeonchecked(true)
+        endif
+    elseif(!args[0].eq('update')) then
+        -- Disable/enable ARF graphics to update
+        !!arfView.view.enableexternalgeometry = FALSE
+        !!arfView.view.enableexternalgeometry = TRUE
+    endif
+    return
+  endif
+
+  if (!this.checked()) then
+    !!arfView.show()
+  else
+    -- close and recreate when reshown
+    !this.close()
+  endif
+
+endmethod
+
+------------------------------------------------------------------------
+--
+-- Method: Close
+--
+-- Description: Runs when form is closed.
+--
+-- Method Type: Procedure
+-- Arguments:
+--   [#] [R/RW] [Data Type] [Description]
+-- Return:
+--   [Data Type] [Description]
+--
+------------------------------------------------------------------------
+define method .close()
+  -- inactivate and hide before closing
+  if (defined(!!arfview)) then
+    !!arfview.setactive(false)
+    !!arfview.hide()
+    !!gphViews.close(!!arfview)
+    !!arfview.delete()
+  endif
+endmethod
+
+------------------------------------------------------------------------
+--
+-- Method: Kill
+--
+-- Description: Runs when form is killed.
+--
+-- Method Type: Procedure
+-- Arguments:
+--   [#] [R/RW] [Data Type] [Description]
+-- Return:
+--   [Data Type] [Description]
+--
+------------------------------------------------------------------------
+define method .kill()
+ 
+  !!gphDrawlists.detachView(!this.view)
+  !!gphDrawlists.deleteDrawlist(!this.drawlist)
+
+  !this.refreshButtonCheckedState()
+
+endmethod

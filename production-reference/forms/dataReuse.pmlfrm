@@ -1,0 +1,2043 @@
+------------------------------------------------------------------------
+--
+-- Copyright 1974 to current year. AVEVA Solutions Limited and its subsidiaries. All rights reserved in original code only.
+--
+-- File:           dataReuse.pmlfrm
+-- Type:           Form Definition
+-- Group:          General Application
+-- Keyword:
+-- Module:         design
+-- Author:         Joe Wyatt
+-- Created:        28/06/17
+-- Description:    Data Reuse form
+--
+------------------------------------------------------------------------
+--
+-- Methods defined:
+--
+--  Method call                      Return              Description
+--  ===========                      ======              ===========
+--  addRemoveRule(STRING,STRING)     -
+--  attributeCellChange(ARRAY)       -
+--  changeRulesOrder(STRING,STRING)  -
+--  copyFromSelect(ARRAY)            -
+--  copyToSelect(ARRAY)              -
+--  createCopy()                     -                   Create copy of selection
+--  dataReuse()                      -                   Constructor
+--  dismiss()                        -
+--  getSelectedRowNumbers(STRING)    ARRAY
+--  initPage2()                      -
+--  initialise()                     -                   initialisation
+--  initialiseAttributeRulesGrid()   -
+--  initialiseNamingRulesGrid()      -
+--  loadAttributeRulesGrid(ARRAY)    -
+--  loadNamingRulesGrid(ARRAY)       -
+--  loadRules(STRING)                -                   Prompt user to choose file to load rules from
+--  loadRulesFile(FILE,STRING)       -                   Read rules data from the given file and add to grid
+--  namingAttributeTabSwitch(ANY,STRING) -                   Perform actions when we switch between naming and attribute tabs
+--  namingCellChange(ARRAY)          -
+--  progressBarClick(ARRAY)          -                   Callback from user clicking on progress bar to change page
+--  saveResults()                    -                   Prompt user to choose file to save results to
+--  saveResultsFile(FILE)            -
+--  saveRules(STRING)                -                   Prompt user to choose file to save rules to
+--  saveRulesFile(FILE,STRING)       -                   Save rules data to given file
+--  setStandardsGridSettings(STRING) -
+--  showPreview()                    -
+--  showResults()                    -
+--  switchPage(GADGET,STRING)        -
+--  switchPage(REAL)                 -
+--  updateAttributeNameValueList(REAL) -
+--  updateAttributeRules(ARRAY)      -
+--  updateNamingRules(ARRAY)         -
+--  updateRowNumbersColumn(STRING)   -
+--  validateAllExpressions(STRING)   BOOLEAN             Returns if there are invalid expressions
+--  validateAttributeCell(ARRAY)     -
+--  validateCopyFrom()               BOOLEAN             Validate and perform actions after finishing 'Copy From' page
+--  validateCopyTo()                 BOOLEAN
+--  validateNamingCell(ARRAY)        -
+--  viewResultsFile()                -
+--
+
+-- Import DLLs
+import 'GridControl'
+handle any
+endhandle
+import 'ExplorerAddin'
+handle any
+endhandle
+import 'PMLNetUtilities'
+handle any
+endhandle
+
+layout form !!dataReuse dialog resize
+
+  !this.formTitle = 'Data Reuse'
+  !this.quitcall   = |!this.dismiss()|
+  !this.callback   = |!this.initialise()|
+
+  using namespace 'Aveva.Core.Presentation'
+  using namespace 'Aveva.Core.PMLNet'
+
+  --Container for progress gadget
+  container .progressContainer PMLNETCONTROL 'NET' at x15 ymin+0.2 anchor T+L+R height 1.5 width 70
+
+  --Page 1 - Copy From
+  frame .page1 panel at x0 ymax+0.5 anchor all height 30 width 100
+    frame .page1Tabset tabset anchor all at x0 y1 DOCK FILL
+
+      frame .page1Tab1 panel 'Database' anchor all at x0 y1 DOCK FILL
+        container .databaseExplorerContainer PMLNETCONTROL 'NET'  DOCK FILL
+      exit
+
+      frame .page1Tab2 panel 'Library' anchor all at x0 y1
+        container .libraryExplorerContainer PMLNETCONTROL 'NET' DOCK FILL
+      exit
+    exit
+  exit
+
+  --Page 2 - Copy To
+  frame .page2 panel anchor all at xmin.page1 ymin.page1 height 30 width 100
+    frame .page2Tab1 panel 'Database' anchor all at x0 y1 DOCK FILL
+      container .copyToExplorerContainer PMLNETCONTROL 'NET' DOCK FILL
+    exit
+  exit
+
+  --Page 3 - Rules
+  frame .page3 panel anchor all at xmin.page1 ymin.page1 height 30 width 100
+    frame .page3Tabset tabset anchor all at x0 ymin  height 28.3 width 98
+      frame .page3Tab1 panel 'Naming' anchor all at x0 y1 DOCK FILL
+        container .namingRulesContainer PMLNETCONTROL 'NET' at x-0.5 ymax+0.2 anchor all height 26.5 width 36
+
+        !size = 32
+        if (defined(!!drSize)) then
+          !size = !!drSize
+        endif
+
+        button .ruleNamingLoad   tooltip 'Load Rules...'  anchor T+R  at xmax+0.5 ymin   call '!this.loadRules(|Naming|)' pixmap "AvevaSharedIcons>ID_OPEN>$!size" width $!size height $!size
+        button .ruleNamingSave   tooltip 'Save Rules...'  anchor T+R  at xmin ymax+0.1   call '!this.saveRules(|Naming|)' pixmap "AvevaSharedIcons>ID_SAVE_WORK>$!size" width $!size height $!size
+
+        button .ruleNamingAdd     tooltip 'Add Rule'    anchor T+R  at xmin ymax+1   call '!this.addRemoveRule(|ADD|,|naming|)'       pixmap "AvevaSharedIcons>ID_ADD_ENTRY>$!size" width $!size height $!size
+        button .ruleNamingCopy    tooltip 'Copy Selected Rules'   anchor T+R  at xmin ymax+0.1 call '!this.addRemoveRule(|COPY|,|naming|)'      pixmap "AvevaSharedIcons>ID_ELEMENT_COPY>$!size" width $!size height $!size
+        button .ruleNamingRemove  tooltip 'Remove Selected Rules' anchor T+R  at xmin ymax+0.1 call '!this.addRemoveRule(|REMOVE|,|naming|)'    pixmap "AvevaSharedIcons>ID_DELETE>$!size" width $!size height $!size
+        button .ruleNamingRemoveAll tooltip 'Remove All Rules' anchor T+R  at xmin ymax+0.1 call '!this.addRemoveRule(|REMOVEALL|,|naming|)'    pixmap "AvevaSharedIcons>ID_DELETE_LIST>$!size" width $!size height $!size
+        button .ruleNamingTop     tooltip 'Move To Top'    anchor T+R  at xmin ymax+1   call '!this.changeRulesOrder(|TOP|,|naming|)'    pixmap "AvevaSharedIcons>ID_HIERARCHY_TOP>$!size" width $!size height $!size
+        button .ruleNamingUp      tooltip 'Move Up'     anchor T+R  at xmin ymax+0.1 call '!this.changeRulesOrder(|UP|,|naming|)'     pixmap "AvevaSharedIcons>ID_HIERARCHY_UP>$!size" width $!size height $!size
+        button .ruleNamingDown    tooltip 'Move Down'   anchor T+R  at xmin ymax+0.1 call '!this.changeRulesOrder(|DOWN|,|naming|)'   pixmap "AvevaSharedIcons>ID_HIERARCHY_DOWN>$!size" width $!size height $!size
+        button .ruleNamingBottom  tooltip 'Move To Bottom' anchor T+R  at xmin ymax+0.1 call '!this.changeRulesOrder(|BOTTOM|,|naming|)' pixmap "AvevaSharedIcons>ID_HIERARCHY_BOTTOM>$!size" width $!size height $!size
+      exit
+
+      frame .page3Tab2 panel 'Attribute' anchor all at x0 y1 DOCK FILL
+        container .attributeRulesContainer PMLNETCONTROL 'NET' at x-0.5 ymax+0.2 anchor all height 26.5 width 36
+
+        button .ruleAttributeLoad   tooltip 'Load Rules...'  anchor T+R  at xmax+0.5 ymin   call '!this.loadRules(|Attribute|)' pixmap "AvevaSharedIcons>ID_OPEN>$!size" width $!size height $!size
+        button .ruleAttributeSave   tooltip 'Save Rules...'  anchor T+R  at xmin ymax+0.1   call '!this.saveRules(|Attribute|)' pixmap "AvevaSharedIcons>ID_SAVE_WORK>$!size" width $!size height $!size
+
+        button .ruleAttributeAdd     tooltip 'Add Rule'    anchor T+R  at xmin ymax+1   call '!this.addRemoveRule(|ADD|,|attribute|)'       pixmap "AvevaSharedIcons>ID_ADD_ENTRY>$!size" width $!size height $!size
+        button .ruleAttributeCopy    tooltip 'Copy Selected Rules'   anchor T+R  at xmin ymax+0.1 call '!this.addRemoveRule(|COPY|,|attribute|)'      pixmap "AvevaSharedIcons>ID_ELEMENT_COPY>$!size" width $!size height $!size
+        button .ruleAttributeRemove  tooltip 'Remove Selected Rules' anchor T+R  at xmin ymax+0.1 call '!this.addRemoveRule(|REMOVE|,|attribute|)'    pixmap "AvevaSharedIcons>ID_DELETE>$!size" width $!size height $!size
+        button .ruleAttributeRemoveAll tooltip 'Remove All Rules' anchor T+R  at xmin ymax+0.1 call '!this.addRemoveRule(|REMOVEALL|,|attribute|)'    pixmap "AvevaSharedIcons>ID_DELETE_LIST>$!size" width $!size height $!size
+        button .ruleAttributeTop     tooltip 'Move To Top'    anchor T+R  at xmin ymax+1   call '!this.changeRulesOrder(|TOP|,|attribute|)'    pixmap "AvevaSharedIcons>ID_HIERARCHY_TOP>$!size" width $!size height $!size
+        button .ruleAttributeUp      tooltip 'Move Up'     anchor T+R  at xmin ymax+0.1 call '!this.changeRulesOrder(|UP|,|attribute|)'     pixmap "AvevaSharedIcons>ID_HIERARCHY_UP>$!size" width $!size height $!size
+        button .ruleAttributeDown    tooltip 'Move Down'   anchor T+R  at xmin ymax+0.1 call '!this.changeRulesOrder(|DOWN|,|attribute|)'   pixmap "AvevaSharedIcons>ID_HIERARCHY_DOWN>$!size" width $!size height $!size
+        button .ruleAttributeBottom  tooltip 'Move To Bottom' anchor T+R  at xmin ymax+0.1 call '!this.changeRulesOrder(|BOTTOM|,|attribute|)' pixmap "AvevaSharedIcons>ID_HIERARCHY_BOTTOM>$!size" width $!size height $!size
+
+      exit
+
+      ----Commented out for possible future development - 'PIPING_RESPEC'
+      --frame .page3Tab3 panel 'Piping' anchor all at x0 y1 DOCK FILL
+        --container .pipingRulesContainer PMLNETCONTROL 'NET' at x-0.5 ymax+0.2 anchor all width 36
+        --para .noPipingPara at x1 y0.5 anchor L+T text 'No piping elements to copy' width 30 height 1
+      --exit
+
+      ----Commented out for possible future development - 'STRUCTURAL_RESPEC'
+      --frame .page3Tab4 panel 'Steelwork' anchor all at x0 y1 DOCK FILL
+        --container .steelworkRulesContainer PMLNETCONTROL 'NET' at x-0.5 ymax+0.2 anchor all height 1 width 36
+        --para .noSteelworkPara at x1 y0.5 anchor L+T text 'No steelwork elements to copy' width 30 height 1
+      --exit
+    exit
+  exit
+
+  --Page 4 - Results
+  frame .page4 panel anchor all at x0 ymin.page1 height 30 width 100
+    frame .page4Tabset tabset anchor all at x0 ymin height 28.3 width 98
+      frame .page4Tab1 panel 'Naming' anchor all at x0 y1 DOCK FILL
+        para      .paraNamingResultsIssues                          at x0 ymin anchor L+T text 'Issues:' width 20 height 1
+        container .namingResultsIssuesContainer PMLNETCONTROL 'NET' at x-0.5 ymax anchor T+L+R height 10 width 36
+        para      .paraNamingResults                                at x0 ymax+0.2 anchor L+T text 'Results:' width 20 height 1
+        container .namingResultsContainer       PMLNETCONTROL 'NET' at x-0.5 ymax anchor all height 15 width 36
+      exit
+      frame .page4Tab2 panel 'Attribute' anchor all at x0 y1 DOCK FILL
+        para      .paraattributeResultsIssues                          at x0 ymin anchor L+T text 'Issues:' width 20 height 1
+        container .attributeResultsIssuesContainer PMLNETCONTROL 'NET' at x-0.5 ymax anchor T+L+R height 10 width 36
+        para      .paraattributeResults                                at x0 ymax+0.2 anchor L+T text 'Results:' width 20 height 1
+        container .attributeResultsContainer       PMLNETCONTROL 'NET' at x-0.5 ymax anchor all height 15 width 36
+      exit
+
+      ----Commented out for possible future development - 'PIPING_RESPEC'
+      --frame .page4Tab3 panel 'Piping' anchor all at x0 y1 DOCK FILL
+        --container .pipingResultsContainer PMLNETCONTROL 'NET' at x-0.5 ymax+0.2 anchor all width 36
+      --exit
+
+      ----Commented out for possible future development - 'STRUCTURAL_RESPEC'
+      --frame .page4Tab4 panel 'Steelwork' anchor all at x0 y1 DOCK FILL
+        --container .steelworkResultsContainer PMLNETCONTROL 'NET' at x-0.5 ymax+0.2 anchor all width 36
+      --exit
+    exit
+  exit
+
+  button .prevPage   'Back' anchor B+L  at x0   ymax+0.1        call '!this.switchPage('  pixmap "AvevaSharedIcons>ID_BACKWARD_ARROW>32" width 32  height 32
+  button .nextPage   'Next' anchor B+R  at xmax.page1-size ymin call '!this.switchPage('  pixmap "AvevaSharedIcons>ID_FORWARD_ARROW>32" width 32  height 32
+  button .apply     'Apply' anchor B+R  at xmin-4 ymin+0.5      call '!this.createCopy()' width 7
+  button .preview 'Preview' anchor B+R  at xmin-1-size ymin     call '!this.showPreview()' width 7
+
+  button .viewLog 'View...'                  anchor B+R at xmin.apply-1-size ymin call |!this.viewResultsFile()|
+  button .saveLog 'Save Results Log File...' anchor B+R at xmin-1-size ymin call |!this.saveResults()|
+
+  --Progress bar
+  member .progress   is STAGEBAR
+
+  --PML Explorer for Copy From Database tab
+  member .databaseExplorer   is PMLEXPLORERCONTROL
+  --PML Explorer for Copy From Library tab
+  member .libraryExplorer    is PMLEXPLORERCONTROL
+  --PML Explorer for Copy To tab
+  member .copyToExplorer     is PMLEXPLORERCONTROL
+  --Grid for naming rules
+  member .namingRulesGrid    is NETGRIDCONTROL
+  --Headings for .namingRulesGrid
+  member .namingRulesHeadings is ARRAY
+  --The options in the drop-down list for the Where column on the rename grid
+  member .renameWhereOptions   is ARRAY
+
+  --Grid for attribute rules
+  member .attributeRulesGrid is NETGRIDCONTROL
+  --Headings for .attributeRulesGrid
+  member .attributeRulesHeadings is ARRAY
+  --The options in the drop-down list for the Name column on the attribute grid
+  member .attributeNameOptions is ARRAY
+
+  ----Commented out for possible future development - 'PIPING_RESPEC'
+  ----Grid for piping rules
+  --member .pipingRulesGrid is NETGRIDCONTROL
+  ----The options in the drop-down list for the 'To Spec' column on the pipe spec grid
+  --member .pipeSpecs is ARRAY
+
+      ----Commented out for possible future development - 'STRUCTURAL_RESPEC'
+  ----Grid for steelwork rules
+  --member .steelworkRulesGrid is NETGRIDCONTROL
+  ----The options in the drop-down list for the 'To Spec' column on the steelwork spec grid
+  --member .steelSpecs is ARRAY
+
+  --Grid for naming result issues
+  member .namingResultsIssuesGrid is NETGRIDCONTROL
+  --Grid for naming results
+  member .namingResultsGrid is NETGRIDCONTROL
+  --Grid for attribute result issues
+  member .attributeResultsIssuesGrid is NETGRIDCONTROL
+  --Grid for attribute results
+  member .attributeResultsGrid is NETGRIDCONTROL
+
+  --Currently shown page
+  member .currentPage        is REAL
+  --Object that performs copying functionality
+  member .copyControl        is DATAREUSECONTROL
+
+  --Stores the rename values before autoname was selected (based on row tag number)
+  member .preAutonameValues is ARRAY
+  --Stores the attribute values before default value checkbox was selected (based on row tag number)
+  member .preDefaultValue is ARRAY
+
+  --Results file location
+  member .resultsFile       is FILE
+
+  --Flag for whether copy has been performed yet - the pages of the form change after copying is complete
+  member .copyComplete      is BOOLEAN
+
+  --Stores rows with expression errors
+  member .expressionErrors  is ARRAY
+exit
+
+------------------------------------------------------------------------
+--
+-- Method:   dataReuse
+--
+-- Description: Constructor
+--
+-- Method Type: Procedure
+-- [#] [R/RW] [Data Type] [Description]
+-- Return:
+-- [Data Type] [Description]
+--
+------------------------------------------------------------------------
+define method .dataReuse()
+  !this.page3Tab1.callback = '!this.namingAttributeTabSwitch('
+endmethod
+
+------------------------------------------------------------------------
+--
+-- Method:   namingAttributeTabSwitch
+--
+-- Description: Perform actions when we switch between naming and attribute tabs
+--
+------------------------------------------------------------------------
+define method .namingAttributeTabSwitch(!gadget is ANY, !action is   STRING)
+  !this.preview.active = !action.eq('SHOWN')
+endmethod
+------------------------------------------------------------------------
+--
+-- Method:   initialise
+--
+-- Description: initialisation
+--
+-- Method Type: Procedure
+-- [#] [R/RW] [Data Type] [Description]
+-- Return:
+-- [Data Type] [Description]
+--
+------------------------------------------------------------------------
+define method .initialise()
+
+  !this.copyComplete = FALSE
+  !this.viewLog.active = FALSE
+  !this.expressionErrors = ARRAY()
+  !this.expressionErrors[1] = ARRAY()
+  !this.expressionErrors[2] = ARRAY()
+
+  !this.copyControl = object DATAREUSECONTROL()
+
+  using namespace 'Aveva.Core.Presentation'
+  using namespace 'Aveva.Core.PMLNet'
+
+  !this.progress = object STAGEBAR()
+  !this.progressContainer.control = !this.progress.handle()
+  !this.progress.addStep('Copy From')
+  !this.progress.addStep('Copy To')
+  !this.progress.addStep('Rules')
+  !this.progress.addStep('Results')
+  !this.progress.addEventHandler('OnStepClick',!this, 'progressBarClick')
+
+  -- Initialise .Net Explorers
+  !this.libraryExplorer = object PMLEXPLORERCONTROL()
+  !this.libraryExplorerContainer.control = !this.libraryExplorer.handle()
+  !this.libraryExplorer.initialise('/*','')
+  !this.libraryExplorer.showOnlyTypeBelowWorld('APPLDW')
+  !this.libraryExplorer.expressionFilter(|type eq 'APPLDW' AND purp neq 'DRLI'|,TRUE)
+  !this.libraryExplorer.addEventHandler('OnSelectionChanged',!this, 'copyFromSelect')
+  --Try and select first APPLDA
+  !firstApplda = APPLDA 1 of APPDAR 1 of APPLDW 1 of WORLD
+  handle any
+    --If APPLDA does not exist then try and select APPLDW
+    !firstAppldw = APPLDW 1 of WORLD
+    handle any
+    elsehandle none
+      !this.libraryExplorer.selectElement(!firstAppldw.flnm)
+    endhandle
+  elsehandle none
+    !this.libraryExplorer.selectElement(!firstApplda.flnm)
+    !this.libraryExplorer.selectElement(!firstApplda.owner.flnm)
+  endhandle
+
+  !this.databaseExplorer = object PMLEXPLORERCONTROL()
+  !this.databaseExplorerContainer.control = !this.databaseExplorer.handle()
+  !this.databaseExplorer.initialise('/*','DESI')
+  !this.databaseExplorer.showOnlyTypeBelowWorld('SITE')
+  !this.databaseExplorer.showDbWorld(TRUE)
+  !this.databaseExplorer.addEventHandler('OnSelectionChanged',!this, 'copyFromSelect')
+  !firstSite = SITE 1 of WORLD
+  handle any
+  elsehandle none
+    !this.databaseExplorer.selectElement(!firstSite.flnm)
+  endhandle
+
+  !this.copyToExplorer = object PMLEXPLORERCONTROL()
+  !this.copyToExplorerContainer.control = !this.copyToExplorer.handle()
+  !this.copyToExplorer.initialise('/*','DESI')
+--  !this.copyToExplorer.expressionFilter('NOT(DBWRITE) AND TYPE NEQ |WORL|',TRUE)
+--  !this.copyToExplorer.expressionFilter('NOT(DBWRITE)',TRUE)
+  !this.copyToExplorer.addEventHandler('OnSelectionChanged',!this, 'copyToSelect')
+
+  if !!ce.dbtype.neq('DESI') then
+    !!alert.error('Please navigate to a Model World to continue.')
+    kill !!$!this
+    return
+  endif
+
+  !this.preAutonameValues = ARRAY()
+
+  !this.initialiseNamingRulesGrid()
+  !this.initialiseAttributeRulesGrid()
+
+  ----Commented out for possible future development - 'PIPING_RESPEC'
+  --!this.page3Tab3.callback = '!this.initialisePipingRulesGrid('
+
+  ----Commented out for possible future development - 'STRUCTURAL_RESPEC'
+  --!this.page3Tab4.callback = '!this.initialiseSteelworkRulesGrid('
+
+  --Load default rules
+  !defaultNamingRules = object FILE('%AVEVA_DESIGN_DFLTS%\des-dataReuse-namingRules.csv')
+  !defaultAttributeRules = object FILE('%AVEVA_DESIGN_DFLTS%\des-dataReuse-attributeRules.csv')
+  if !defaultNamingRules.exists() then
+    !this.loadRulesFile(!defaultNamingRules, 'Naming')
+  endif
+  if !defaultAttributeRules.exists() then
+    !this.loadRulesFile(!defaultAttributeRules, 'Attribute')
+  endif
+
+  !this.switchPage(1)
+
+endmethod
+
+-----------------------------------------------------------------------------------------------------
+--
+-- Method:      progressBarClick
+--
+-- Description: Callback from user clicking on progress bar to change page
+--
+-----------------------------------------------------------------------------------------------------
+define method .progressBarClick(!data is ARRAY)
+  using namespace 'Aveva.Core.PMLNet'
+
+  !stage = !data[0]
+
+  !this.switchPage(!stage)
+  !this.progress.skipTo(!this.currentPage)
+
+endmethod
+
+-----------------------------------------------------------------------------------------------------
+--
+-- Method:      switchPage
+--
+-- Description: Callback from next/previous buttons
+--
+-----------------------------------------------------------------------------------------------------
+define method .switchPage(!gadget is GADGET, !dummySelect is STRING)
+
+  if (!gadget.eq(!this.nextPage)) then
+    !this.switchPage(!this.currentPage + 1)
+  elseif (!gadget.eq(!this.prevPage)) then
+    !this.switchPage(!this.currentPage - 1)
+  endif
+
+endmethod
+
+-----------------------------------------------------------------------------------------------------
+--
+-- Method:      switchPage
+--
+-- Description: Hides previous page and shows the next
+--
+-----------------------------------------------------------------------------------------------------
+define method .switchPage(!page is REAL)
+  !copyComplete = !this.ruleNamingAdd.active.not()
+
+  if !this.currentPage.eq(1) and !copyComplete.not() then
+    if !this.validateCopyFrom().not() then
+      return
+    endif
+  elseif !this.currentPage.eq(2) and !page.eq(3) and !copyComplete.not() then
+    if !this.validateCopyTo().not() then
+      return
+    endif
+  endif
+  if !page.eq(4) and !this.copyComplete.not() then
+    return
+  endif
+
+  if !this.currentPage.set() then
+    if !page.gt(!this.currentPage) then
+      !this.progress.forward()
+    else
+      !this.progress.back()
+    endif
+  endif
+
+  !lastPage = 4
+  !this.currentPage = !page
+
+  -- Show given page and hide the others.
+  do !i to !lastPage
+    if (!i.eq(!page)) then
+      !this.page$!<i>.visible = TRUE
+    else
+      !this.page$!<i>.visible = FALSE
+    endif
+  enddo
+
+  -- Control the visibility of the Next and Back buttons
+  !this.prevPage.visible = !page.neq(1) $*and !page.neq(!lastPage)
+  !this.nextPage.active  = TRUE
+  !this.nextPage.visible = !page.lt(3) or (!page.eq(3) and !copyComplete)
+  !this.apply.visible    = !page.eq(4) or (!page.eq(3) and !copyComplete.not())
+  !this.preview.visible  = !page.eq(3) and !copyComplete.not()
+  !this.saveLog.visible  = !page.eq(4)
+  !this.viewLog.visible  = !page.eq(4)
+
+  if !page.eq(1) then
+    --'Copy From'
+    if !copyComplete then
+      --If copy has been done and the user is just reviewing the page then we need to
+      --re-select the value in the explorer and make the explorer inactive
+      !this.page1Tabset.active = TRUE
+      if !this.page1Tab1.selected then
+        !this.databaseExplorer.selectElement(!this.copyControl.selectedCopyFromElement.string())
+      elseif !copyComplete then
+        !this.libraryExplorer.selectElement(!this.copyControl.selectedCopyFromElement.string())
+      endif
+      !this.page1Tabset.active = FALSE
+    endif
+
+  elseif !page.eq(2) then
+    -- 'Copy To'
+    if !copyComplete.not() then
+      !this.initPage2()
+    else
+      --If copy has been done and the user is just reviewing the page then we need to
+      --re-select the value in the explorer and make the explorer inactive
+      !this.copyToExplorerContainer.active = TRUE
+      !this.copyToExplorer.selectElement(!this.copyControl.createdCopyToElement.string())
+      !this.copyToExplorerContainer.active = FALSE
+    endif
+
+  elseif !page.eq(3) then
+    -- 'Naming/Attribute Rules'
+    !this.apply.callback = '!this.createCopy()'
+    !this.apply.tag = 'Apply'
+
+  elseif !page.eq(4) then
+    -- 'Results'
+    !this.apply.callback = '!this.dismiss()'
+    !this.apply.tag = 'Close'
+  endif
+
+endmethod
+
+-----------------------------------------------------------------------------------------------------
+--
+-- Method:      initPage2
+--
+-- Description: Initialise 'Copy To' explorer based on element chosen on previous 'Copy From' explorer
+--
+-----------------------------------------------------------------------------------------------------
+define method .initPage2()
+  !this.copyControl.updateListOfElements()
+
+  if !this.copyControl.selectedCopyToElement.unset() then
+    using namespace 'Aveva.Core.Presentation'
+
+    !this.copyToExplorer.showOnlyTypeBelowWorld('SITE')
+
+    !this.copyToExplorer.resetRoot('/*')
+    !this.copyToExplorer.showDbWorld(TRUE)
+
+    if !this.page1Tab1.selected and !this.copyControl.selectedCopyFromElement.dbwrite then
+      !this.copyToExplorer.selectElement(!this.copyControl.selectedCopyFromElement.flnm)
+    elseif !this.page1Tab2.selected then
+      !this.copyToExplorer.selectElement('SITE 1 of /*')
+    endif
+
+  endif
+endmethod
+
+-----------------------------------------------------------------------------------------------------
+--
+-- Method:      initialiseNamingRulesGrid
+--
+-- Description: Initialise the Naming Rules grid gadget
+--
+-----------------------------------------------------------------------------------------------------
+define method .initialiseNamingRulesGrid()
+  using namespace 'Aveva.Core.Presentation'
+
+  !this.namingRulesHeadings = SPLIT('Number,Element Type,Expression,Autoname,From,To,Where,Members,Validate Element Type,Validate Expression',',')
+  !this.namingRulesGrid = object NETGRIDCONTROL()
+  !this.namingRulesContainer.control = !this.namingRulesGrid.handle()
+  !this.namingRulesGrid.addEventHandler('AfterCellUpdate', !this, 'updateNamingRules')
+  !this.namingRulesGrid.addEventHandler('BeforeCellUpdate', !this, 'validateNamingCell')
+  !this.namingRulesGrid.addEventHandler('cellChange', !this, 'namingCellChange')
+  !this.renameWhereOptions = SPLIT('Beginning,First Instance,All Instances,Last Instance,End',',')
+  !this.namingRulesGrid.createValueList('renameWhere', !this.renameWhereOptions)
+  !this.namingRulesGrid.assignValueListToColumn('renameWhere',5)
+  !this.namingRulesGrid.fixedHeaders(FALSE)
+  !this.namingRulesGrid.headerSort(FALSE)
+  !this.namingRulesGrid.outlookGroupStyle(FALSE)
+  !this.namingRulesGrid.columnExcelFilter(FALSE)
+  !this.namingRulesGrid.setLabelVisibility(FALSE)
+  !this.namingRulesGrid.editableGrid(TRUE)
+  !this.namingRulesGrid.setAlternateRowColor('')
+  !this.namingRulesGrid.setColumnVisibility(9, FALSE)
+  !this.namingRulesGrid.setColumnVisibility(10, FALSE)
+
+  --Add blank row into grid
+  !rows = ARRAY()
+  !rows[1][1] = '1'
+  !rows[1][2] = 'ALL'
+  !rows[1][3] = ''
+  !rows[1][4] = 'FALSE'
+  !rows[1][5] = ''
+  !rows[1][6] = ''
+  !rows[1][7] = 'Beginning'
+  !rows[1][8] = 'FALSE'
+  --Hidden validation rows
+  !rows[1][9] = 'TRUE'
+  !rows[1][10] = 'TRUE'
+
+  !this.loadNamingRulesGrid(!rows)
+
+  --Resize columns
+  !this.namingRulesGrid.resizeAllColumns()
+  !this.namingRulesGrid.setcolumnwidth(1,15)
+  !this.namingRulesGrid.setcolumnwidth(2,40)
+  !this.namingRulesGrid.setcolumnwidth(3,80)
+  !this.namingRulesGrid.setcolumnwidth(4,30)
+  !this.namingRulesGrid.setcolumnwidth(5,70)
+  !this.namingRulesGrid.setcolumnwidth(6,70)
+  !this.namingRulesGrid.setcolumnwidth(7,45)
+  !this.namingRulesGrid.setcolumnwidth(8,30)
+
+endmethod
+
+-----------------------------------------------------------------------------------------------------
+--
+-- Method:      loadNamingRulesGrid
+--
+-- Description: Load given data into the Naming Rules grid gadget
+--
+-----------------------------------------------------------------------------------------------------
+define method .loadNamingRulesGrid(!rows is ARRAY)
+  using namespace 'Aveva.Core.Presentation'
+
+  !this.namingRulesGrid.clearGrid()
+
+  -- Define data source and bind to the grid
+  !gridName = 'Data'
+  !nds = object NETDATASOURCE(!gridName, !this.namingRulesHeadings, !rows)
+  !this.namingRulesGrid.bindToDataSource(!nds)
+
+  !this.namingRulesGrid.assignValueListToColumn('renameWhere',7)
+  !this.namingRulesGrid.assignBiCheckboxToColumn(4)
+  !this.namingRulesGrid.assignBiCheckboxToColumn(8)
+  !this.namingRulesGrid.setEditableColumn(1,FALSE)
+  !this.namingRulesGrid.setColumnVisibility(9, FALSE)
+  !this.namingRulesGrid.setColumnVisibility(10, FALSE)
+  !this.namingRulesGrid.autoFitColumns()
+
+  --If autoname is selected on a row then we need to make the rows rename rule cells read-only
+  do !i index !rows
+    if !rows[!i][4].boolean() then
+      !args[0] = !i.string()
+      !args[1] = 'Autoname'
+      !this.namingCellChange(!args)
+    endif
+
+    --Validate the 'Element Type' and 'Expression' columns
+    !args = ARRAY()
+    !args[0] = !i.string()
+    !args[1] = 'Element Type'
+    !this.updateNamingRules(!args)
+  enddo
+
+--  !this.namingRulesGrid.selectRow(1)
+
+  --Reset autoname storage - has any rename values before autoname was selected
+  !this.preAutonameValues= ARRAY()
+
+  !this.updateRowNumbersColumn('naming')
+
+  --Update rules in control object
+  !this.copyControl.namingRules = !rows
+
+  --Set flag to update names
+  !this.copyControl.updateListOfNewNames = TRUE
+
+endmethod
+
+-----------------------------------------------------------------------------------------------------
+--
+-- Method:      initialiseAttributeRulesGrid
+--
+-- Description: Initialise the Attribute Rules grid gadget
+--
+-----------------------------------------------------------------------------------------------------
+define method .initialiseAttributeRulesGrid()
+  using namespace 'Aveva.Core.Presentation'
+
+  !this.attributeRulesHeadings = SPLIT('Element Type,Expression,Attribute Name,Default Value,Attribute Value,Validate Element Type,Validate Expression',',')
+  !this.attributeRulesGrid = object NETGRIDCONTROL()
+  !this.attributeRulesContainer.control = !this.attributeRulesGrid.handle()
+  !this.attributeRulesGrid.addEventHandler('AfterCellUpdate', !this, 'updateAttributeRules')
+  !this.attributeRulesGrid.addEventHandler('BeforeCellUpdate', !this, 'validateAttributeCell')
+  !this.attributeRulesGrid.addEventHandler('cellChange', !this, 'attributeCellChange')
+  !this.attributeRulesGrid.fixedHeaders(FALSE)
+  !this.attributeRulesGrid.headerSort(FALSE)
+  !this.attributeRulesGrid.outlookGroupStyle(FALSE)
+  !this.attributeRulesGrid.columnExcelFilter(FALSE)
+  !this.attributeRulesGrid.setLabelVisibility(FALSE)
+  !this.attributeRulesGrid.editableGrid(TRUE)
+  !this.attributeRulesGrid.setAlternateRowColor('')
+  !this.attributeRulesGrid.setColumnVisibility(6, FALSE)
+  !this.attributeRulesGrid.setColumnVisibility(7, FALSE)
+
+  --Add blank row into grid
+  !rows = ARRAY()
+  !rows[1][1] = 'ALL'
+  !rows[1][2] = ''
+  !rows[1][3] = ''
+  !rows[1][4] = 'FALSE'
+  !rows[1][5] = ''
+  --Hidden validation rows
+  !rows[1][6] = 'TRUE'
+  !rows[1][7] = 'TRUE'
+
+  !this.loadAttributeRulesGrid(!rows)
+
+  --Resize columns
+  !this.attributeRulesGrid.resizeAllColumns()
+  !this.attributeRulesGrid.setcolumnwidth(1,40)
+  !this.attributeRulesGrid.setcolumnwidth(2,80)
+  !this.attributeRulesGrid.setcolumnwidth(3,60)
+  !this.attributeRulesGrid.setcolumnwidth(4,30)
+  !this.attributeRulesGrid.setcolumnwidth(5,60)
+
+endmethod
+
+-----------------------------------------------------------------------------------------------------
+--
+-- Method:      loadAttributeRulesGrid
+--
+-- Description: Load given data into the Attribute Rules grid gadget
+--
+-----------------------------------------------------------------------------------------------------
+define method .loadAttributeRulesGrid(!rows is ARRAY)
+  using namespace 'Aveva.Core.Presentation'
+
+  !this.attributeRulesGrid.clearGrid()
+
+  --Define data source and bind to the grid
+  !gridName = 'Data'
+  using namespace  'Aveva.Core.Presentation'
+  !nds = object NETDATASOURCE(!gridName, !this.attributeRulesHeadings, !rows)
+  !this.attributeRulesGrid.bindToDataSource(!nds)
+  !this.attributeRulesGrid.assignBiCheckboxToColumn(4)
+
+  do !i index !rows
+    --If 'Default Value' is selected on a row then we need to make the 'Attribute Value' cell read-only
+    if !rows[!i][4].boolean() then
+      !args[0] = !i.string()
+      !args[1] = 'Default Value'
+      !this.attributeCellChange(!args)
+    endif
+
+    --Validate the 'Element Type' and 'Expression' columns
+    !args = ARRAY()
+    !args[0] = !i.string()
+    !args[1] = 'Element Type'
+    !this.updateAttributeRules(!args)
+  enddo
+
+  --Hide validation columns
+  !this.attributeRulesGrid.setColumnVisibility(6, FALSE)
+  !this.attributeRulesGrid.setColumnVisibility(7, FALSE)
+
+  !this.attributeRulesGrid.resizeAllColumns()
+--  !this.attributeRulesGrid.selectRow(1)
+
+  --Update rules in control object
+  !this.copyControl.attributeRules = !rows
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      createCopy
+--
+-- Description: Create copy of selection
+--
+----------------------------------------------------------------------
+define method .createCopy()
+  !nl = '
+  '
+  !nl = !nl.trim()
+
+  if !this.validateAllExpressions('BOTH').not() then
+    !!alert.error('Cannot continue as there are rules with invalid values. $!<nl>The highlighted errors need to be fixed before proceeding.')
+    return
+  endif
+
+  --Update rules stored in object
+  !namingRows = !this.namingRulesGrid.getRows()
+  !this.copyControl.namingRules = !namingRows
+  !attributeRows = !this.attributeRulesGrid.getRows()
+  !this.copyControl.attributeRules = !attributeRows
+
+    --Update list of elements and list of new names if required
+  !this.copyControl.updateListOfElements()
+  !this.copyControl.updateListOfNewNames()
+
+  --Concatenate confirmation message
+  !fromName = !this.copyControl.selectedCopyFromElement.flnm & |$!<nl>(DB: | & !this.copyControl.selectedCopyFromElement.dbnam & |)|
+  !toName = !this.copyControl.selectedCopyToElement.flnm & |$!<nl>(DB: | & !this.copyControl.selectedCopyToElement.dbnam & |)|
+  !numElements = !this.copyControl.fromElements.size()
+  !numNaming = !namingRows.size()
+  !numNamingText = '$!numNaming naming rule'
+  if !numNaming.neq(1) then
+    !numNamingText = !numNamingText & |s|
+  endif
+  !numAttribute = !attributeRows.size()
+  !numAttributeText = '$!numAttribute attribute rule'
+  if !numAttribute.neq(1) then
+    !numAttributeText = !numAttributeText & |s|
+  endif
+  !copyMessage = |Copying $!numElements elements from: $!<nl>$!fromName $!<nl>to: $!<nl>$!toName $!<nl>using $!numNamingText and $!<numAttributeText>.|
+
+  --Add warning to confirmation message if there are renaming errors
+  !errorIndices = !this.copyControl.renameStatus.find('EXISTS')
+  !errorIndices.appendArray(!this.copyControl.renameStatus.find('LONG'))
+  !continue = 'YES'
+  if !errorIndices.set() then
+    !numOfErrors = !errorIndices.size()
+    if !numOfErrors.eq(1) then
+      !errorsMessage1 = |is 1 element|
+      !errorsMessage2 = |this element|
+    else
+      !errorsMessage1 = |are $!numOfErrors elements|
+      !errorsMessage2 = |these elements|
+    endif
+    !copyMessage = !copyMessage & |
+    $!<nl>Warning: There $!errorsMessage1 with renaming errors, see Preview form for details. If you choose to continue then $!errorsMessage2 will be renamed with a 'Copy-to-' prefix.|
+  endif
+
+  !continue = !!alert.confirm(!copyMessage & |
+  $!<nl>Would you like to continue?|)
+
+  if !continue.eq('YES') then
+
+    --Hide Preview form
+    if defined(!!dataReusePreview) then
+      hide !!dataReusePreview
+    endif
+
+    --Perform copy
+    !this.copyControl.createCopy()
+
+    --Switch to results page
+    !this.showResults()
+  endif
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      showResults
+--
+-- Description: Show results page - initialise results grids and fill with data
+--
+----------------------------------------------------------------------
+define method .showResults()
+
+  --Make the gadgets on the other pages inactive
+  !this.copyComplete = TRUE
+  !this.namingRulesGrid.editableGrid(FALSE)
+  !this.attributeRulesGrid.editableGrid(FALSE)
+  !tabs = 'Naming Attribute'
+  !buttons = 'Load Add Copy Remove RemoveAll Top Up Down Bottom'
+  do !tab values !tabs.split()
+    do !button values !buttons.split()
+      !this.rule$!<tab>$!<button>.active = FALSE
+    enddo
+  enddo
+
+  using namespace  'Aveva.Core.Presentation'
+  !this.switchPage(4)
+
+  --Naming Issues
+  !this.namingResultsIssuesGrid = object NETGRIDCONTROL()
+  !this.namingResultsIssuesContainer.control = !this.namingResultsIssuesGrid.handle()
+  !errorHeadings = |Type,From Name,Attempted To Name,To Name,Issue,DBREF|
+  !nds = object NETDATASOURCE('Naming Issues', !errorHeadings.split(','), !this.copyControl.renameErrors)
+  !this.namingResultsIssuesGrid.bindToDataSource(!nds)
+  !this.namingResultsIssuesGrid.setColumnVisibility(6, FALSE)
+  !this.setStandardsGridSettings('namingResultsIssuesGrid')
+
+  --Naming Results
+  !this.namingResultsGrid = object NETGRIDCONTROL()
+  !this.namingResultsContainer.control = !this.namingResultsGrid.handle()
+  !namingHeadings = |Type,From Name,To Name,DBREF|
+  !namingData = !this.copyControl.previewNames()[1]
+  !nds = object NETDATASOURCE('Naming Results', !namingHeadings.split(','), !namingData)
+  !this.namingResultsGrid.bindToDataSource(!nds)
+  !this.namingResultsGrid.setColumnVisibility(4, FALSE)
+  !this.setStandardsGridSettings('namingResultsGrid')
+
+  --Attribute Issues
+  !this.attributeResultsIssuesGrid = object NETGRIDCONTROL()
+  !this.attributeResultsIssuesContainer.control = !this.attributeResultsIssuesGrid.handle()
+  !errorHeadings = |Type,To Name,Attribute,From Value,Attempted To Value,Issue,DBREF|
+  !nds = object NETDATASOURCE('Attribute Issues', !errorHeadings.split(','), !this.copyControl.attributeErrors)
+  !this.attributeResultsIssuesGrid.bindToDataSource(!nds)
+  !this.attributeResultsIssuesGrid.setColumnVisibility(7, FALSE)
+  !this.setStandardsGridSettings('attributeResultsIssuesGrid')
+
+  --Attribute Results
+  !this.attributeResultsGrid = object NETGRIDCONTROL()
+  !this.attributeResultsContainer.control = !this.attributeResultsGrid.handle()
+  !attributeHeadings = |Type,To Name,Attribute,From Value,To Value,DBREF|
+  !nds = object NETDATASOURCE('Attribute Results', !attributeHeadings.split(','), !this.copyControl.attributeResults)
+  !this.attributeResultsGrid.bindToDataSource(!nds)
+  !this.attributeResultsGrid.setColumnVisibility(6, FALSE)
+  !this.setStandardsGridSettings('attributeResultsGrid')
+
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      gridSettings
+--
+-- Description: Set the standard grid settings
+--
+----------------------------------------------------------------------
+define method .setStandardsGridSettings(!gridName is STRING)
+  !this.$!<gridName>.autoFitColumns()
+  !this.$!<gridName>.fixedHeaders(FALSE)
+  !this.$!<gridName>.headerSort(FALSE)
+  !this.$!<gridName>.outlookGroupStyle(FALSE)
+  !this.$!<gridName>.columnExcelFilter(FALSE)
+  !this.$!<gridName>.setLabelVisibility(FALSE)
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      showPreview
+--
+-- Description: Show Preview form - get renaming data from the control object and pass it to the Preview form
+--
+----------------------------------------------------------------------
+define method .showPreview()
+  !nl = '
+  '
+  !nl = !nl.trim()
+
+  if !this.validateAllExpressions('NAMING').not() then
+    !!alert.error('Cannot continue as there are naming rules with invalid expressions. $!<nl>The highlighted errors need to be fixed before proceeding.')
+    return
+  endif
+
+  --Update rules stored in object
+  !namingRows = !this.namingRulesGrid.getRows()
+  !this.copyControl.namingRules = !namingRows
+
+  --Initialise the preview form
+  if undefined(!!dataReusePreview) then
+    pml load form !!dataReusePreview
+  endif
+
+  --Get data from object
+  !gridData = !this.copyControl.previewNames()
+
+  --Apply renaming data to grid
+  !!dataReusePreview.setGridData(!gridData)
+
+  --Show Preview form
+  show !!dataReusePreview at xr0.635 yr0.14
+endmethod
+
+------------------------------------------------------------------------
+--
+-- Method:      dismiss
+--
+-- Description: Dismiss form
+--
+------------------------------------------------------------------------
+define method .dismiss()
+  !this.hide()
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      validateAllExpressions
+--
+-- Description: Returns if there are invalid expressions
+--
+----------------------------------------------------------------------
+define method .validateAllExpressions(!whichRules is STRING) is BOOLEAN
+
+  !return = TRUE
+
+  if !whichRules inset('NAMING','BOTH') then
+    if !this.namingRulesGrid.getColumn('Validate Element Type').findFirst('False').set() then
+      !return = FALSE
+    endif
+    if !this.namingRulesGrid.getColumn('Validate Expression').findFirst('False').set() then
+      !return = FALSE
+    endif
+  endif
+
+  if !whichRules inset('ATTRIBUTE','BOTH') then
+    if !this.attributeRulesGrid.getColumn('Validate Element Type').findFirst('False').set() then
+      !return = FALSE
+    endif
+    if !this.attributeRulesGrid.getColumn('Validate Expression').findFirst('False').set() then
+      !return = FALSE
+    endif
+  endif
+
+  return !return
+
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      copyFromSelect
+--
+-- Description: Callback from selection on 'Copy From' explorer
+--
+----------------------------------------------------------------------
+define method .copyFromSelect(!data is ARRAY)
+  !element  = object DBREF(!data[0])
+  if !element.neq(!this.copyControl.selectedCopyFromElement) then
+    --Update 'Copy From' base element in object
+    !this.copyControl.selectedCopyFromElement = !element
+    --Reset 'Copy To' element in object
+    !this.copyControl.selectedCopyToElement = object DBREF()
+    --Set flag for object to update list of elements to copy
+    !this.copyControl.updateListOfElements = TRUE
+  endif
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      copyToSelect
+--
+-- Description: Callback from selection on 'Copy To' explorer
+--
+----------------------------------------------------------------------
+define method .copyToSelect(!data is ARRAY)
+  !element  = object DBREF(!data[0])
+  --Check that DB is writable
+  if !element.dbwrite then
+    !this.copyControl.selectedCopyToElement = !element
+    !this.nextPage.active = TRUE
+  else
+    --Warn user that DB is read-only
+    !!alert.warning('Read-only Database.')
+    !this.copyControl.selectedCopyToElement = object DBREF()
+    !this.nextPage.active = FALSE
+  endif
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      validateCopyFrom
+--
+-- Description: Validate and perform actions after finishing 'Copy From' page
+--
+----------------------------------------------------------------------
+define method .validateCopyFrom() is BOOLEAN
+  !copyFromType = !this.copyControl.selectedCopyFromElement.type
+  if !copyFromType inset('WORL') then
+    !!alert.error('Cannot copy $!copyFromType element')
+    return FALSE
+  elseif !copyFromType inset('APPLDW','APPDAR') then
+    !!alert.error('Please select an APPLDA element or an element below it in the hierarchy')
+    return FALSE
+  endif
+  return TRUE
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      validateCopyTo
+--
+-- Description: Validate and perform actions after finishing 'Copy To' page
+--
+----------------------------------------------------------------------
+define method .validateCopyTo() is BOOLEAN
+
+  --Get type of element we are copying from
+  !copyFromType = !this.copyControl.selectedCopyFromElement.acttype
+  if !copyFromType.eq('APPLDA') then
+    --If APPLDW has been selected we will actually be creating this below a SITE
+    !copyFromType = 'SITE'
+  endif
+
+  !copyTo = !this.copyControl.selectedCopyToElement
+  --Check that the element can be created below the selected element
+  if !copyTo.unset() then
+    !!alert.error('Please select an element to copy to')
+    return FALSE
+  elseif !copyTo.list.findFirst(!copyFromType).unset() then
+    --If it can't be created at this level then see if it can be created below the owner
+    if !copyTo.acttype.eq('WORL') or !copyTo.owner.list.findFirst(!copyFromType).unset() then
+      !!alert.error('Cannot create a $!copyFromType at this level')
+      return FALSE
+    endif
+  endif
+  return TRUE
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      updateNamingRules
+--
+-- Description: Perform actions after cell has been updated in 'Naming Rules' grid
+--
+----------------------------------------------------------------------
+define method .updateNamingRules(!args is ARRAY)
+  !columnTag = !args[1]
+  !rowTag = !args[0]
+  !row = !this.namingRulesGrid.getRowNumFromTag(!rowTag)
+  !data = !this.namingRulesGrid.getCell(!rowTag,!columnTag)
+
+  --Remove spaces before and after
+  if !data.trim().neq(!data) then
+    !this.namingRulesGrid.setCellValue(!rowTag,!columnTag,!data.trim())
+    --The above call re-runs this method so we can return from this current one
+    return
+  endif
+
+  if !columnTag.eq('Element Type') then
+    --Ensure element name is upper case
+    if !data.upcase().neq(!data) then
+      !this.namingRulesGrid.setCellValue(!rowTag,!columnTag,!data.upcase())
+    endif
+
+    --Ensure that a valid element type has been input - if not then colour cell in red
+    if !this.copyControl.validateElementType(!data) then
+      !this.namingRulesGrid.setCellColor(!row, 2, 'empty')
+      !this.namingRulesGrid.setCellValue(!row, 9, 'True')
+    else
+      --!!alert.error('Unknown element type')
+      !this.namingRulesGrid.setCellColor(!row, 2, 255, 190, 170)
+      !this.namingRulesGrid.setCellValue(!row, 9, 'False')
+    endif
+
+    --Validate the value in the Expression cell in case its validity has now changed based on the new element type
+    !newArgs = !args
+    !newArgs[1] = 'Expression'
+    !this.updateNamingRules(!newArgs)
+
+    if !data.trim().eq('ALL') then
+      --Members option cannot be set if element type ALL is selected
+      !this.namingRulesGrid.setCellValue(!row, 8, 'False')
+      !this.namingRulesGrid.setEditableCell(!row,8,FALSE)
+    else
+      !this.namingRulesGrid.setEditableCell(!row,8,TRUE)
+    endif
+
+  elseif (!columnTag.eq('Expression')) then
+    --Ensure that a valid expression has been input for the given element type
+    !elementType = !this.namingRulesGrid.getCell(!rowTag,'Element Type').trim()
+    if !data.trim().eq('') or (!this.copyControl.validateExpression(!data,!elementType)) then
+      !this.namingRulesGrid.setCellColor(!row, 3, 'empty')
+      !this.namingRulesGrid.setCellValue(!row, 10, 'True')
+    else
+      --!!alert.error('Invalid Expression')
+      !this.namingRulesGrid.setCellColor(!row, 3, 255, 190, 170)
+      !this.namingRulesGrid.setCellValue(!row, 10, 'False')
+    endif
+
+  elseif (!columnTag inset('To','From')) then
+
+    !newToValue = !data
+    --Remove spaces from within naming rule
+    if !data.match(' ').neq(0) then
+      !newToValue = !newToValue.replace(' ', '')
+    endif
+
+    --Check for illegal characters
+    !invalidCharacters = ''
+    if !data.match('$').neq(0) then
+      !newToValue = !newToValue.replace('$', '')
+      !invalidCharacters = !invalidCharacters & ' $'
+    endif
+    if !data.match('@').neq(0) then
+      !newToValue = !newToValue.replace('@', '')
+      !invalidCharacters = !invalidCharacters & ' @'
+    endif
+    if !invalidCharacters.neq('') then
+      !!alert.warning('Cannot use$!invalidCharacters in a name.')
+    endif
+
+    if !newToValue.neq(!data) then
+      !this.namingRulesGrid.setCellValue(!rowTag,!columnTag,!newToValue)
+    endif
+
+  endif
+
+  --Set flag to update names
+  !this.copyControl.updateListOfNewNames = TRUE
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      namingCellChange
+--
+-- Description: Perform grid UI changes as cells are changed in 'Naming Rules' grid
+--
+----------------------------------------------------------------------
+define method .namingCellChange(!args is ARRAY)
+  !columnTag = !args[1]
+  !rowTag = !args[0]
+  !row = !this.namingRulesGrid.getRowNumFromTag(!rowTag)
+
+  if (!columnTag.eq('Autoname')) then
+    --We need to move selection away and then back to the cell to get its new value
+    !this.namingRulesGrid.selectCell(!row,4,TRUE)
+    !this.namingRulesGrid.selectCell(!row,4,FALSE)
+    !autoname = !this.namingRulesGrid.getCell(!rowTag,!columnTag).boolean()
+
+    --Make rename rule cells read-only if using autoname
+    !this.namingRulesGrid.setEditableCell(!row,5,!autoname.not())
+    !this.namingRulesGrid.setEditableCell(!row,6,!autoname.not())
+    !this.namingRulesGrid.setEditableCell(!row,7,!autoname.not())
+
+    --Make rename rule cells empty if using autoname
+    if !autoname then
+      --Store rename rule values in case autoname is deselected again later (store by tag number)
+      !renameValues[1] = !this.namingRulesGrid.getCell(!row,5)
+      !renameValues[2] = !this.namingRulesGrid.getCell(!row,6)
+      !renameValues[3] = !this.namingRulesGrid.getCell(!row,7)
+      !this.preAutonameValues[!rowTag.real()] = !renameValues
+      !this.namingRulesGrid.setCellValue(!rowTag,'From','')
+      !this.namingRulesGrid.setCellValue(!rowTag,'To','')
+      !this.namingRulesGrid.setCellValue(!rowTag,'Where','')
+
+    elseif defined(!this.preAutonameValues[!rowTag.real()]) then
+      --Fill rename rule cells with previous values if autoname is deselected
+      !this.namingRulesGrid.setCellValue(!rowTag,'From',!this.preAutonameValues[!rowTag.real()][1])
+      !this.namingRulesGrid.setCellValue(!rowTag,'To',!this.preAutonameValues[!rowTag.real()][2])
+      !this.namingRulesGrid.setCellValue(!rowTag,'Where',!this.preAutonameValues[!rowTag.real()][3])
+
+    else
+      --If no previous values then just set 'Where' column to default value
+      !this.namingRulesGrid.setCellValue(!rowTag,'Where','Beginning')
+    endif
+
+  endif
+
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      attributeCellChange
+--
+-- Description: Perform grid UI changes as cells are changed in 'Attribute Rules' grid
+--
+----------------------------------------------------------------------
+define method .attributeCellChange(!args is ARRAY)
+  --UI changes required when 'Default Value' is ticked
+  if (!args[1].eq('Default Value')) then
+    !tag = !args[0]
+    !row = !this.attributeRulesGrid.getRowNumFromTag(!tag)
+    --We need to move selection away and then back to the cell to get its new value
+    !this.attributeRulesGrid.selectCell(!row,5,TRUE)
+    !this.attributeRulesGrid.selectCell(!row,5,FALSE)
+    !useDefault = !this.attributeRulesGrid.getCell(!tag,'Default Value').boolean()
+
+    --Make attribute rule cell read-only if using default
+    !this.attributeRulesGrid.setEditableCell(!row,5,!useDefault.not())
+
+    --Make attribute rule cells empty if using default value
+    if !useDefault then
+      --Store attribute rule value in case default is deselected again later (store by tag number)
+      !this.preDefaultValue[!tag.real()] = !this.attributeRulesGrid.getCell(!row,5)
+      !this.attributeRulesGrid.setCellValue(!tag,'Attribute Value','')
+    elseif defined(!this.preDefaultValue[!tag.real()]) then
+      --Fill attribute rule cells with previous values if default is deselected
+      !this.attributeRulesGrid.setCellValue(!tag,'Attribute Value',!this.preDefaultValue[!tag.real()])
+    endif
+  endif
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      updateAttributeRules
+--
+-- Description: Perform actions after cell has been updated in 'Attribute Rules' grid
+--
+----------------------------------------------------------------------
+define method .updateAttributeRules(!args is ARRAY)
+  !columnTag = !args[1]
+  !rowTag = !args[0]
+  !row = !this.attributeRulesGrid.getRowNumFromTag(!rowTag)
+  !data = !this.attributeRulesGrid.getCell(!rowTag,!columnTag)
+
+  --Remove spaces before and after
+  if !data.trim().neq(!data) then
+    !this.attributeRulesGrid.setCellValue(!rowTag,!columnTag,!data.trim())
+    --The above call re-runs this method so we can return from this current one
+    return
+  endif
+
+  if !columnTag.eq('Element Type') then
+    --Ensure element name is upper case
+    !data = !this.attributeRulesGrid.getCell(!rowTag,!columnTag)
+    if !data.upcase().neq(!data) then
+      !this.attributeRulesGrid.setCellValue(!rowTag,!columnTag,!data.upcase())
+    endif
+
+    --Update the 'Attribute Name' column drop down list to contain attributes for the chosen element type
+    !this.updateAttributeNameValueList(!row)
+
+    --Ensure that a valid element type has been input - if not then colour cell in red
+    if !this.copyControl.validateElementType(!data) then
+      !this.attributeRulesGrid.setCellColor(!row, 1, 'empty')
+      !this.attributeRulesGrid.setCellValue(!row, 6, 'True')
+    else
+      !this.attributeRulesGrid.setCellColor(!row, 1, 255, 190, 170)
+      !this.attributeRulesGrid.setCellValue(!row, 6, 'False')
+    endif
+
+    --Validate the value in the Expression cell in case its validity has now changed based on the new element type
+    !newArgs = !args
+    !newArgs[1] = 'Expression'
+    !this.updateAttributeRules(!newArgs)
+
+  elseif (!columnTag.eq('Expression')) then
+    --Ensure that a valid expression has been input for the given element type
+    !elementType = !this.attributeRulesGrid.getCell(!rowTag,'Element Type')
+    if !data.trim().eq('') or (!this.copyControl.validateExpression(!data,!elementType)) then
+      !this.attributeRulesGrid.setCellColor(!row, 2, 'empty')
+      !this.attributeRulesGrid.setCellValue(!row, 7, 'True')
+    else
+      !this.attributeRulesGrid.setCellColor(!row, 2, 255, 190, 170)
+      !this.attributeRulesGrid.setCellValue(!row, 7, 'False')
+    endif
+
+  endif
+
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      updateAttributeNameValueList
+--
+-- Description: Update the Attribute cell in 'Attribute Rules' grid so it has a dropdown list of the
+--              valid attributes for the chosen element type
+--
+----------------------------------------------------------------------
+define method .updateAttributeNameValueList(!row is REAL)
+
+  !elementType = !this.attributeRulesGrid.getCell(!row,1)
+
+  if !elementType.eq('ALL') then
+    !this.attributeRulesGrid.removeValueListFromCell(!row,3)
+    return
+  endif
+
+  --Update the Attribute Name column with valid attributes for this element type
+  !element = object ELEMENTTYPE(!elementType)
+  !attributes = !element.systemAttributes()
+  !attributes.appendArray(!element.udas())
+  !attributeValueList = ARRAY()
+  do !att values !attributes
+    --Do not display if attribute is hidden
+    skip if !att.hidden()
+    !attributeValueList.append(!att.queryText())
+  enddo
+
+  !this.attributeNameOptions = !attributeValueList
+  !listName = !elementType & 'Attributes'
+  !this.attributeRulesGrid.createValueList(!listName, !attributeValueList)
+  !this.attributeRulesGrid.assignValueListToCell(!listName,!row,3)
+
+  --Check that the current attribute is in the list, if not then select the first item
+  !currentAttribute = !this.attributeRulesGrid.getCell(!row,3)
+  if !attributeValueList.findFirst(!currentAttribute).unset() then
+    !this.attributeRulesGrid.setCellValue(!row,3,'')
+  endif
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      validateNamingCell
+--
+-- Description: Validate cells when they are updated in the 'Naming Rules' grid
+--
+----------------------------------------------------------------------
+define method .validateNamingCell(!eArgs is ARRAY)
+  !data = !eArgs[0]
+  !columnTag = !eArgs[2]
+
+  !eArgs[3] = true
+  if (!columnTag.eq('Where')) then
+    --Ensure that if the user has chosen to type a value, it is one of the given drop-down options
+    --Allow blank if autoname is checked
+    if !this.namingRulesGrid.getCell(!eArgs[1],'Autoname').boolean().not() then
+      !eArgs[3] = !this.renameWhereOptions.findFirst(!data).set()
+    endif
+  endif
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      validateAttributeCell
+--
+-- Description: Validate cells when they are updated in the 'Attribute Rules' grid
+--
+----------------------------------------------------------------------
+define method .validateAttributeCell(!eArgs is ARRAY)
+  !data = !eArgs[0]
+  !rowTag = !eArgs[1]
+  !columnTag = !eArgs[2]
+
+  !eArgs[3] = true
+  if(!columnTag.eq('Attribute Name')) then
+    if !this.attributeRulesGrid.getCell(!rowTag,'Element Type').neq('ALL') and !data.neq('') then
+      --Ensure that if the user has chosen to type a value, it is one of the given drop-down options
+      !eArgs[3] = !this.attributeNameOptions.findFirst(!data).set()
+    endif
+  endif
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      addRemoveRule
+--
+-- Description: Adds or removes rows from the defined grid
+--
+----------------------------------------------------------------------
+define method .addRemoveRule(!action is STRING, !grid is STRING)
+
+  if !action.eq('ADD') then
+    --Add new row at current position in the grid
+    if !grid.eq('naming') then
+      !newRowData = ',ALL,,FALSE,,,Beginning,FALSE,TRUE,TRUE'
+    else
+      !newRowData = 'ALL,,,FALSE,,TRUE,TRUE'
+    endif
+    !this.$!<grid>RulesGrid.addRow(!newRowData.split(','))
+
+    !lastRow = !this.$!<grid>RulesGrid.getNumberRows()
+
+    if !grid.eq('naming') then
+      !this.namingRulesGrid.setEditableCell(!lastRow,8,FALSE)
+    endif
+
+    --Move new row to current selection
+    !rows = !this.getSelectedRowNumbers(!grid)
+    if !rows.set() then
+      !this.$!<grid>RulesGrid.moveRowToPosition(!lastRow,!rows[1])
+      !this.$!<grid>RulesGrid.clearRowSelection()
+      !this.$!<grid>RulesGrid.selectRow(!rows[1])
+      --!this.$!<grid>RulesGrid.selectCell(!rows[1],1,TRUE)
+    endif
+
+  elseif !action.eq('COPY') then
+    --Copy current selected row(s) and insert them below their current position
+    !rows = !this.getSelectedRowNumbers(!grid).invert()
+    if !rows.set() then
+      do !row value !rows
+        !rowData = !this.$!<grid>RulesGrid.getRow(!row)
+        !this.$!<grid>RulesGrid.addRow(!rowData)
+        !lastRow = !this.$!<grid>RulesGrid.getNumberRows()
+        !this.$!<grid>RulesGrid.moveRowToPosition(!lastRow,!row)
+      enddo
+    endif
+
+  elseif !action.eq('REMOVE') then
+    --Delete selected rows after confirming with user
+    !numberOfRowsSelected = !this.$!<grid>RulesGrid.getSelectedRowTags().size()
+    if !numberOfRowsSelected.eq(0) then
+      return
+    elseif !numberOfRowsSelected.eq(1) then
+      !confirm = !!alert.confirm('Are you sure you want to remove the selected rule?')
+    else
+      !confirm = !!alert.confirm('Are you sure you want to remove the ' & !numberOfRowsSelected & ' selected rules?')
+    endif
+    if !confirm.eq('YES') then
+      --Remove tags from autoname storage - stores rename values from before autoname was selected
+      if !grid.eq('naming') then
+        !removeTags = !this.$!<grid>RulesGrid.getSelectedRowTags()
+        do !removeTag values !removeTags
+          if defined(!this.preAutonameValues[!removeTag.real()]) then
+            !this.preAutonameValues[!removeTag.real()].delete()
+          endif
+        enddo
+      endif
+      --Delete selected rows
+      !this.$!<grid>RulesGrid.deleteSelectedRows()
+    endif
+
+  elseif !action.eq('REMOVEALL') then
+    --Remove all rules from grid
+    !confirm = !!alert.confirm('Are you sure you want to remove all of the rules?')
+    if !confirm.eq('YES') then
+      --!this.$!<grid>RulesGrid.clearGridData()
+      !this.initialise$!<grid>RulesGrid()
+
+      if !grid.eq('naming') then
+        --Reset autoname storage - has any rename values before autoname was selected
+        !this.preAutonameValues= ARRAY()
+      endif
+    endif
+  endif
+
+  --Update the row number column
+  if !grid.eq('naming') then
+    !this.updateRowNumbersColumn(!grid)
+
+    --Set flag to update names in control object to account for the change to the rules
+    !this.copyControl.updateListOfNewNames = TRUE
+  endif
+
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      changeRulesOrder
+--
+-- Description: Changes the order of the rows in the defined grid
+--
+----------------------------------------------------------------------
+define method .changeRulesOrder(!action is STRING, !grid is STRING)
+
+  if !action.eq('UP') then
+    --Move selected rows up one place in the grid
+    !this.$!<grid>RulesGrid.moveSelectedRowsUp()
+
+  elseif !action.eq('DOWN') then
+    !this.$!<grid>RulesGrid.moveSelectedRowsDown()
+
+  elseif !action.eq('TOP') then
+    --Move all selected rows to the top of the grid
+    !rows = !this.getSelectedRowNumbers(!grid)
+    do !i index !rows
+      !this.$!<grid>RulesGrid.moveRowToPosition(!rows[!i],!i)
+    enddo
+
+  elseif !action.eq('BOTTOM') then
+    --Move all selected rows to the bottom of the grid
+    !rows = !this.getSelectedRowNumbers(!grid).invert()
+    !totalNumberOfRows = !this.$!<grid>RulesGrid.getNumberRows()
+    do !i index !rows
+      !this.$!<grid>RulesGrid.moveRowToPosition(!rows[!i],!totalNumberOfRows + 1 - !i)
+    enddo
+  endif
+
+  if !grid.eq('naming') then
+    --Update the row number column
+    !this.updateRowNumbersColumn(!grid)
+
+    --Set flag to update names in control object as rule order may cause changes
+    !this.copyControl.updateListOfNewNames = TRUE
+  endif
+
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      getSelectedRowNumbers
+--
+-- Description: Returns the selected row numbers for the defined grid
+--
+----------------------------------------------------------------------
+define method .getSelectedRowNumbers(!grid is STRING) is ARRAY
+
+  --Get the tags for all rows and the tags for selected rows
+  !rowTags = !this.$!<grid>RulesGrid.getColumn(0)
+  !selectedRowTags = !this.$!<grid>RulesGrid.getSelectedRowTags()
+
+  --Using the tags, find which number rows are selected in order from the top
+  !selectedRowNumbers = ARRAY()
+  do !row index !rowTags
+    !index = !selectedRowTags.findFirst(!rowTags[!row])
+    if !index.set() then
+      !selectedRowNumbers.append(!row)
+    endif
+  enddo
+
+  return !selectedRowNumbers
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      updateRowNumbersColumn
+--
+-- Description: Reset the values in the Number column so they are sequential
+--
+----------------------------------------------------------------------
+define method .updateRowNumbersColumn(!grid is STRING)
+
+  --Get current selection
+  !selectedRowTags = !this.$!<grid>RulesGrid.getSelectedRowTags()
+  !numRows = !this.$!<grid>RulesGrid.getNumberRows()
+
+  --Update numbering
+  do !row to !numRows
+    !this.$!<grid>RulesGrid.setCellValue(!row,1,!row.string())
+    --Selecting the row ensures that the edit icon on the left hand bar disappears (we don't want to see this)
+    !this.$!<grid>RulesGrid.selectRow(!row)
+  enddo
+
+  --Reset the current selection back to what it was when method started
+  !this.$!<grid>RulesGrid.clearRowSelection()
+  do !tag values !selectedRowTags
+    !this.$!<grid>RulesGrid.selectRow(!this.$!<grid>RulesGrid.getRowNumFromTag(!tag))
+  enddo
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      loadRulesFile
+--
+-- Description: Read rules data from the given file and add to grid
+--
+----------------------------------------------------------------------
+define method .loadRulesFile(!rulesFile is FILE, !rulesType is STRING)
+  !rules = !rulesFile.readFile()
+
+  if !rules[1].trim().neq('$!rulesType Rules') then
+    !!alert.error('Not a valid Data Reuse $!rulesType Rules file.')
+    return
+  endif
+
+  !rows = ARRAY()
+  do !rulesFileLine from 3 to !rules.size()
+    !row = !rules[!rulesFileLine].split(',')
+    if !row.size().eq(1) then
+      break
+    endif
+    --Add hidden validation rows
+    !row.append(TRUE)
+    !row.append(TRUE)
+    --Add row to list
+    !rows.append(!row)
+  enddo
+
+  --Load the rules into the relevant grid
+  !this.load$!<rulesType>RulesGrid(!rows)
+
+  --Define the attribute cell dropdown list for each row
+  if !rulesType.eq('Attribute') then
+    do !i to !rows.size()
+      !this.updateAttributeNameValueList(!i)
+    enddo
+  endif
+
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      loadRules
+--
+-- Description: Prompt user to choose file to load rules from
+--
+----------------------------------------------------------------------
+define method .loadRules(!rulesType is STRING)
+
+  --Define the pml file browser
+  if (undefined(!!fileBrowser)) then
+    pml load form !!fileBrowser
+  endif
+  import 'pmlfilebrowser'
+  handle any
+  endhandle
+  using namespace 'Aveva.Core.Presentation'
+
+  --Show the file browser in 'OPEN' mode, limit to *.csv files and set default folder to %AVEVA_DESIGN_USER%
+  !browser = object PMLFILEBROWSER('OPEN')
+  !formTitle = 'Load Data Reuse $!rulesType Rules'
+  !browser.show(|%AVEVA_DESIGN_USER%|,'' , !formTitle , TRUE , 'csv files|*.csv' , 1)
+
+  !!fileBrowser.file = !!file(!browser.file())
+  !!fileBrowser.existFlag = TRUE
+
+  --If file was selected then run the 'callback'
+  if (!!fileBrowser.file.string() neq '') then
+    !!dataReuse.loadRulesFile(!!fileBrowser.file, |$!rulesType|)
+  endif
+
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      saveRules
+--
+-- Description: Prompt user to choose file to save rules to
+--
+----------------------------------------------------------------------
+define method .saveRules(!rulesType is STRING)
+
+  --Create default filename based on project code and date
+  var !dateTime clock
+  !dateTime = !dateTime.replace(':','')
+  !project = CURRENT PROJECT
+  !projectCode = !project.code()
+  !filename = |%AVEVA_DESIGN_USER%\Data Reuse $!rulesType Rules - $!projectCode - $!<dateTime>.csv|
+  !file   = object FILE(!filename)
+  !directory = !file.path()[1].name()
+  !seedFile  = !file.entry()
+  !formTitle = 'Save Data Reuse $!rulesType Rules'
+  !needToExist = false
+  !callback = '!!dataReuse.saveRulesFile(!!fileBrowser.file, |$!rulesType|)'
+
+  --Show file browser
+  !!fileBrowser(!directory, !seedFile, !formTitle, !needToExist, !callback)
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      saveRulesFile
+--
+-- Description: Save rules data to given file
+--
+----------------------------------------------------------------------
+define method .saveRulesFile(!rulesFile is FILE, !rulesType is STRING)
+
+  --Create an array to store the output file data
+  !output = ARRAY()
+  !output.append('$!rulesType Rules')
+
+  --Add the column headings to the output file data
+  !headings = ''
+  do !heading values !this.$!<rulesType>RulesHeadings
+    skip if !heading.substring(1,8).eq('Validate')
+    !headings = !headings & ',' & !heading
+  enddo
+  !output.append(!headings.trim('L',','))
+
+  --Convert the grid data into comma separated values
+  !rulesAllRows = !this.$!<rulesType>RulesGrid.getRows()
+  do !rulesRow values !rulesAllRows
+    !ruleOutput = ''
+    do !i index !rulesRow
+      skip if !this.$!<rulesType>RulesHeadings[!i].substring(1,8).eq('Validate')
+      !rule = !rulesRow[!i]
+      !ruleOutput = !ruleOutput & ',' & !rule
+    enddo
+    !output.append(!ruleOutput.trim('L',','))
+  enddo
+
+  --Write to file
+  !rulesFile.writeFile('OVERWRITE', !output)
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      saveResults
+--
+-- Description: Prompt user to choose file to save results to
+--
+----------------------------------------------------------------------
+define method .saveResults()
+
+  --Create default filename based on project code and date
+  var !dateTime clock
+  !dateTime = !dateTime.replace(':','')
+  !project = CURRENT PROJECT
+  !projectCode = !project.code()
+  !filename = |%AVEVA_DESIGN_USER%\Data Reuse Results - $!projectCode - $!<dateTime>.txt|
+  !file   = object FILE(!filename)
+  !directory = !file.path()[1].name()
+  !seedFile  = !file.entry()
+  !formTitle = 'Data Reuse Results File'
+  !needToExist = false
+  !callback = '!!dataReuse.saveResultsFile(!!fileBrowser.file)'
+
+  --Show file browser
+  !!fileBrowser(!directory, !seedFile, !formTitle, !needToExist, !callback)
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      saveResultsFile
+--
+-- Description: Save results to given file
+--
+----------------------------------------------------------------------
+define method .saveResultsFile(!file is FILE)
+  !this.resultsFile  = !file
+
+  !log = ARRAY()
+  !log.append('Data Reuse Results')
+  !log.append('--------------------------')
+  !log.append('Copy from: ' & !this.copyControl.selectedCopyFromElement.flnm & ' (DB: ' & !this.copyControl.selectedCopyFromElement.dbnam & ')')
+  !log.append('Copy to: ' & !this.copyControl.createdCopyToElement.flnm & ' (DB: ' & !this.copyControl.createdCopyToElement.dbnam & ')')
+  !log.append('')
+
+  --RENAMING
+  !renameErrors = !this.copyControl.renameErrors
+  if !renameErrors.set() then
+    !log.append('Renaming Issues:')
+    !log.append('-----------------------')
+
+    do !error values !renameErrors
+      if !error[5].match('Autoname: No valid').neq(0) then
+        !log.append('Issue autonaming ' & !error[1] & ' ' & !error[2])
+      else
+        !log.append('Issue autonaming ' & !error[1] & ' ' & !error[2] & ' to ' & !error[3])
+      endif
+      !log.append(!error[5])
+      !log.append('Renamed to: ' & !error[4])
+      !log.append('')
+    enddo
+
+    !log.append('')
+    !log.append('Full Renaming Results (Including Issues):')
+    !log.append('---------------------------------------')
+  else
+    !log.append('')
+    !log.append('Full Renaming Results:')
+    !log.append('------------------')
+  endif
+
+  do !result value !this.namingResultsGrid.getRows()
+    !log.append('Renamed: ' & !result[1] & ' ' & !result[2] & ' to ' & !result[3])
+  enddo
+
+  !log.append('')
+  !log.append('===================================================')
+  !log.append('')
+
+  --ATTRIBUTES
+  !attributeErrors = !this.copyControl.attributeErrors
+  if !attributeErrors.set() then
+    !log.append('Attribute Change Issues:')
+    !log.append('----------------------------------')
+
+    do !error values !attributeErrors
+      !log.append('Issue changing attribute ' & !error[3] & ' on '& !error[1] & ' ' & !error[2])
+      !log.append('Attempted To Value: ' & !error[5] & '.  Returned to original value: ' & !error[4])
+      !log.append('Error: ' & !error[6])
+      !log.append('')
+    enddo
+
+    !log.append('')
+    !log.append('Full Attribute Change Results:')
+    !log.append('---------------------------------------')
+  else
+    !log.append('')
+    !log.append('Full Attribute Change Results:')
+    !log.append('------------------')
+  endif
+
+  do !result value !this.copyControl.attributeResults
+    !log.append('Changed Attribute ' & !result[3] & ' on '& !result[1] & ' ' & !result[2] & ' to: ' & !result[5])
+  enddo
+
+  !log.append('')
+  !log.append('===================================================')
+
+  !this.resultsFile.writeFile('OVERWRITE', !log)
+
+  !this.viewLog.active = TRUE
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      viewResultsFile
+--
+-- Description: View results file
+--
+----------------------------------------------------------------------
+define method .viewResultsFile()
+
+  !filename = !this.resultsFile.fullname()
+  handle any
+    !!alert.error('Cannot find results file to open')
+    return
+  endhandle
+  if undefined(!!fileViewer) then
+    pml load form !!fileViewer
+  endif
+  !!fileViewer(!filename, !filename)
+--  syscom 'notepad "$!filename"'
+endmethod
+
+
+  ----Commented out for possible future development - 'PIPING_RESPEC' - from form init method
+  --!this.pipingRulesGrid = object NETGRIDCONTROL()
+  --!this.pipingRulesContainer.control = !this.pipingRulesGrid.handle()
+----  !this.pipingRulesGrid.addEventHandler('AfterCellUpdate', !this, 'updateAttributeRules')
+  --!this.pipingRulesGrid.addEventHandler('BeforeCellUpdate', !this, 'validatePipingCell')
+  --!this.pipingRulesGrid.fixedHeaders(FALSE)
+  --!this.pipingRulesGrid.headerSort(FALSE)
+  --!this.pipingRulesGrid.outlookGroupStyle(FALSE)
+  --!this.pipingRulesGrid.columnExcelFilter(FALSE)
+  --!this.pipingRulesGrid.setLabelVisibility(FALSE)
+  --!this.pipingRulesGrid.editableGrid(TRUE)
+
+  ----Commented out for possible future development - 'STRUCTURAL_RESPEC' - from form init method
+  --!this.steelworkRulesGrid = object NETGRIDCONTROL()
+  --!this.steelworkRulesContainer.control = !this.steelworkRulesGrid.handle()
+----  !this.steelworkRulesGrid.addEventHandler('AfterCellUpdate', !this, 'updateAttributeRules')
+  --!this.steelworkRulesGrid.addEventHandler('BeforeCellUpdate', !this, 'validateSteelworkCell')
+  --!this.steelworkRulesGrid.fixedHeaders(FALSE)
+  --!this.steelworkRulesGrid.headerSort(FALSE)
+  --!this.steelworkRulesGrid.outlookGroupStyle(FALSE)
+  --!this.steelworkRulesGrid.columnExcelFilter(FALSE)
+  --!this.steelworkRulesGrid.setLabelVisibility(FALSE)
+  --!this.steelworkRulesGrid.editableGrid(TRUE)
+
+--define method .initialiseSteelworkRulesGrid(!dummyGadget is GADGET, !action is STRING)
+--
+  --if !this.steelworkRulesGrid.getRows().set() or !action.eq('HIDDEN') then
+    --return
+  --endif
+  --
+  ----Find any existing steelwork
+  --!rows = !this.getSteelworkSpecs()
+  --if !rows.unset() then
+    --!this.steelworkRulesContainer.visible = FALSE
+    --!this.noSteelworkPara.visible = TRUE
+    --return
+  --endif
+  --!this.steelworkRulesContainer.visible = TRUE
+  --!this.noSteelworkPara.visible = FALSE
+--
+  --if !this.steelSpecs.unset() then
+    --!collection = object COLLECTION()
+    --!collection.type('SPWL')
+    --!collection.filter(object EXPRESSION('PURP eq |STL|'))
+    --!specWorlds = !collection.results()
+  --
+    --!collection = object COLLECTION()
+    --!collection.type('SPCO')
+    --!collection.scope(!specWorlds)
+    --!specs = !collection.results()
+    --!specNames = ARRAY()
+    --do !spec values !specs
+      --!specNames.append(!spec.name)
+    --enddo
+  --
+    --!this.steelSpecs = !specNames
+    --!this.steelworkRulesGrid.createValueList('steelSpecs', !specNames)
+  --endif
+  --
+  --!this.loadSteelworkRulesGrid(!rows)
+--
+--endmethod
+--
+--define method .getSteelworkSpecs() is ARRAY
+  --!fromElement = !this.copyControl.selectedCopyFromElement
+  --var !gensecs coll all GENSEC for $!fromElement
+  --var !specs eval spref for all from !gensecs
+  --!specs = !specs.unique()
+  --
+  --!rows = ARRAY()
+  --do !spec values !specs
+    --!row[1] = !spec
+    --!row[2] = ''
+    --!rows.append(!row)
+  --enddo
+  --
+  --return !rows
+--endmethod
+--
+--define method .loadSteelworkRulesGrid(!rows is ARRAY)
+  --using namespace 'Aveva.Core.Presentation'
+  --
+  --!this.steelworkRulesGrid.clearGrid()
+  --
+  ----Define data source and bind to the grid
+  --!gridName = 'Data'
+  --!headings = 'From Spec,To Spec'
+  --using namespace  'Aveva.Core.Presentation'
+  --!nds = object NETDATASOURCE(!gridName, !headings.split(','), !rows)
+  --!this.steelworkRulesGrid.bindToDataSource(!nds)
+  --
+  --!this.steelworkRulesGrid.resizeAllColumns()
+----  !this.steelworkRulesGrid.autoFitColumns()
+  --!this.steelworkRulesGrid.selectRow(1)
+  --
+  --!this.steelworkRulesGrid.assignValueListToColumn('steelSpecs',2)
+--
+  ----Update rules in control object
+  ----!this.copyControl.attributeRules = !rows
+--
+--endmethod
+--
+--define method .initialisePipingRulesGrid(!dummyGadget is GADGET, !action is STRING)
+--
+  --if !this.pipingRulesGrid.getRows().set() or !action.eq('HIDDEN') then
+    --return
+  --endif
+  --
+  --!rows = !this.getPipingSpecs()
+  --if !rows.unset() then
+    --!this.pipingRulesContainer.visible = FALSE
+    --!this.noPipingPara.visible = TRUE
+    --return
+  --endif
+  --!this.pipingRulesContainer.visible = TRUE
+  --!this.noPipingPara.visible = FALSE
+  --
+  ---- collecting available specification
+  --!pipeSpec = object SPECIFICATIONS()
+--
+  ---- collect piping spec
+  --!pipeSpec.piping()
+  --!names        = !pipeSpec.names
+  --!unusedReferences   = !pipeSpec.references
+  --!unusedRefStrings   = !pipeSpec.refStrings
+--
+  --!this.pipeSpecs = !names
+  --!this.pipingRulesGrid.createValueList('pipeSpecs', !names)
+  --
+  --!this.loadPipingRulesGrid(!rows)
+--
+--endmethod
+--
+--define method .getPipingSpecs() is ARRAY
+--
+  --!fromElement = !this.copyControl.selectedCopyFromElement
+  --var !pipes coll all PIPE for $!fromElement
+  --var !names eval flnm for all from !pipes
+  --var !pspecs eval pspec for all from !pipes
+  --
+  --!rows = ARRAY()
+  --do !i index !pipes
+    --!row[1] = !names[!i]
+    --!row[2] = !pspecs[!i]
+    --!row[3] = ''
+    --!rows.append(!row)
+  --enddo
+  --
+  --return !rows
+--endmethod
+--
+--define method .loadPipingRulesGrid(!rows is ARRAY)
+  --using namespace 'Aveva.Core.Presentation'
+  --
+  --!this.pipingRulesGrid.clearGrid()
+  --
+  ----Define data source and bind to the grid
+  --!gridName = 'Data'
+  --!headings = 'Pipe Name,From Spec,To Spec'
+  --using namespace  'Aveva.Core.Presentation'
+  --!nds = object NETDATASOURCE(!gridName, !headings.split(','), !rows)
+  --!this.pipingRulesGrid.bindToDataSource(!nds)
+  --
+  --!this.pipingRulesGrid.resizeAllColumns()
+----  !this.pipingRulesGrid.autoFitColumns()
+  --!this.pipingRulesGrid.selectRow(1)
+  --
+  --!this.pipingRulesGrid.assignValueListToColumn('pipeSpecs',3)
+--
+  ----Update rules in control object
+  ----!this.copyControl.attributeRules = !rows
+--
+--endmethod
+--
+--define method .validatePipingCell(!eArgs is ARRAY)
+  --!data = !eArgs[0]
+  --!columnTag = !eArgs[2]
+--
+  --!eArgs[3] = true
+  --if(!columnTag.eq('To Spec')) then
+    ----Ensure that if the user has chosen to type a value, it is one of the given drop-down options
+    --!eArgs[3] = !this.pipingSpecs.findFirst(!data).set()
+  --endif
+--endmethod
+--
+--define method .validateSteelworkCell(!eArgs is ARRAY)
+  --!data = !eArgs[0]
+  --!columnTag = !eArgs[2]
+--
+  --!eArgs[3] = true
+  --if(!columnTag.eq('To Spec')) then
+    ----Ensure that if the user has chosen to type a value, it is one of the given drop-down options
+    --!eArgs[3] = !this.steelSpecs.findFirst(!data).set()
+  --endif
+--endmethod
+--
+--

@@ -1,0 +1,240 @@
+----------------------------------------------------------------------
+--
+-- Copyright 1974 to current year. AVEVA Solutions Limited and its subsidiaries. All rights reserved in original code only.
+--
+--  File:            designapplicationmode.pmlcmd
+--    Type:          Command Definition
+--      Keyword:     Undefined
+--    Module:        Undefined
+--  Author:          Undefined
+--  Created:         Mon Apr 16 11:16:00 2012
+--
+-- Group:        Design General
+-- Description:  Command object for Design Application switch
+--   This is a combo box command supporting the standard command interface
+--
+------------------------------------------------------------------------
+setup command !!designApplicationMode
+
+  -- flag for initial state of this command
+  member .initialised        is BOOLEAN
+  -- array of application codes
+  member .applicationList    is ARRAY
+  -- corresponding array of application titles
+  member .applicationTitles  is ARRAY
+  --  history of the loaded application
+  member .applicationHistory is ARRAY
+exit
+
+------------------------------------------------------------------------
+-- Method:     designApplicationMode
+-- Description: Constructor
+------------------------------------------------------------------------
+define method .designApplicationMode()
+
+  -- initialise events and command key
+  !this.key         = 'AVEVA.DesignGeneral.CommandApplicationMode'
+  !this.execute     = 'execute'
+  !this.list        = 'list'
+  !this.refresh     = 'refresh'
+  !filters          = object ARRAY()
+  !filters[1]       = 'INITIALISED'
+  !filters[2]       = 'CONTEXT'
+  !this.refreshFilters = !filters
+  !this.initialised = false
+
+  !this.applicationList   = !!appCntrl.getApplicationList(true)
+  !this.applicationTitles = ARRAY()
+  !this.applicationHistory = ARRAY()
+  -- create list of titles corresponding to applications
+  do !index indices !this.applicationList
+    !this.applicationTitles[!index] = !!appCntrl.getApplic(!this.applicationList[!index]).title
+  enddo
+
+endmethod
+
+------------------------------------------------------------------------
+-- Method:     refresh
+-- Description: Refresh event
+------------------------------------------------------------------------
+define method .refresh(!args is ARRAY)
+
+  if( !this.initialised.not() ) then
+    -- first refresh for this command - initialise current application
+    !this.initialised = true
+    !this.initialiseCurrentApplication()
+  endif
+
+  !nArgs = !args.size()
+  if (!nArgs lt 3) then
+    return
+  endif
+
+  if( !args[0] neq 'CONTEXT' ) then
+    return
+  endif
+
+  !message = !args[2]
+
+  -- application switch messages begin with key word 'Application:'
+  if( !message.subString(1,12) eq 'Application:' ) then
+    !this.initialiseApplication(!message.after('Application:'))
+  endif
+
+endmethod
+
+------------------------------------------------------------------------
+-- Method:     execute
+-- Description: Execute event
+------------------------------------------------------------------------
+define method .execute(!dummyArgs is ARRAY)
+  !index = !this.selectedIndex() + 1
+
+  !!appxload(!!appCntrl.appkey, !this.applicationList[!index], false)
+  handle any
+
+    if defined(!!mdsStartupError) AND !!mdsStartupError.set() then
+      !!alert.error(!!mdsStartupError)
+    endif
+
+    -- remove !index from history if already added to it
+    if (!this.applicationHistory.size().gt(0) and !this.applicationHistory[!this.applicationHistory.size()].eq(!index)) then
+      !this.applicationHistory.removeLast()
+    endif
+    !this.restorePreviousApplication()
+  endhandle
+
+endmethod
+
+------------------------------------------------------------------------
+-- Method:     list
+-- Description: List event
+------------------------------------------------------------------------
+define method .list(!args is ARRAY)
+
+  !appList = ARRAY()
+  -- copy to zero based args array to set the application list
+  do !index indices !this.applicationList
+    !appList[!index - 1] = !this.applicationTitles[!index]
+  enddo
+
+  !args[0] = !appList
+
+endmethod
+
+------------------------------------------------------------------------
+-- Method:     initialiseCurrentApplication
+-- Description: Set application in list to the current application
+------------------------------------------------------------------------
+define method .initialiseCurrentApplication()
+
+  !this.initialiseApplication(!!appCntrl.currentApp())
+
+endmethod
+------------------------------------------------------------------------
+-- Method:     initialiseApplication
+-- Description: Set application in list.
+--              This simply displays the correct value
+--              It does not execute he command
+------------------------------------------------------------------------
+define method .initialiseApplication(!application is STRING)
+
+  
+  import 'AVEVA.E3D.ERMIntegration.DataExchange'
+  handle any
+  endhandle
+    
+  using namespace 'AVEVA.ERMIntegration.DataExchange'
+  !pmlExchangeObject = object PMLEXCHANGE()
+  handle any
+  endhandle
+  !pmlExchangeObject.filterNotificationsbyApp(!application)
+  handle any
+  endhandle
+  
+  !index = !this.applicationList.findFirst(!application)
+  if( !index.set() ) then
+    -- select the current application in the list
+    !this.value(!this.applicationTitles[!index])
+    !this.applicationHistory.append(!index)
+  endif
+
+endmethod
+
+------------------------------------------------------------------------
+-- Method:     restorePreviousApplication
+-- Description: Restores previous loaded application.
+------------------------------------------------------------------------
+define method .restorePreviousApplication()
+
+  if (!this.applicationHistory.size().gt(1)) then
+    -- and remove last at it will be added in execute method
+    !this.value(!this.applicationTitles[!this.applicationHistory.removeLast()])
+
+    !args = ARRAY()
+    !this.execute(!args)
+  endif
+endmethod
+
+------------------------------------------------------------------------
+--
+-- Method:      removeApplication
+--
+-- Description: Removes an application from the list.
+--
+-- Method Type: Function/Procedure
+-- Arguments:
+--   [#] [R/RW] [Data Type] [Description]
+--    1   R      STRING      App name (not title)
+--
+------------------------------------------------------------------------
+define method .removeApplication(!appName is STRING)
+
+  !index = !this.applicationList.findFirst(!appName)
+  if(!index.unset()) then
+    return
+  endif
+
+  !this.applicationList.remove(!index)
+  !this.applicationTitles.remove(!index)
+
+  !dummyArgs = object ARRAY()
+  !this.list(!dummyArgs)
+
+endmethod
+
+------------------------------------------------------------------------
+--
+-- Method:      addApplicationAfter
+--
+-- Description: Adds an application to the list after a specified entry.
+--
+-- Method Type: Function/Procedure
+-- Arguments:
+--   [#] [R/RW] [Data Type] [Description]
+--    1   R      STRING      App name (not title)
+--    2   R      STRING      Name of app to insert after. Leave blank to
+--                           insert at the end of the list.
+--
+------------------------------------------------------------------------
+define method .addApplicationAfter(!appName is STRING, !previousApp is STRING)
+
+  !app = !!appCntrl.getApplic(!appName)
+  if(!app.unset()) then
+    return
+  endif
+
+  if(!this.applicationList.findFirst(!appName).set()) then
+    -- We don't want to add it twice
+    return
+  endif
+
+  !insertionIndex = !this.applicationList.findFirst(!previousApp)
+  if(!insertionIndex.unset()) then
+    !insertionIndex = !this.applicationList.size()
+  endif
+
+  !this.applicationList.insert(!insertionIndex + 1, !appName)
+  !this.applicationTitles.insert(!insertionIndex + 1, !app.title)
+
+endmethod

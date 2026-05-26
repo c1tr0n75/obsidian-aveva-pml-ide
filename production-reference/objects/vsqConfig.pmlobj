@@ -1,0 +1,2239 @@
+-- Configuration object for visual queries in application data world
+-- File: vsqConfig.pmlobj
+-- This is the interface object for visual queries configuration and running queries
+
+define object VSQCONFIG
+
+  --arrays of visual query sets, visual queries, view style and type collection definitions
+  member .visualQuerySets       is ARRAY
+  member .visualQueries         is ARRAY
+  member .viewStyles            is ARRAY
+  member .typeCollections       is ARRAY
+
+  --application data world
+  member .dataWorld             is DBREF
+
+  --writable containers flag
+  member .writable              is BOOLEAN
+
+  --application data areas
+  member .querySetsArea         is DBREF
+  member .queriesArea           is DBREF
+  member .stylesArea            is DBREF
+  member .collectionsArea       is DBREF
+
+  --container names
+  member .dataWorldName         is STRING
+  member .querySetsAreaName     is STRING
+  member .queriesAreaName       is STRING
+  member .stylesAreaName        is STRING
+  member .collectionsAreaName   is STRING
+
+  --internal id seed, used to generate internal ids for visual queries, view styles and type collections
+  member .lastInternalId        is REAL
+
+  --db elements to delete on write to database
+  member .elementsToDelete      is ARRAY
+
+  --flag for unsaved changes
+  member .pendingChanges        is BOOLEAN
+
+endobject
+
+----------------------------------------------------------------------
+--
+-- Method:      vsqConfig
+--
+-- Description: default constructor
+--
+----------------------------------------------------------------------
+define method .vsqConfig()
+
+  --we want to run the constructor that creates the config from an export macro but not from a form setup member
+  !inFormSetup = false
+  blah
+  handle any
+    do !stack values !!error.callstack
+      if (!stack.match('member ').gt(0)) then
+        !inFormSetup = true
+      endif
+    enddo
+  endhandle
+  if (!inFormSetup.not()) then
+    !this.vsqConfig(true)
+  endif
+
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      vsqConfig
+--
+-- Description: constructor called from form init not on object creation so not run within form setup
+--
+----------------------------------------------------------------------
+define method .vsqConfig(!forConfig is BOOLEAN)
+
+  --argument for config is true if called from config form or plug method, false if called from run queries
+
+  --set names for the data areas used in configuration
+  !this.dataWorldName       = '/VSQ/VISUALQUERIES'
+  !this.querySetsAreaName   = !this.dataWorldName & '/QUERYSETS'
+  !this.queriesAreaName     = !this.dataWorldName & '/QUERIES'
+  !this.stylesAreaName      = !this.dataWorldName & '/VIEWSTYLES'
+  !this.collectionsAreaName = !this.dataWorldName & '/TYPECOLLECTIONS'
+
+  --initialise the container refs
+  !this.dataWorld           = object DBREF()
+  !this.querySetsArea       = object DBREF()
+  !this.queriesArea         = object DBREF()
+  !this.stylesArea          = object DBREF()
+  !this.collectionsArea     = object DBREF()
+
+  --initialise the writable containers flag
+  !this.writable = false
+
+  --initialise the internal id counter, used to match objects until they have a dbref
+  !this.lastInternalId = 0
+
+  --check the data world and areas and load config if they are available
+  if (!this.checkDataWorld(!forConfig)) then
+    !this.loadConfig()
+  endif
+  !this.pendingChanges = false
+
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      checkDataWorld
+--
+-- Description: check the data world where our configuration data is stored
+--
+----------------------------------------------------------------------
+define method .checkDataWorld() is BOOLEAN
+
+  --default check is from run queries
+  return !this.checkDataWorld(false)
+
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      checkDataWorld
+--
+-- Description: check the data world where our configuration data is stored
+--
+----------------------------------------------------------------------
+define method .checkDataWorld(!forConfig is BOOLEAN) is BOOLEAN
+
+  --check if data world exists
+  !name = !this.dataWorldName
+  var !exists EXISTS $!name APPLDW
+  if (!exists.eq('TRUEB')) then
+    !this.dataWorld = object DBREF(!this.dataWorldName)
+    --check and create the data areas for the sets, queries, view styles and collection types
+    !this.checkQuertSetsContainer(false)
+    !this.checkQueriesContainer(false)
+    !this.checkStylesContainer(false)
+    !this.checkCollectionsContainer(false)
+  endif
+
+  --if for configuration and not just to run queries, and only the query sets data area is unavailable this is an upgrade
+  if (!forConfig and !this.querySetsArea.badRef() and !this.queriesArea.badRef().not() and !this.stylesArea.badRef().not() and !this.collectionsArea.badRef().not()) then
+    !this.checkQuertSetsContainer(true)
+    handle any
+      !!alert.error('Unable to create query sets application data area: $!!error.text')
+    endhandle
+  endif
+
+  --confirm all data areas excluding sets are available
+  !allContainersAvailable = (!this.queriesArea.badRef().not() and !this.stylesArea.badRef().not() and !this.collectionsArea.badRef().not())
+  !this.writable          = (!allContainersAvailable and !this.dataWorld.dbwrit and !this.dataWorld.lock.not() and !this.dataWorld.dacmod)
+  return !allContainersAvailable
+  
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      createDataWorld
+--
+-- Description: create the data world where our configuration data is stored
+--
+----------------------------------------------------------------------
+define method .createDataWorld()
+
+  !currentElement = !!ce
+
+  --create application data world
+  !name = !this.dataWorldName
+  NEW APPLDW $!name
+  handle any
+    return error 1 'Unable to create application data world: $!!error.text'
+  endhandle
+  PURP WORD VISQ
+  !this.dataWorld = !!ce
+
+  --check and create the data areas for the sets, queries, view styles and collection types
+  !this.checkQuertSetsContainer(true)
+  !this.checkQueriesContainer(true)
+  !this.checkStylesContainer(true)
+  !this.checkCollectionsContainer(true)
+
+  !!ce = !currentElement
+  handle any
+  endhandle
+
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      checkQuertSetsContainer
+--
+-- Description: check and if necessary create the container for query sets configuration
+--
+----------------------------------------------------------------------
+define method .checkQuertSetsContainer(!create is BOOLEAN)
+
+  !currentElement = !!ce
+
+  --check if container exists and create if not
+  !name = !this.querySetsAreaName
+  var !exists EXISTS $!name APPDAR
+  if (!exists.eq('TRUEB')) then
+    !this.querySetsArea = object DBREF(!this.querySetsAreaName)
+  elseif (!create) then
+    !!ce = !this.dataWorld
+    NEW APPDAR
+    !!ce.name = !name
+    PURP WORD VQQS
+    !this.querySetsArea = !!ce
+    NEW APPLDA
+    PURP WORD VQQS
+  endif
+
+  !!ce = !currentElement
+
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      checkQueriesContainer
+--
+-- Description: check and if necessary create the container for queries configuration
+--
+----------------------------------------------------------------------
+define method .checkQueriesContainer(!create is BOOLEAN)
+
+  !currentElement = !!ce
+
+  --check if container exists and create if not
+  !name = !this.queriesAreaName
+  var !exists EXISTS $!name APPDAR
+  if (!exists.eq('TRUEB')) then
+    !this.queriesArea = object DBREF(!this.queriesAreaName)
+  elseif (!create) then
+    !!ce = !this.dataWorld
+    NEW APPDAR
+    !!ce.name = !name
+    PURP WORD VQVQ
+    !this.queriesArea = !!ce
+    NEW APPLDA
+    PURP WORD VQVQ
+  endif
+
+  !!ce = !currentElement
+
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      checkStylesContainer
+--
+-- Description: check and if necessary create the container for styles configuration
+--
+----------------------------------------------------------------------
+define method .checkStylesContainer(!create is BOOLEAN)
+
+  !currentElement = !!ce
+
+  --check if container exists and create if not
+  !name = !this.stylesAreaName
+  var !exists EXISTS $!name APPDAR
+  if (!exists.eq('TRUEB')) then
+    !this.stylesArea = object DBREF(!this.stylesAreaName)
+  elseif (!create) then
+    !!ce = !this.dataWorld
+    NEW APPDAR
+    !!ce.name = !name
+    PURP WORD VQVS
+    !this.stylesArea = !!ce
+    NEW APPLDA
+    PURP WORD VQVS
+  endif
+
+  !!ce = !currentElement
+
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      checkCollectionsContainer
+--
+-- Description: check and if necessary create the container for collections configuration
+--
+----------------------------------------------------------------------
+define method .checkCollectionsContainer(!create is BOOLEAN)
+
+  !currentElement = !!ce
+
+  --check if container exists and create if not
+  !name = !this.collectionsAreaName
+  var !exists EXISTS $!name APPDAR
+  if (!exists.eq('TRUEB')) then
+    !this.collectionsArea = object DBREF(!this.collectionsAreaName)
+  elseif (!create) then
+    !!ce = !this.dataWorld
+    NEW APPDAR
+    !!ce.name = !name
+    PURP WORD VQTC
+    !this.collectionsArea = !!ce
+    NEW APPLDA
+    PURP WORD VQTC
+  endif
+
+  !!ce = !currentElement
+
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      loadConfig
+--
+-- Description: load config data for queries, styles and collections
+--
+----------------------------------------------------------------------
+define method .loadConfig()
+
+  --load config data from the database
+  !this.visualQuerySets = ARRAY()
+  if (!this.querySetsArea.badref().not()) then
+    do !item values !!kCollectAllFor('DDSE', '', !this.querySetsArea)
+      !this.visualQuerySets.append(object VSQVISUALQUERYSET(!item))
+    enddo
+  endif
+  !this.visualQueries = ARRAY()
+  if (!this.queriesArea.badref().not()) then
+    do !item values !!kCollectAllFor('DDSE', '', !this.queriesArea)
+      !this.visualQueries.append(object VSQVISUALQUERY(!item))
+    enddo
+  endif
+  !this.viewStyles = ARRAY()
+  if (!this.stylesArea.badref().not()) then
+    do !item values !!kCollectAllFor('DDSE', '', !this.stylesArea)
+      !this.viewStyles.append(object VSQVIEWSTYLE(!item))
+    enddo
+  endif
+  !this.typeCollections = ARRAY()
+  if (!this.collectionsArea.badref().not()) then
+    do !item values !!kCollectAllFor('DDSE', '', !this.collectionsArea)
+      !this.typeCollections.append(object VSQTYPECOLLECTION(!item))
+    enddo
+  endif
+  !this.elementsToDelete.clear()
+  !this.pendingChanges = false
+
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      write
+--
+-- Description: write to database
+--
+----------------------------------------------------------------------
+define method .write()
+
+  --delete any db elements from removed styles, collections and queries
+  !this.deleteRemovedElements()
+
+  --write all the styles and collections data first, this must be done before the queries are written
+  do !style values !this.viewStyles
+    if (!style.pendingChanges) then
+      !style.write()
+    endif
+  enddo
+  do !collection values !this.typeCollections
+    if (!collection.pendingChanges) then
+      !collection.write()
+    endif
+  enddo
+
+  --update the dbElements in the objects owned by the queries before writing the queries and sets
+  !this.setQueriesFrom()
+  do !query values !this.visualQueries
+    if (!query.pendingChanges) then
+      !query.write()
+    endif
+  enddo
+  !this.setSetsFrom()
+  do !set values !this.visualQuerySets
+    if (!set.pendingChanges) then
+      !set.write()
+    endif
+  enddo
+
+  --reorder saved elements
+  do !i indices !this.viewStyles
+    !this.setSequence(!this.viewStyles[!i].getDbElement(), !i)
+  enddo
+  do !i indices !this.typeCollections
+    !this.setSequence(!this.typeCollections[!i].getDbElement(), !i)
+  enddo
+  do !i indices !this.visualQueries
+    !this.setSequence(!this.visualQueries[!i].getDbElement(), !i)
+  enddo
+  do !i indices !this.visualQuerySets
+    !this.setSequence(!this.visualQuerySets[!i].getDbElement(), !i)
+  enddo
+
+  !this.pendingChanges = false
+
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      setSequence
+--
+-- Description: set element in sequence order
+--
+----------------------------------------------------------------------
+define method .setSequence(!element is DBREF, !sequence is REAL)
+
+  --set order
+  !currentElement = !!ce
+  !!ce = !element.owner
+  REORDER $!element BEFORE $!sequence
+  !!ce = !currentElement
+
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      styleIndexForQueryIndex
+--
+-- Description: return style array index for query array index
+--
+----------------------------------------------------------------------
+define method .queryIndexForSetIndex(!setIndex is REAL) is REAL
+
+  --get style index
+  return !this.visualQuerySets[!setIndex].queryIndex(!this.visualQueries)
+
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      styleIndexForQueryIndex
+--
+-- Description: return style array index for query array index
+--
+----------------------------------------------------------------------
+define method .styleIndexForQueryIndex(!queryIndex is REAL) is REAL
+
+  --get style index
+  return !this.visualQueries[!queryIndex].styleIndex(!this.viewStyles)
+
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      collectionIndexForQueryIndex
+--
+-- Description: return collection array index for query array index
+--
+----------------------------------------------------------------------
+define method .collectionIndexForQueryIndex(!queryIndex is REAL) is REAL
+
+  --get collection index
+  return !this.visualQueries[!queryIndex].collectionIndex(!this.typeCollections)
+
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      queryInUse
+--
+-- Description: return true if the query is in a set
+--
+----------------------------------------------------------------------
+define method .queryInUse(!i is REAL) is BOOLEAN
+
+  --check if any query uses the style
+  return !this.queryInUse(!this.visualQueries[!i])
+
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      queryInUse
+--
+-- Description: return true if the query is in a set
+--
+----------------------------------------------------------------------
+define method .queryInUse(!visualQuery is VSQVISUALQUERY) is BOOLEAN
+
+  --check if any set uses the query
+  do !set values !this.visualQuerySets
+    if (!set.usesQuery(!visualQuery)) then
+      return true
+    endif
+  enddo
+  return false
+
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      styleInUse
+--
+-- Description: return true if the style is in use
+--
+----------------------------------------------------------------------
+define method .styleInUse(!i is REAL) is BOOLEAN
+
+  --check if any query uses the style
+  return !this.styleInUse(!this.viewStyles[!i])
+
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      styleInUse
+--
+-- Description: return true if the style is in use
+--
+----------------------------------------------------------------------
+define method .styleInUse(!viewStyle is VSQVIEWSTYLE) is BOOLEAN
+
+  --check if any query uses the style
+  do !query values !this.visualQueries
+    if (!query.usesStyle(!viewStyle)) then
+      return true
+    endif
+  enddo
+  return false
+
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      collectionInUse
+--
+-- Description: return true if the style is in use
+--
+----------------------------------------------------------------------
+define method .collectionInUse(!i is REAL) is BOOLEAN
+
+  --check if any query uses the collection
+  return !this.collectionInUse(!this.typeCollections[!i])
+
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      collectionInUse
+--
+-- Description: return true if the collection is in use
+--
+----------------------------------------------------------------------
+define method .collectionInUse(!typeCollection is VSQTYPECOLLECTION) is BOOLEAN
+
+  --check if any query uses the collection
+  do !query values !this.visualQueries
+    if (!query.usesCollection(!typeCollection)) then
+      return true
+    endif
+  enddo
+  return false
+
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      setSetsFrom
+--
+-- Description: update the dbElements in the objects owned by the query sets
+--
+----------------------------------------------------------------------
+define method .setSetsFrom()
+
+  --update the dbElements in the objects owned by the sets before writing the sets
+  do !set values !this.visualQuerySets
+    !set.setFrom(!this.visualQueries)
+  enddo
+
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      setQueriesFrom
+--
+-- Description: update the dbElements in the objects owned by the queries
+--
+----------------------------------------------------------------------
+define method .setQueriesFrom()
+
+  --update the dbElements in the objects owned by the queries before writing the queries
+  do !query values !this.visualQueries
+    !query.setFrom(!this.viewStyles, !this.typeCollections)
+  enddo
+
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      addSet
+--
+-- Description: add a new query set
+--
+----------------------------------------------------------------------
+define method .addSet() is VSQVISUALQUERYSET
+
+  --add the new query set to the object set
+  !set = object VSQVISUALQUERYSET(!this.getNextInternalId(), !this.querySetsArea, 'New visual query set')
+  !this.visualQuerySets.append(!set)
+  return !set
+
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      addSet
+--
+-- Description: add a new query set
+--
+----------------------------------------------------------------------
+define method .addSet(!description is STRING) is VSQVISUALQUERYSET
+
+  --add the new query set to the object set
+  !set = object VSQVISUALQUERYSET(!this.getNextInternalId(), !this.querySetsArea, !description)
+  !this.visualQuerySets.append(!set)
+  return !set
+
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      addSet
+--
+-- Description: add a new query set
+--
+----------------------------------------------------------------------
+define method .addSet(!description is STRING, !visualQueries is ARRAY) is VSQVISUALQUERYSET
+
+  --add the new query set to the object set
+  !set = object VSQVISUALQUERYSET(!this.getNextInternalId(), !this.querySetsArea, !description, !visualQueries)
+  !this.visualQuerySets.append(!set)
+  return !set
+
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      updateSet
+--
+-- Description: update a query set
+--
+----------------------------------------------------------------------
+define method .updateSet(!setRow is REAL, !description is STRING)
+
+  --update the set in the object set
+  !this.visualQuerySets[!setRow].update(!description)
+
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      addMember
+--
+-- Description: add new members from the available queries to a query set
+--
+----------------------------------------------------------------------
+define method .addMember(!setIndex is REAL, !availableQueryIndices is ARRAY)
+
+  --add the queries to the set
+  !availableQueries = !this.getAvailableQueries(!setIndex)
+  do !i values !availableQueryIndices
+    !this.visualQuerySets[!setIndex].addQuery(!availableQueries[!i])
+  enddo
+
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      addQueryToSet
+--
+-- Description: add a new member from the total queries to a query set
+--
+----------------------------------------------------------------------
+define method .addQueryToSet(!setIndex is REAL, !queryIndex is REAL)
+
+  --add the query to the set
+  !this.visualQuerySets[!setIndex].addQuery(!this.visualQueries[!queryIndex])
+
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      addQuery
+--
+-- Description: add a new query
+--
+----------------------------------------------------------------------
+define method .addQuery(!description is STRING, !expression is EXPRESSION, !viewStyle is VSQVIEWSTYLE, !typeCollection is VSQTYPECOLLECTION) is VSQVISUALQUERY
+
+  --add the style if not already defined
+  !found = false
+  do !style values !this.viewStyles
+    if (!style.equals(!viewStyle)) then
+      !found = true
+    endif
+  enddo
+  if (!found.not()) then
+    !this.viewStyles.append(!viewStyle)
+  endif
+
+  --add the collection if not already defined
+  !found = false
+  do !collection values !this.typeCollections
+    if (!collection.equals(!typeCollection)) then
+      !found = true
+    endif
+  enddo
+  if (!found.not()) then
+    !this.typeCollections.append(!typeCollection)
+  endif
+
+  --add the new query to the object set
+  !query = object VSQVISUALQUERY(!this.getNextInternalId(), !this.queriesArea, !description, !expression, !viewStyle, !typeCollection)
+  !this.visualQueries.append(!query)
+  return !query
+
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      addQuery
+--
+-- Description: add a new query with basic properties
+--
+----------------------------------------------------------------------
+define method .addQuery() is VSQVISUALQUERY
+
+  --add the new query to the object set with the the first view style and type collection if available, otherwise new basic versions
+  !expression = object EXPRESSION('( TRUE )')
+  if (!this.viewStyles.empty()) then
+    !style = !this.addStyle()
+  else
+    !style = !this.viewStyles[1]
+  endif
+  if (!this.typeCollections.empty()) then
+    !collection = !this.addCollection()
+  else
+    !collection = !this.typeCollections[1]
+  endif
+  !query = object VSQVISUALQUERY(!this.getNextInternalId(), !this.queriesArea, 'New visual query', !expression, !style, !collection)
+  !this.visualQueries.append(!query)
+  return !query
+
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      copyQuery
+--
+-- Description: copy a query
+--
+----------------------------------------------------------------------
+define method .copyQuery(!i is REAL) is VSQVISUALQUERY
+
+  --add the copied query to the object set
+  !query = !this.visualQueries[!i]
+  !query = !this.addQuery(!query.getDescription(), !query.getExpression(), !query.getViewStyle(), !query.getTypeCollection())
+  return !query
+
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      updateQuery
+--
+-- Description: update a query
+--
+----------------------------------------------------------------------
+define method .updateQuery(!query is VSQVISUALQUERY, !description is STRING, !expression is EXPRESSION, !viewStyle is VSQVIEWSTYLE, !typeCollection is VSQTYPECOLLECTION) is VSQVISUALQUERY
+
+  --update the query in the object set
+  do !i indices !this.visualQueries
+    if (!this.visualQueries[!i].equals(!query)) then
+      return !this.updateQuery(!i, !description, !expression, !viewStyle, !typeCollection)
+    endif
+  enddo
+  return !query
+
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      updateQuery
+--
+-- Description: update a query
+--
+----------------------------------------------------------------------
+define method .updateQuery(!i is REAL, !description is STRING, !expression is EXPRESSION, !viewStyle is VSQVIEWSTYLE, !typeCollection is VSQTYPECOLLECTION) is VSQVISUALQUERY
+
+  --update the query in the object set
+  !this.visualQueries[!i].update(!description, !expression, !viewStyle, !typeCollection)
+  return !this.visualQueries[!i]
+
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      updateQuery
+--
+-- Description: update a query
+--
+----------------------------------------------------------------------
+define method .updateQuery(!i is REAL, !description is STRING, !expression is EXPRESSION, !style is REAL, !collection is REAL) is VSQVISUALQUERY
+
+  --update the query in the object set
+  !this.visualQueries[!i].update(!description, !expression, !this.viewStyles[!style], !this.typeCollections[!collection])
+  return !this.visualQueries[!i]
+
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      addStyle
+--
+-- Description: add a new style
+--
+----------------------------------------------------------------------
+define method .addStyle(!description is STRING, !colour is REAL, !translucency is REAL, !edges is BOOLEAN) is VSQVIEWSTYLE
+
+  --add the new style to the object set
+  !style = object VSQVIEWSTYLE(!this.getNextInternalId(), !this.stylesArea, !description, !colour, !translucency, !edges)
+  !this.viewStyles.append(!style)
+  return !style
+
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      addStyle
+--
+-- Description: add a new style with basic properties
+--
+----------------------------------------------------------------------
+define method .addStyle() is VSQVIEWSTYLE
+
+  --add the new style to the object set
+  !style = object VSQVIEWSTYLE(!this.getNextInternalId(), !this.stylesArea, 'New view style', 1, 0, false)
+  !this.viewStyles.append(!style)
+  return !style
+
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      copyStyle
+--
+-- Description: copy a style
+--
+----------------------------------------------------------------------
+define method .copyStyle(!i is REAL) is VSQVIEWSTYLE
+
+  --add the copied style to the object set
+  !style = !this.viewStyles[!i]
+  !style = !this.addStyle(!style.getDescription(), !style.getColour(), !style.getTranslucency(), !style.getEdges())
+  return !style
+
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      updateStyle
+--
+-- Description: update a style
+--
+----------------------------------------------------------------------
+define method .updateStyle(!style is VSQVIEWSTYLE, !description is STRING, !colour is REAL, !translucency is REAL, !edges is BOOLEAN) is VSQVIEWSTYLE
+
+  --update the style in the object set
+  do !i indices !this.viewStyles
+    if (!this.viewStyles[!i].equals(!style)) then
+      return !this.updateStyle(!i, !description, !colour, !translucency, !edges)
+    endif
+  enddo
+  return !style
+
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      updateStyle
+--
+-- Description: update a style
+--
+----------------------------------------------------------------------
+define method .updateStyle(!i is REAL, !description is STRING, !colour is REAL, !translucency is REAL, !edges is BOOLEAN) is VSQVIEWSTYLE
+
+  --update the style in the object set
+  !this.viewStyles[!i].update(!description, !colour, !translucency, !edges)
+  return !this.viewStyles[!i]
+
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      addCollection
+--
+-- Description: add a new collection
+--
+----------------------------------------------------------------------
+define method .addCollection(!description is STRING, !types is STRING) is VSQTYPECOLLECTION
+
+  --add the new collection to the object set
+  return !this.addCollection(!description, !types.split())
+
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      addCollection
+--
+-- Description: add a new collection
+--
+----------------------------------------------------------------------
+define method .addCollection(!description is STRING, !types is ARRAY) is VSQTYPECOLLECTION
+
+  --add the new collection to the object set
+  !collection = object VSQTYPECOLLECTION(!this.getNextInternalId(), !this.collectionsArea, !description, !types)
+  !this.typeCollections.append(!collection)
+  return !collection
+
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      addCollection
+--
+-- Description: add a new collection with basic properties
+--
+----------------------------------------------------------------------
+define method .addCollection() is VSQTYPECOLLECTION
+
+  --add the new collection to the object set
+  return !this.addCollection('New type collection', 'PIPE EQUI STRU')
+
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      copyCollection
+--
+-- Description: copy a collection
+--
+----------------------------------------------------------------------
+define method .copyCollection(!i is REAL) is VSQTYPECOLLECTION
+
+  --add the copied collection to the object set
+  !collection = !this.typeCollections[!i]
+  !collection = !this.addCollection(!collection.getDescription(), !collection.getTypes())
+  return !collection
+
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      updateCollection
+--
+-- Description: update a collection
+--
+----------------------------------------------------------------------
+define method .updateCollection(!collection is VSQTYPECOLLECTION, !description is STRING, !types is STRING) is VSQTYPECOLLECTION
+
+  --update the collection in the object set
+  return !this.updateCollection(!collection, !description, !types.split())
+
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      updateCollection
+--
+-- Description: update a collection
+--
+----------------------------------------------------------------------
+define method .updateCollection(!collection is VSQTYPECOLLECTION, !description is STRING, !types is ARRAY) is VSQTYPECOLLECTION
+
+  --update the collection in the object set
+  do !i indices !this.typeCollections
+    if (!this.typeCollections[!i].equals(!collection)) then
+      return !this.updateCollection(!i, !description, !types)
+    endif
+  enddo
+  return !collection
+
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      updateCollection
+--
+-- Description: update a collection
+--
+----------------------------------------------------------------------
+define method .updateCollection(!i is REAL, !description is STRING, !types is STRING) is VSQTYPECOLLECTION
+
+  --update the collection in the object set
+  return !this.updateCollection(!i, !description, !types.split())
+
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      updateCollection
+--
+-- Description: update a collection
+--
+----------------------------------------------------------------------
+define method .updateCollection(!i is REAL, !description is STRING, !types is ARRAY) is VSQTYPECOLLECTION
+
+  --update the collection in the object set
+  !this.typeCollections[!i].update(!description, !types)
+  return !this.typeCollections[!i]
+
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      getNextInternalId
+--
+-- Description: increment and return the internal id counter
+--
+----------------------------------------------------------------------
+define method .getNextInternalId() is REAL
+
+  --move the counter on
+  !this.lastInternalId = !this.lastInternalId + 1
+  return !this.lastInternalId
+
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      removeSet
+--
+-- Description: remove a set
+--
+----------------------------------------------------------------------
+define method .removeSet(!set is VSQVISUALQUERYSET)
+
+  --find and remove the set, setting its db element to be deleted in the write method
+  do !i indices !this.visualQuerySets
+    if (!this.visualQuerySets[!i].equals(!set)) then
+      !index = !i
+    endif
+  enddo
+  if (defined(!index)) then
+    !this.removeSet(!index)
+  endif
+
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      removeSet
+--
+-- Description: remove a set
+--
+----------------------------------------------------------------------
+define method .removeSet(!i is REAL)
+
+  --remove the set, setting its db element to be deleted in the write method
+  !this.addElementToDelete(!this.visualQuerySets[!i].getDbElement())
+  !this.visualQuerySets.remove(!i)
+  !this.pendingChanges = true
+
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      removeMember
+--
+-- Description: remove members from a query set
+--
+----------------------------------------------------------------------
+define method .removeMember(!setIndex is REAL, !memberQueryIndices is ARRAY)
+
+  --remove the queries from the set
+  !memberQueries = !this.visualQuerySets[!setIndex].visualQueries
+  do !i values !memberQueryIndices
+    !this.visualQuerySets[!setIndex].removeQuery(!memberQueries[!i])
+  enddo
+
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      removeQuery
+--
+-- Description: remove a query
+--
+----------------------------------------------------------------------
+define method .removeQuery(!query is VSQVISUALQUERY)
+
+  --find and remove the query, setting its db element to be deleted in the write method
+  do !i indices !this.visualQueries
+    if (!this.visualQueries[!i].equals(!query)) then
+      !index = !i
+    endif
+  enddo
+  if (defined(!index)) then
+    !this.removeQuery(!index)
+  endif
+
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      removeQuery
+--
+-- Description: remove a query
+--
+----------------------------------------------------------------------
+define method .removeQuery(!i is REAL)
+
+  --remove the query, setting its db element to be deleted in the write method
+  !this.addElementToDelete(!this.visualQueries[!i].getDbElement())
+  !this.visualQueries.remove(!i)
+  !this.pendingChanges = true
+
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      removeStyle
+--
+-- Description: remove a style
+--
+----------------------------------------------------------------------
+define method .removeStyle(!style is VSQVIEWSTYLE)
+
+  --find and remove the style, setting its db element to be deleted in the write method
+  do !i indices !this.viewStyles
+    if (!this.viewStyles[!i].equals(!style)) then
+      !index = !i
+    endif
+  enddo
+  if (defined(!index)) then
+    !this.removeStyle(!index)
+  endif
+
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      removeStyle
+--
+-- Description: remove a style
+--
+----------------------------------------------------------------------
+define method .removeStyle(!i is REAL)
+
+  --remove the style, setting its db element to be deleted in the write method
+  !this.addElementToDelete(!this.viewStyles[!i].getDbElement())
+  !this.viewStyles.remove(!i)
+  !this.pendingChanges = true
+
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      removeCollection
+--
+-- Description: remove a collection
+--
+----------------------------------------------------------------------
+define method .removeCollection(!collection is VSQTYPECOLLECTION)
+
+  --find and remove the collection, setting its db element to be deleted in the write method
+  do !i indices !this.typeCollections
+    if (!this.typeCollections[!i].equals(!collection)) then
+      !index = !i
+    endif
+  enddo
+  if (defined(!index)) then
+    !this.removeCollection(!index)
+  endif
+
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      removeCollection
+--
+-- Description: remove a collection
+--
+----------------------------------------------------------------------
+define method .removeCollection(!i is REAL)
+
+  --remove the collection, setting its db element to be deleted in the write method
+  !this.addElementToDelete(!this.typeCollections[!i].getDbElement())
+  !this.typeCollections.remove(!i)
+  !this.pendingChanges = true
+
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      removeAll
+--
+-- Description: remove all queries, styles and collections from the object and the database
+--
+----------------------------------------------------------------------
+define method .removeAll()
+
+  --remove all sets, queries, styles and collections
+  !this.removeAllQuerySets()
+  !this.removeAllQueries()
+  !this.removeAllStyles()
+  !this.removeAllCollections()
+
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      removeAllQuerySets
+--
+-- Description: remove all query sets from the object and the database
+--
+----------------------------------------------------------------------
+define method .removeAllQuerySets()
+
+  --remove all query sets
+  do !set values !this.visualQuerySets
+    !this.addElementToDelete(!set.getDbElement())
+  enddo
+  !this.visualQuerySets.clear()
+  !this.pendingChanges = true
+
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      removeAllQueries
+--
+-- Description: remove all queries from the object and the database
+--
+----------------------------------------------------------------------
+define method .removeAllQueries()
+
+  --remove all queries
+  do !query values !this.visualQueries
+    !this.addElementToDelete(!query.getDbElement())
+  enddo
+  !this.visualQueries.clear()
+  !this.pendingChanges = true
+
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      removeAllStyles
+--
+-- Description: remove all styles from the object and the database
+--
+----------------------------------------------------------------------
+define method .removeAllStyles()
+
+  --remove all queries
+  do !style values !this.viewStyles
+    !this.addElementToDelete(!style.getDbElement())
+  enddo
+  !this.viewStyles.clear()
+  !this.pendingChanges = true
+
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      removeAllCollections
+--
+-- Description: remove all collections from the object and the database
+--
+----------------------------------------------------------------------
+define method .removeAllCollections()
+
+  --remove all queries
+  do !collection values !this.typeCollections
+    !this.addElementToDelete(!collection.getDbElement())
+  enddo
+  !this.typeCollections.clear()
+  !this.pendingChanges = true
+
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      addElementToDelete
+--
+-- Description: add a db element to the list to be deleted
+--
+----------------------------------------------------------------------
+define method .addElementToDelete(!dbElement is DBREF)
+
+  --check and add the db element
+  if (!dbElement.badRef().not()) then
+    if (!this.elementsToDelete.findFirst(!dbElement).unset()) then
+      !this.elementsToDelete.append(!dbElement)
+    endif
+  endif
+
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      deleteRemovedElements
+--
+-- Description: delete all db elements from removed queries, styles and collections
+--
+----------------------------------------------------------------------
+define method .deleteRemovedElements()
+
+  !currentElement = !!ce
+
+  --delete any db elements from removed styles, collections and queries
+  do !item values !this.elementsToDelete
+    !!ce = !item
+    handle any
+    elsehandle none
+      !type = !!ce.type
+      DELETE $!type
+      handle any
+        !message = |Error deleting | & !!ce.flnm & | : | & !!error.text
+        write !message
+      endhandle
+    endhandle
+  enddo
+
+  !!ce = !currentElement
+  handle any
+  endhandle
+
+endmethod
+
+------------------------------------------------------------------------
+--
+-- Method:   moveSetUp
+--
+-- Description: move query set up in list order
+--
+------------------------------------------------------------------------
+define method .moveSetUp(!index is REAL)
+
+  --move up
+  !temp = !this.visualQuerySets[!index]
+  !this.visualQuerySets[!index] = !this.visualQuerySets[!index - 1]
+  !this.visualQuerySets[!index - 1] = !temp
+  !this.pendingChanges = true
+
+endmethod
+
+------------------------------------------------------------------------
+--
+-- Method:   moveSetDown
+--
+-- Description: move query set down in list order
+--
+------------------------------------------------------------------------
+define method .moveSetDown(!index is REAL)
+
+  --move down
+  !temp = !this.visualQuerySets[!index]
+  !this.visualQuerySets[!index] = !this.visualQuerySets[!index + 1]
+  !this.visualQuerySets[!index + 1] = !temp
+  !this.pendingChanges = true
+
+endmethod
+
+------------------------------------------------------------------------
+--
+-- Method:   moveMemberUp
+--
+-- Description: move set member up in list order
+--
+------------------------------------------------------------------------
+define method .moveMemberUp(!setIndex is REAL, !index is REAL)
+
+  --move up
+  !this.visualQuerySets[!setIndex].moveMemberUp(!index)
+
+endmethod
+
+------------------------------------------------------------------------
+--
+-- Method:   moveMemberDown
+--
+-- Description: move set member down in list order
+--
+------------------------------------------------------------------------
+define method .moveMemberDown(!setIndex is REAL, !index is REAL)
+
+  --move down
+  !this.visualQuerySets[!setIndex].moveMemberDown(!index)
+
+endmethod
+
+------------------------------------------------------------------------
+--
+-- Method:   moveQueryUp
+--
+-- Description: move query up in list order
+--
+------------------------------------------------------------------------
+define method .moveQueryUp(!index is REAL)
+
+  --move up
+  !temp = !this.visualQueries[!index]
+  !this.visualQueries[!index] = !this.visualQueries[!index - 1]
+  !this.visualQueries[!index - 1] = !temp
+  !this.pendingChanges = true
+
+endmethod
+
+------------------------------------------------------------------------
+--
+-- Method:   moveQueryDown
+--
+-- Description: move query down in list order
+--
+------------------------------------------------------------------------
+define method .moveQueryDown(!index is REAL)
+
+  --move down
+  !temp = !this.visualQueries[!index]
+  !this.visualQueries[!index] = !this.visualQueries[!index + 1]
+  !this.visualQueries[!index + 1] = !temp
+  !this.pendingChanges = true
+
+endmethod
+
+------------------------------------------------------------------------
+--
+-- Method:   moveStyleUp
+--
+-- Description: move style up in list order
+--
+------------------------------------------------------------------------
+define method .moveStyleUp(!index is REAL)
+
+  --move up
+  !temp = !this.viewStyles[!index]
+  !this.viewStyles[!index] = !this.viewStyles[!index - 1]
+  !this.viewStyles[!index - 1] = !temp
+  !this.pendingChanges = true
+
+endmethod
+
+------------------------------------------------------------------------
+--
+-- Method:   moveStyleDown
+--
+-- Description: move style down in list order
+--
+------------------------------------------------------------------------
+define method .moveStyleDown(!index is REAL)
+
+  --move down
+  !temp = !this.viewStyles[!index]
+  !this.viewStyles[!index] = !this.viewStyles[!index + 1]
+  !this.viewStyles[!index + 1] = !temp
+  !this.pendingChanges = true
+
+endmethod
+
+------------------------------------------------------------------------
+--
+-- Method:   moveCollectionUp
+--
+-- Description: move collection up in list order
+--
+------------------------------------------------------------------------
+define method .moveCollectionUp(!index is REAL)
+
+  --move up
+  !temp = !this.typeCollections[!index]
+  !this.typeCollections[!index] = !this.typeCollections[!index - 1]
+  !this.typeCollections[!index - 1] = !temp
+  !this.pendingChanges = true
+
+endmethod
+
+------------------------------------------------------------------------
+--
+-- Method:   moveCollectionDown
+--
+-- Description: move collection down in list order
+--
+------------------------------------------------------------------------
+define method .moveCollectionDown(!index is REAL)
+
+  --move down
+  !temp = !this.typeCollections[!index]
+  !this.typeCollections[!index] = !this.typeCollections[!index + 1]
+  !this.typeCollections[!index + 1] = !temp
+  !this.pendingChanges = true
+
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      reload
+--
+-- Description: discard data and reload from database
+--
+----------------------------------------------------------------------
+define method .reload()
+
+  --clear the queries, styles and collections then reload from database
+  !this.clear()
+  !this.loadConfig()
+
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      clear
+--
+-- Description: remove all queries, styles and collections from the object without deleting from the database
+--
+----------------------------------------------------------------------
+define method .clear()
+
+  --empty the arrays for sets, queries, styles and collections, allowing them to be reinitialised from saved data
+  !this.visualQuerySets.clear()
+  !this.visualQueries.clear()
+  !this.viewStyles.clear()
+  !this.typeCollections.clear()
+
+endmethod
+
+------------------------------------------------------------------------
+--
+-- Method:   isGoodQuerySet
+--
+-- Description: check if a dbref is a valid visual query set
+--
+------------------------------------------------------------------------
+define method .isGoodQuerySet(!ref is DBREF) is BOOLEAN
+
+  --confirm if good ref with correct type and purpose
+  if (!ref.badRef().not()) then
+    if (!ref.type.eq('DDSE') and !ref.purpose.eq('VQQS')) then
+      return true
+    endif
+  endif
+  return false
+
+endmethod
+
+------------------------------------------------------------------------
+--
+-- Method:   isGoodQuery
+--
+-- Description: check if a dbref is a valid visual query
+--
+------------------------------------------------------------------------
+define method .isGoodQuery(!ref is DBREF) is BOOLEAN
+
+  --confirm if good ref with correct type and purpose
+  if (!ref.badRef().not()) then
+    if (!ref.type.eq('DDSE') and !ref.purpose.eq('VQVQ')) then
+      return true
+    endif
+  endif
+  return false
+
+endmethod
+
+------------------------------------------------------------------------
+--
+-- Method:   isGoodStyle
+--
+-- Description: check if a dbref is a valid view style
+--
+------------------------------------------------------------------------
+define method .isGoodStyle(!ref is DBREF) is BOOLEAN
+
+  --confirm if good ref with correct type and purpose
+  if (!ref.badRef().not()) then
+    if (!ref.type.eq('DDSE') and !ref.purpose.eq('VQVS')) then
+      return true
+    endif
+  endif
+  return false
+
+endmethod
+
+------------------------------------------------------------------------
+--
+-- Method:   isGoodCollection
+--
+-- Description: check if a dbref is a valid type collection
+--
+------------------------------------------------------------------------
+define method .isGoodCollection(!ref is DBREF) is BOOLEAN
+
+  --confirm if good ref with correct type and purpose
+  if (!ref.badRef().not()) then
+    if (!ref.type.eq('DDSE') and !ref.purpose.eq('VQTC')) then
+      return true
+    endif
+  endif
+  return false
+
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      test
+--
+-- Description: test with some sample config data
+--
+----------------------------------------------------------------------
+define method .test()
+
+  --to test run the following commands
+  --if the application data world does not already exist, first ensure CE is where we want to create it
+$(
+  !visq = object VSQCONFIG()
+  !visq.test()
+$)
+  --check and create data world
+  if (!this.checkDataWorld().not()) then
+    !this.createDataWorld()
+  endif
+
+  --create styles
+  !styleLargePipes = !this.addStyle('Large bore pipes style', 47, 20, false)
+  !jazzyEquipment  = !this.addStyle('EyeCatching equipment style', 303, 0, false)
+  !styleSmallPipes = !this.addStyle('Small bore pipes style', 13, 0, false)
+
+  --create collections
+  !collectionPiping     = !this.addCollection('Piping and Equipment types', 'PIPE EQUI')
+  !collectionStructural = !this.addCollection('Structural types', 'STRU FRMW PANEL')
+
+  --create queries
+  !expressionLargePipes  = object EXPRESSION(|(BORE GT 150mm)|)
+  !expressionSmallPipes  = object EXPRESSION(|(BORE LE 150mm)|)
+  !queryLargePipes       = !this.addQuery('Large pipes in orange', !expressionLargePipes, !styleLargePipes, !collectionPiping)
+  !unusedQuerySmallPipes = !this.addQuery('Small pipes in mauve', !expressionSmallPipes, !styleSmallPipes, !collectionPiping)
+  !jazzySmallPipes       = !this.addQuery('Small pipes in gold', !expressionSmallPipes, !jazzyEquipment, !collectionPiping)
+
+  --update some settings
+  !styleSmallPipes  = !this.updateStyle(!styleSmallPipes, 'Small bore pipes style', 12, 0, false)
+  !collectionPiping = !this.updateCollection(!collectionPiping, 'Piping collection', 'PIPE')
+  !queryLargePipes  = !this.updateQuery(!queryLargePipes, 'Large pipes in orange red', !expressionLargePipes, !styleLargePipes, !collectionPiping)
+
+  --write it to database
+  !this.write()
+
+  --remove unwanted things
+  !this.removeStyle(!jazzyEquipment)
+  !this.removeCollection(!collectionStructural)
+  !this.removeQuery(!jazzySmallPipes)
+
+  --check and output results
+  !expected = ARRAY()
+  !expected.append(|Visual query Large pipes in orange red at DDSE 1 of APPLDATA 1 of APPDAREA /VSQ/VISUALQUERIES/QUERIES|)
+  !expected.append(|  Expression (BORE GT 150mm)|)
+  !expected.append(|  Style Large bore pipes style at DDSE 1 of APPLDATA 1 of APPDAREA /VSQ/VISUALQUERIES/VIEWSTYLES|)
+  !expected.append(|    Colour 47 translucency 20 edges FALSE|)
+  !expected.append(|  Type collection Piping collection at DDSE 1 of APPLDATA 1 of APPDAREA /VSQ/VISUALQUERIES/TYPECOLLECTIONS|)
+  !expected.append(|    Types PIPE|)
+  !expected.append(|Visual query Small pipes in mauve at DDSE 2 of APPLDATA 1 of APPDAREA /VSQ/VISUALQUERIES/QUERIES|)
+  !expected.append(|  Expression (BORE LE 150mm)|)
+  !expected.append(|  Style Small bore pipes style at DDSE 2 of APPLDATA 1 of APPDAREA /VSQ/VISUALQUERIES/VIEWSTYLES|)
+  !expected.append(|    Colour 12 translucency 0 edges FALSE|)
+  !expected.append(|  Type collection Piping collection at DDSE 1 of APPLDATA 1 of APPDAREA /VSQ/VISUALQUERIES/TYPECOLLECTIONS|)
+  !expected.append(|    Types PIPE|)
+  !actual = !this.output()
+  if (!actual.neq(!expected)) then
+    write 'Results do not match'
+  else
+    write 'Results match'
+  endif
+  !this.print()
+
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      export
+--
+-- Description: write out config data as a macro to be run into a new project
+--
+----------------------------------------------------------------------
+define method .export()
+
+  --save queries config
+  !file = object FILE(|%AVEVA_DESIGN_USER%/vsqConfig.pmlmac|)
+  !this.export(!file)
+
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      export
+--
+-- Description: write out config data as a macro to be run into a new project
+--
+----------------------------------------------------------------------
+define method .export(!file is FILE)
+
+  --save queries config
+  !data = ARRAY()
+  !data.append( |--Visual queries configuration| )
+  !data.append( |--if the application data world does not already exist, first ensure CE is where we want to create it| )
+  !data.append( |!visq = object VSQCONFIG()| )
+  !data.append( |if (!visq.checkDataWorld().not()) then| )
+  !data.append( |  !visq.createDataWorld()| )
+  !data.append( |endif| )
+
+  --type collections
+  !data.append( |!collections = ARRAY()| )
+  do !collection values !this.typeCollections
+    !data.append( '!collections.append(!visq.addCollection(|'  & !collection.getDescription() & '|, |' & !collection.getTypeList() & '|))' )
+  enddo
+
+  --view styles
+  !data.append( |!styles = ARRAY()| )
+  do !style values !this.viewStyles
+    !data.append( '!styles.append(!visq.addStyle(|' & !style.getDescription() & '|, ' & !style.getColour() & ', ' & !style.getTranslucency() & ', ' & !style.getEdges() & '))' )
+  enddo
+
+  --visual queries
+  !data.append( |!queries = ARRAY()| )
+  do !query values !this.visualQueries
+    !expression = 'object EXPRESSION(|' & !query.getExpression()  & '|)'
+    !viewStyle  = !query.getViewStyle()
+    !styleIndex = 0
+    do !i indices !this.viewStyles
+      if (!this.viewStyles[!i].equals(!viewStyle)) then
+        !styleIndex = !i
+        break
+      endif
+    enddo
+    !typeCollection  = !query.getTypeCollection()
+    !collectionIndex = 0
+    do !i indices !this.typeCollections
+      if (!this.typeCollections[!i].equals(!typeCollection)) then
+        !collectionIndex = !i
+        break
+      endif
+    enddo
+    if (!styleIndex.gt(0) and !collectionIndex.gt(0)) then
+      !data.append( '!queries.append(!visq.addQuery(|' & !query.getDescription() & '|, ' & !expression & ', !styles[' & !styleIndex & '], !collections[' & !collectionIndex & ']))' )
+    endif
+  enddo
+
+  --visual query sets
+  !data.append( '!testObject = object VSQVISUALQUERYSET()' )
+  !data.append( 'handle any' )
+  !data.append( '  --older version' )
+  !data.append( 'elsehandle none' )
+  !data.append( |  !sets = ARRAY()| )
+  do !i indices !this.visualQuerySets
+    !data.append( '  !sets.append(!visq.addSet(|' & !this.visualQuerySets[!i].getDescription() & '|))' )
+    do !j indices !this.visualQuerySets[!i].visualQueries
+      do !k indices !this.visualQueries
+        if (!this.visualQuerySets[!i].visualQueries[!j].equals(!this.visualQueries[!k])) then
+          !data.append( '  !visq.addQueryToSet(' & !i & ', ' & !k & ')' )
+          break
+        endif
+      enddo
+    enddo
+  enddo
+  !data.append( 'endhandle' )
+
+  --save to file
+  !data.append( '!visq.write()' )
+  !file.writeFile('Overwrite', !data)
+
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      plugQuerySet
+--
+-- Description: application callable method to plug a query set into the config
+--
+----------------------------------------------------------------------
+define method .plugQuerySet(!setDescription is STRING, !typeList is STRING, !descriptions is ARRAY, !expressions is ARRAY, !colourNos is ARRAY)
+
+  --example macro for green, yellow, red on cable fill
+  -- !visq = object VSQCONFIG(true)
+  -- !descriptions[1] = 'Fill level below max'
+  -- !descriptions[2] = 'Fill level close to max'
+  -- !descriptions[3] = 'Fill level over max'
+  -- !expressions[1] = object EXPRESSION(' ( FLEVEL LEQ ( 0.9 * MAXFIL ) ) ')
+  -- !expressions[2] = object EXPRESSION(' ( ( FLEVEL GT ( 0.9 * MAXFIL ) ) AND ( FLEVEL LEQ MAXFIL ) ) ')
+  -- !expressions[3] = object EXPRESSION(' ( FLEVEL GT MAXFIL ) ')
+  -- !colourNos[1] = 5
+  -- !colourNos[2] = 4
+  -- !colourNos[3] = 18
+  -- !visq.plugQuerySet('Cable fill levels', 'CWBRAN', !descriptions, !expressions, !colourNos)
+  -- !visq.write()
+
+  --check config has been created
+  if (!this.checkDataWorld().not()) then
+    return error 1 'Visual Queries configuration must be created before you can plug a query set'
+  endif
+
+  --any forms using visual queries need to be closed with any changes saved
+  !configShown = !!vsqConfiguration.shown()
+  handle any
+    !configShown = false
+  endhandle
+  if (!configShown) then
+    return error 1 'Visual Queries Configuration form must be closed before you can plug a query set'
+  endif
+  !runShown = !!vsqRunQueries.shown()
+  handle any
+    !runShown = false
+  endhandle
+  if (!runShown) then
+    return error 1 'Run Visual Queries form must be closed before you can plug a query set'
+  endif
+  !seqShown = !!awpRunSequence.shown()
+  handle any
+    !seqShown = false
+  endhandle
+  if (!seqShown) then
+    return error 1 'Work Pack Sequence form must be closed before you can plug a query set'
+  endif
+
+  --add the definitions
+  !set    = !this.addSet(!setDescription)
+  !setRow = !this.visualQuerySets.maxIndex()
+  !types  = !this.addCollection(!setDescription & | types|, !typeList.split())
+  do !i indices !descriptions
+    !style = !this.addStyle(!descriptions[!i] & | style|, !colourNos[!i], 0, FALSE)
+    !query = !this.addQuery(!descriptions[!i], !expressions[!i], !style, !types)
+    !this.addQueryToSet(!setRow, !this.visualQueries.maxIndex())
+  enddo
+
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      output
+--
+-- Description: return the config data
+--
+----------------------------------------------------------------------
+define method .output() is ARRAY
+
+  --output config data
+  !output = ARRAY()
+  do !set values !this.visualQuerySets
+    !output.appendArray(!set.output())
+  enddo
+  do !query values !this.visualQueries
+    !output.appendArray(!query.output())
+  enddo
+  return !output
+
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      print
+--
+-- Description: print the config data
+--
+----------------------------------------------------------------------
+define method .print()
+
+  --print config data
+  do !line values !this.output()
+    write !line
+  enddo
+
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      getPendingChanges
+--
+-- Description: return true if unsaved changes
+--
+----------------------------------------------------------------------
+define method .getPendingChanges() is BOOLEAN
+
+  --find if anything unsaved
+  !pendingChanges = !this.pendingChanges
+  do !style values !this.viewStyles
+    !pendingChanges = (!pendingChanges or !style.getPendingChanges())
+  enddo
+  do !collection values !this.typeCollections
+    !pendingChanges = (!pendingChanges or !collection.getPendingChanges())
+  enddo
+  do !query values !this.visualQueries
+    !pendingChanges = (!pendingChanges or !query.getPendingChanges())
+  enddo
+  do !set values !this.visualQuerySets
+    !pendingChanges = (!pendingChanges or !set.getPendingChanges())
+  enddo
+  return !pendingChanges
+
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      getSetHeadings
+--
+-- Description: return the set table headings
+--
+----------------------------------------------------------------------
+define method .getSetHeadings() is ARRAY
+
+  !headings = ARRAY()
+  !headings[1] = 'Description'
+  return !headings
+
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      getSetAsRowSet
+--
+-- Description: return the currently configured visual query sets
+--
+----------------------------------------------------------------------
+define method .getSetsAsRowSet() is ARRAY
+
+  !rowset = ARRAY()
+  do !set values !this.visualQuerySets
+    !rowset.append(!set.getAsRow())
+  enddo
+  return !rowset
+
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      getSetMembersHeadings
+--
+-- Description: return the set member or available queries table headings
+--
+----------------------------------------------------------------------
+define method .getSetMembersHeadings() is ARRAY
+
+  !headings = ARRAY()
+  !headings[1] = 'Color'
+  !headings[2] = 'Query Description'
+  !headings[3] = 'Index'
+  !headings[4] = 'Color No'
+  return !headings
+
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      getSetMembersAsRowSet
+--
+-- Description: return the currently configured set members
+--
+----------------------------------------------------------------------
+define method .getSetMembersAsRowSet(!setRow is REAL) is ARRAY
+
+  !rowset = ARRAY()
+  if (!setRow.leq(!this.visualQuerySets.size())) then
+    !rowset = !this.visualQuerySets[!setRow].getMembersAsRowSet()
+  endif
+  return !rowset
+
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      getAvailableQueries
+--
+-- Description: return the currently configured available queries
+--
+----------------------------------------------------------------------
+define method .getAvailableQueries(!setRow is REAL) is ARRAY
+
+  -- return the queries that are not members of the set
+  !availableQueries = ARRAY()
+  if (!setRow.gt(!this.visualQuerySets.size())) then
+    return !this.visualQueries
+  endif
+  do !i indices !this.visualQueries
+    !isMember = false
+    do !j indices !this.visualQuerySets[!setRow].visualQueries
+      if (!this.visualQuerySets[!setRow].visualQueries[!j].equals(!this.visualQueries[!i])) then
+        !isMember = true
+        break
+      endif
+    enddo
+    if (!isMember.not()) then
+      !availableQueries.append(!this.visualQueries[!i])
+    endif
+  enddo
+  return !availableQueries
+
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      getAvailableAsRowSet
+--
+-- Description: return a row set suitable for a grid
+--
+----------------------------------------------------------------------
+define method .getAvailableAsRowSet(!setRow is REAL) is ARRAY
+
+  --return a row set array
+  !rowset = ARRAY()
+  !availableQueries = !this.getAvailableQueries(!setRow)
+  do !i indices !availableQueries
+    --columns will be [1] blank to display colour, [2] query description, [3] hidden query index, [4] hidden colour number
+    !row[1]  = ' '
+    !row[2]  = !availableQueries[!i].getDescription()
+    !row[3]  = !i
+    !row[4]  = !availableQueries[!i].getColour()
+    !rowset.append(!row)
+  enddo
+  return !rowset
+
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      getVisualQueryHeadings
+--
+-- Description: return the query table headings
+--
+----------------------------------------------------------------------
+define method .getVisualQueryHeadings() is ARRAY
+
+  !headings = ARRAY()
+  !headings[1] = 'Description'
+  !headings[2] = 'Expression'
+  !headings[3] = 'View Style'
+  !headings[4] = 'Type Collection'
+  return !headings
+
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      getVisualQueriesAsRowSet
+--
+-- Description: return the currently configured visual queries
+--
+----------------------------------------------------------------------
+define method .getVisualQueriesAsRowSet() is ARRAY
+
+  !rowset = ARRAY()
+  do !query values !this.visualQueries
+    !rowset.append(!query.getAsRow())
+  enddo
+  return !rowset
+
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      getViewStyleHeadings
+--
+-- Description: return the style table headings
+--
+----------------------------------------------------------------------
+define method .getViewStyleHeadings() is ARRAY
+
+  !headings = ARRAY()
+  !headings[1] = 'Description'
+  !headings[2] = 'Color'
+  !headings[3] = 'Translucency %'
+  !headings[4] = 'Edges'
+  return !headings
+
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      getViewStylesAsRowSet
+--
+-- Description: return the currently configured view styles
+--
+----------------------------------------------------------------------
+define method .getViewStylesAsRowSet() is ARRAY
+
+  !rowset = ARRAY()
+  do !style values !this.viewStyles
+    !rowset.append(!style.getAsRow())
+  enddo
+  return !rowset
+
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      getViewStyleValueList
+--
+-- Description: return the view style descriptions
+--
+----------------------------------------------------------------------
+define method .getViewStyleValueList() is ARRAY
+
+  !list = ARRAY()
+  do !style values !this.viewStyles
+    !list.append(!style.getDescription())
+  enddo
+  return !list
+
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      getTypeCollectionHeadings
+--
+-- Description: return the collection table headings
+--
+----------------------------------------------------------------------
+define method .getTypeCollectionHeadings() is ARRAY
+
+  !headings = ARRAY()
+  !headings[1] = 'Description'
+  !headings[2] = 'Types'
+  return !headings
+
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      getTypeCollectionsAsRowSet
+--
+-- Description: return the currently configured type collections
+--
+----------------------------------------------------------------------
+define method .getTypeCollectionsAsRowSet() is ARRAY
+
+  !rowset = ARRAY()
+  do !collection values !this.typeCollections
+    !rowset.append(!collection.getAsRow())
+  enddo
+  return !rowset
+
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      getTypeCollectionValueList
+--
+-- Description: return the type collection descriptions
+--
+----------------------------------------------------------------------
+define method .getTypeCollectionList() is ARRAY
+
+  !liat = ARRAY()
+  do !collection values !this.typeCollections
+    !liat.append(!collection.getDescription())
+  enddo
+  return !liat
+
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      getDataWorldRef
+--
+-- Description: return the data world reference
+--
+----------------------------------------------------------------------
+define method .getDataWorld() is DBREF
+  return !this.dataWorld
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      getDataWorldName
+--
+-- Description: return the data world name
+--
+----------------------------------------------------------------------
+define method .getDataWorldName() is STRING
+  return !this.dataWorldName
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      getVisualQuerySets
+--
+-- Description: return the currently configured visual query sets
+--
+----------------------------------------------------------------------
+define method .getVisualQuerySets() is ARRAY
+  return !this.visualQuerySets
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      getVisualQueries
+--
+-- Description: return the currently configured visual queries
+--
+----------------------------------------------------------------------
+define method .getVisualQueries() is ARRAY
+  return !this.visualQueries
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      getWritable
+--
+-- Description: return true if application data world is writable
+--
+----------------------------------------------------------------------
+define method .getWritable() is BOOLEAN
+  return !this.writable
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      getViewStyles
+--
+-- Description: return the currently configured view styles
+--
+----------------------------------------------------------------------
+define method .getViewStyles() is ARRAY
+  return !this.viewStyles
+endmethod
+
+----------------------------------------------------------------------
+--
+-- Method:      getTypeCollections
+--
+-- Description: return the currently configured type collections
+--
+----------------------------------------------------------------------
+define method .getTypeCollections() is ARRAY
+  return !this.typeCollections
+endmethod

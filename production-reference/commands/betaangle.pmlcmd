@@ -1,0 +1,57 @@
+﻿----------------------------------------------------------------------
+--
+-- Copyright 1974 to current year. AVEVA Solutions Limited and its subsidiaries. All rights reserved in original code only.
+--
+--  File:            betaangle.pmlcmd
+--    Type:          Command Definition
+--      Keyword:     Undefined
+--    Module:        Undefined
+--  Author:          Undefined
+--  Created:         Tue May  1 11:25:50 2012
+
+--
+--  Description:     Command object for Rotate --   This is a button command supporting the standard command interface--
+--
+----------------------------------------------------------------------
+------------------------------------------------------------------------
+--
+-- Group:        Steelwork/WallsFloors
+-- Description:  Command object for Rotate by 'X' degrees
+--   This is a button command supporting the standard command interface
+--
+------------------------------------------------------------------------
+setup command !!betaAngle
+
+exit
+
+------------------------------------------------------------------------
+-- Method:      betaAngle
+-- Description: Constructor
+------------------------------------------------------------------------
+define method .betaAngle()
+  -- initialise events and command key
+  !this.key     = 'AVEVA.Steelwork.CommandBetaAngle'
+  !this.execute = 'execute'
+endmethod
+
+------------------------------------------------------------------------
+-- Method:      execute
+-- Description: Execute event
+------------------------------------------------------------------------
+define method .execute(!args is ARRAY)
+
+   !type = !args[0]
+
+   if (!type eq '0') then
+     BANG 0
+   elseif  (!type eq '90') then
+     BANG 90
+   elseif  (!type eq '180') then
+     BANG 180
+   elseif  (!type eq '-90') then
+     BANG -90
+   elseif  (!type eq '-180') then
+     BANG -180
+   endif
+
+endmethod

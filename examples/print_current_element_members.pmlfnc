@@ -1,0 +1,20 @@
+$* Filename: printcurrentelementmembers.pmlfnc
+$* Prints members of the current database element.
+
+define function !!PrintCurrentElementMembers()
+    if (!!CE.Unset()) then
+        !!Alert.Error('Current element is unset.')
+        return
+    endif
+
+    if (!!CE.BadRef()) then
+        !!Alert.Error('Current element is a bad DBREF.')
+        return
+    endif
+
+    !count = !!CE.MCount()
+    $p Current element: $!!CE.String()
+    $p Member count: $!count
+
+    $* This function reports count only. Member navigation syntax depends on the target AVEVA module conventions.
+endfunction

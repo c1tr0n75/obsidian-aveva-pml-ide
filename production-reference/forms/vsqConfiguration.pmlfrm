@@ -1,0 +1,1955 @@
+-- Configuration form for visual queries application data
+-- File: vsqConfiguration.pmlfrm
+
+import 'GridControl'
+handle any
+endhandle
+import 'pmlFileBrowser'
+handle any
+endhandle
+
+layout form !!vsqConfiguration dialog resize
+
+  !this.formTitle      = |Visual Queries Configuration|
+  !this.initCall       = |!this.init()|
+  !this.quitCall       = |!this.close('QUIT')|
+
+  using namespace 'Aveva.Core.Presentation'
+
+  --grid controls
+  member .netSetsTable            is NETGRIDCONTROL
+  member .netSetMembersTable      is NETGRIDCONTROL
+  member .netAvailableTable       is NETGRIDCONTROL
+  member .netQueriesTable         is NETGRIDCONTROL
+  member .netStylesTable          is NETGRIDCONTROL
+  member .netCollectionsTable     is NETGRIDCONTROL
+  --cell edit caches
+  member .setsCellEditData        is ARRAY
+  --rowset content
+  member .setsRowSet              is ARRAY
+  member .setMembersRowSet        is ARRAY
+  member .availableRowSet         is ARRAY
+  member .queriesRowSet           is ARRAY
+  member .stylesRowSet            is ARRAY
+  member .collectionsRowSet       is ARRAY
+  --rows selected
+  member .selectedSetRows         is ARRAY
+  member .selectedSetMemberRows   is ARRAY
+  member .selectedAvailableRows   is ARRAY
+  member .selectedQueryRows       is ARRAY
+  member .selectedStyleRows       is ARRAY
+  member .selectedCollectionRows  is ARRAY
+  --configuration object for visual queries
+  member .config                  is VSQCONFIG
+  --displayed colour
+  member .currentColour           is REAL
+  -- File browser
+  member .homeDirectory           is STRING
+
+  path down
+  vdist 0.5
+  hdist 1
+
+  frame .outerPanel panel anchor all
+
+    --create data world panel
+    frame .modePanel panel anchor all
+      button .createWorld 'Create Application Data World' anchor top+left at xmin+32 ymin+6 width 24
+    exit
+
+    frame .tabs tabset anchor all at xmin.modePanel ymin.modePanel
+
+      --query sets
+      frame .frameSets 'Visual Query Sets' anchor left+right+top+bottom
+        frame .frameSetsBorder 'Query Sets' anchor all width 26
+          frame .frameSetsTable panel anchor all width 25 height 14
+            container .conSetsTable nobox PmlNetControl 'Table' dock fill
+          exit
+          path down
+          button .moveSetUp   pixmap "AvevaSharedIcons>ID_HIERARCHY_UP>32"   anchor top+right at xmax.frameSetsTable+1 ymin.frameSetsTable
+          button .moveSetDown pixmap "AvevaSharedIcons>ID_HIERARCHY_DOWN>32" anchor top+right
+          button .addSet      pixmap "AvevaSharedIcons>ID_ADD_ROW>32"        anchor top+right
+          button .removeSet   pixmap "AvevaSharedIcons>ID_DELETE_ROW>32"     anchor top+right
+        exit
+        path right
+        frame .frmSetMembersBorder 'Queries in Set' anchor top+right+bottom at xmax.frameSetsBorder+1 ymin.frameSetsBorder width 32
+          frame .frmSetMembersTable panel anchor top+right+bottom width 31 height 14
+            container .conSetMembersTable nobox PmlNetControl 'Queries' dock fill
+          exit
+          button .moveMemberUp   pixmap "AvevaSharedIcons>ID_HIERARCHY_UP>32"   anchor top+right at xmax.frmSetMembersTable+1 ymin.moveSetUp
+          button .moveMemberDown pixmap "AvevaSharedIcons>ID_HIERARCHY_DOWN>32" anchor top+right at xmin ymin.moveSetDown
+        exit
+        path down
+        button .addMember    pixmap "AvevaSharedIcons>ID_PLAY_BACKWARD>24" anchor top+right at xmax.frmSetMembersBorder ymin.addSet
+        button .removeMember pixmap "AvevaSharedIcons>ID_PLAY_FORWARD>24"  anchor top+right at xmin ymin.removeSet
+        frame .frmAvailableBorder 'Available Queries' anchor top+right+bottom at xmax.addMember ymin.frmSetMembersBorder width 32
+          frame .frmAvailableTable panel anchor top+right+bottom width 31 height 14
+            container .conAvailableTable nobox PmlNetControl 'Available' dock fill
+          exit
+        exit
+      exit
+
+      --queries
+      frame .frameQueries 'Visual Queries' anchor left+right+top+bottom
+        frame .frameQueriesTable panel anchor all width 80 height 10
+          container .conQueriesTable nobox PmlNetControl 'Table' dock fill
+        exit
+        text   .queryDesc      'Description'     anchor left+right+bottom tagWidth 8 width to max.frameQueriesTable string
+        text   .expression     'Expression'      anchor left+right+bottom tagWidth 8 width to max.frameQueriesTable string
+        option .viewStyle      'View Style'      anchor left+right+bottom tagWidth 8 width 27
+        option .typeCollection 'Type Collection' anchor right+bottom at xmax+1.5 ymin tagWidth 11 width to max.frameQueriesTable
+        button .moveQueryUp    pixmap "AvevaSharedIcons>ID_HIERARCHY_UP>32"         anchor top+right at xmax.frameQueriesTable+1 ymin.frameQueriesTable+1
+        button .moveQueryDown  pixmap "AvevaSharedIcons>ID_HIERARCHY_DOWN>32"       anchor top+right
+        button .addQuery       pixmap "AvevaSharedIcons>ID_ADD_ROW>32"              anchor top+right
+        button .copyQuery      pixmap "AvevaSharedIcons>ID_COPY_ITEM>32"            anchor top+right
+        button .removeQuery    pixmap "AvevaSharedIcons>ID_DELETE_ROW>32"           anchor top+right
+        button .updateQuery    pixmap "AvevaSharedIcons>ID_MODIFY_PROPERTY_GRID>32" anchor bottom+right
+      exit
+
+      --styles
+      frame .frameStyles 'View Styles' anchor left+right+top+bottom
+        frame .frameStylesTable panel anchor all width 80 height 10
+          container .conStylesTable nobox PmlNetControl 'Table' dock fill
+        exit
+        text   .styleDesc   'Description' anchor left+right+bottom tagWidth 8 width to max.frameStylesTable string
+
+        --colour
+        para   .colourTitle      anchor left+bottom width 7 lines 1
+        path right
+        button .colour | |       anchor left+bottom width 2
+        para   .colourName       anchor left+bottom at ymin+0.1 width 10 lines 1
+        --translucency
+        para   .transTitle       anchor left+bottom at ymin width 9 lines 1
+        para   .translucency     anchor left+bottom width 2 lines 1
+        button .less pixmap      anchor left+bottom at ymin-0.1 width 9 height 12
+        slider .slide horizontal anchor left+right+bottom at ymin+0.1 range 0 +99 step 1 width to max.frameStyles-13
+        button .more             anchor right+bottom pixmap at ymin-0.1 width 9 height 12
+        --edges
+        toggle .edges |Edges|    anchor right+bottom at xmax+4 ymin-0.2 states |Off| |On|
+
+        path down
+        button .moveStyleUp   pixmap "AvevaSharedIcons>ID_HIERARCHY_UP>32"         anchor top+right at xmax.frameStylesTable+1 ymin.frameStylesTable+1
+        button .moveStyleDown pixmap "AvevaSharedIcons>ID_HIERARCHY_DOWN>32"       anchor top+right
+        button .addStyle      pixmap "AvevaSharedIcons>ID_ADD_ROW>32"              anchor top+right
+        button .copyStyle     pixmap "AvevaSharedIcons>ID_COPY_ITEM>32"            anchor top+right
+        button .removeStyle   pixmap "AvevaSharedIcons>ID_DELETE_ROW>32"           anchor top+right
+        button .updateStyle   pixmap "AvevaSharedIcons>ID_MODIFY_PROPERTY_GRID>32" anchor bottom+right
+      exit
+
+      --collections
+      frame .frameCollections 'Type Collections' anchor left+right+top+bottom
+        frame .frameCollectionsTable panel anchor all width 80 height 10
+          container .conCollectionsTable nobox PmlNetControl 'Table' dock fill
+        exit
+        text   .collectionDesc     'Description' anchor left+right+bottom tagWidth 8 width to max.frameCollectionsTable string
+        text   .typeList           'Type List'   anchor left+right+bottom tagWidth 8 width to max.frameCollectionsTable string
+        button .moveCollectionUp   pixmap "AvevaSharedIcons>ID_HIERARCHY_UP>32"         anchor top+right at xmax.frameCollectionsTable+1 ymin.frameCollectionsTable+1
+        button .moveCollectionDown pixmap "AvevaSharedIcons>ID_HIERARCHY_DOWN>32"       anchor top+right
+        button .addCollection      pixmap "AvevaSharedIcons>ID_ADD_ROW>32"              anchor top+right
+        button .copyCollection     pixmap "AvevaSharedIcons>ID_COPY_ITEM>32"            anchor top+right
+        button .removeCollection   pixmap "AvevaSharedIcons>ID_DELETE_ROW>32"           anchor top+right
+        button .updateCollection   pixmap "AvevaSharedIcons>ID_MODIFY_PROPERTY_GRID>32" anchor bottom+right
+      exit
+
+    exit
+
+    path left
+    button .cancel 'Cancel' anchor right+bottom at xmax form-10 ymax+0.5 width 8
+    button .apply  'Apply'  anchor right+bottom width 8
+    button .reset  'Reset'  anchor left+bottom at xmin.tabs width 8
+    path right
+    button .export 'Export' anchor left+bottom width 8
+
+  exit
+
+exit
+
+------------------------------------------------------------------------
+--
+-- Method:   vsqConfiguration
+--
+-- Description: constructor
+--
+------------------------------------------------------------------------
+--
+define method .vsqConfiguration()
+
+  using namespace 'Aveva.Core.Presentation'
+
+  --callbacks
+  !this.createWorld.callback        = |!this.createDataWorld()|
+  !this.moveSetUp.callback          = |!this.moveSetUp()|
+  !this.moveSetDown.callback        = |!this.moveSetDown()|
+  !this.addSet.callback             = |!this.addSet()|
+  !this.removeSet.callback          = |!this.removeSet()|
+  !this.moveMemberUp.callback       = |!this.moveMemberUp()|
+  !this.moveMemberDown.callback     = |!this.moveMemberDown()|
+  !this.addMember.callback          = |!this.addMember()|
+  !this.removeMember.callback       = |!this.removeMember()|
+  !this.moveQueryUp.callback        = |!this.moveQueryUp()|
+  !this.moveQueryDown.callback      = |!this.moveQueryDown()|
+  !this.addQuery.callback           = |!this.addQuery()|
+  !this.copyQuery.callback          = |!this.copyQuery()|
+  !this.removeQuery.callback        = |!this.removeQuery()|
+  !this.updateQuery.callback        = |!this.updateQuery()|
+  !this.moveStyleUp.callback        = |!this.moveStyleUp()|
+  !this.moveStyleDown.callback      = |!this.moveStyleDown()|
+  !this.addStyle.callback           = |!this.addStyle()|
+  !this.copyStyle.callback          = |!this.copyStyle()|
+  !this.removeStyle.callback        = |!this.removeStyle()|
+  !this.updateStyle.callback        = |!this.updateStyle()|
+  !this.moveCollectionUp.callback   = |!this.moveCollectionUp()|
+  !this.moveCollectionDown.callback = |!this.moveCollectionDown()|
+  !this.addCollection.callback      = |!this.addCollection()|
+  !this.copyCollection.callback     = |!this.copyCollection()|
+  !this.removeCollection.callback   = |!this.removeCollection()|
+  !this.updateCollection.callback   = |!this.updateCollection()|
+  !this.colour.callback             = |!this.colour()|
+  !this.slide.callback              = |!this.slide(|
+  !this.less.callback               = |!this.nudge(|
+  !this.more.callback               = |!this.nudge(|
+  !this.expression.callback         = |!this.expression()|
+  !this.reset.callback              = |!this.reset()|
+  !this.export.callback             = |!this.export()|
+  !this.apply.callback              = |!this.apply()|
+  !this.cancel.callback             = |!this.close('CANCEL')|
+
+  --tool tips
+  !this.moveSetUp.setToolTip('Move selected query set row up')
+  !this.moveSetDown.setToolTip('Move selected query set row down')
+  !this.addSet.setToolTip('Add new query set row')
+  !this.removeSet.setToolTip('Remove selected query set row')
+  !this.moveMemberUp.setToolTip('Move selected set member row up')
+  !this.moveMemberDown.setToolTip('Move selected set member row down')
+  !this.addMember.setToolTip('Add selected available queries to the set')
+  !this.removeMember.setToolTip('Remove selected queries from the set')
+  !this.expression.setToolTip(|Enter an expression that returns a Boolean result, e.g. (attrib STVDSC( /ConstructionStatus ) eq 'Approved')|)
+  !this.typeList.setToolTip('Enter a space separated list of Types, e.g. PIPE HVAC SUPPO')
+  !this.moveQueryUp.setToolTip('Move selected query row up')
+  !this.moveQueryDown.setToolTip('Move selected query row down')
+  !this.addQuery.setToolTip('Add new query row')
+  !this.copyQuery.setToolTip('Add a copy of selected query row')
+  !this.removeQuery.setToolTip('Remove selected query row')
+  !this.updateQuery.setToolTip('Update selected query row')
+  !this.moveStyleUp.setToolTip('Move selected style row up')
+  !this.moveStyleDown.setToolTip('Move selected style row down')
+  !this.addStyle.setToolTip('Add new style row')
+  !this.copyStyle.setToolTip('Add a copy of selected style row')
+  !this.removeStyle.setToolTip('Remove selected style row')
+  !this.updateStyle.setToolTip('Update selected style row')
+  !this.moveCollectionUp.setToolTip('Move selected collection row up')
+  !this.moveCollectionDown.setToolTip('Move selected collection row down')
+  !this.addCollection.setToolTip('Add new collection row')
+  !this.copyCollection.setToolTip('Add a copy of selected collection row')
+  !this.removeCollection.setToolTip('Remove selected collection row')
+  !this.updateCollection.setToolTip('Update selected collection row')
+  !this.reset.setToolTip('Reset to last apply')
+  !this.export.setToolTip('Export configuration to macro')
+  !this.apply.setToolTip('Save changes to database')
+  !this.cancel.setToolTip('Close form and discard changes')
+
+  --values
+  !this.less.addPixmap(!!pml.getPathName(|leftarrow9x12.png|))
+  !this.more.addPixmap(!!pml.getPathName(|rightarrow9x12.png|))
+  !this.colourTitle.val  = |Color|
+  !this.transTitle.val   = |Translucency|
+  !this.translucency.val = |0|
+  !this.colour(1)
+
+  --query sets table control
+  !this.netSetsTable = object NETGRIDCONTROL()
+  !this.netSetsTable.addEventHandler('AfterSelectChange', !this, 'setsAfterSelect')
+  !this.netSetsTable.addEventHandler('BeforeCellUpdate',  !this, 'setsBeforeCellUpdate')
+  !this.netSetsTable.addEventHandler('AfterCellUpdate',   !this, 'setsAfterCellUpdate')
+  !this.netSetsTable.fixedHeaders(false)
+  !this.netSetsTable.outlookGroupStyle(false)
+  !this.netSetsTable.columnExcelFilter(true)
+  !this.netSetsTable.headerSort(false)
+  !this.netSetsTable.columnSummaries(false)
+  !this.netSetsTable.singleRowSelection(true)
+  !this.netSetsTable.setAlternateRowColor('white')
+  !this.netSetsTable.bulkEditableGrid(false)
+  !this.netSetsTable.editableGrid(true)
+  !this.conSetsTable.control = !this.netSetsTable.handle()
+
+  --query set members table control
+  !this.netSetMembersTable = object NETGRIDCONTROL()
+  !this.netSetMembersTable.addEventHandler('AfterSelectChange', !this, 'setMembersAfterSelect')
+  !this.netSetMembersTable.fixedHeaders(false)
+  !this.netSetMembersTable.outlookGroupStyle(false)
+  !this.netSetMembersTable.columnExcelFilter(true)
+  !this.netSetMembersTable.headerSort(false)
+  !this.netSetMembersTable.columnSummaries(false)
+  !this.netSetMembersTable.singleRowSelection(false)
+  !this.netSetMembersTable.setAlternateRowColor('white')
+  !this.netSetMembersTable.bulkEditableGrid(false)
+  !this.netSetMembersTable.editableGrid(false)
+  !this.conSetMembersTable.control = !this.netSetMembersTable.handle()
+
+  --available queries table control
+  !this.netAvailableTable = object NETGRIDCONTROL()
+  !this.netAvailableTable.addEventHandler('AfterSelectChange', !this, 'availableAfterSelect')
+  !this.netAvailableTable.fixedHeaders(false)
+  !this.netAvailableTable.outlookGroupStyle(false)
+  !this.netAvailableTable.columnExcelFilter(true)
+  !this.netAvailableTable.headerSort(false)
+  !this.netAvailableTable.columnSummaries(false)
+  !this.netAvailableTable.singleRowSelection(false)
+  !this.netAvailableTable.setAlternateRowColor('white')
+  !this.netAvailableTable.bulkEditableGrid(false)
+  !this.netAvailableTable.editableGrid(false)
+  !this.conAvailableTable.control = !this.netAvailableTable.handle()
+
+  --queries table control
+  !this.netQueriesTable = object NETGRIDCONTROL()
+  !this.netQueriesTable.addEventHandler('AfterSelectChange', !this, 'queriesAfterSelect')
+  !this.netQueriesTable.fixedHeaders(false)
+  !this.netQueriesTable.outlookGroupStyle(false)
+  !this.netQueriesTable.columnExcelFilter(true)
+  !this.netQueriesTable.headerSort(false)
+  !this.netQueriesTable.columnSummaries(false)
+  !this.netQueriesTable.singleRowSelection(true)
+  !this.netQueriesTable.setAlternateRowColor('white')
+  !this.netQueriesTable.bulkEditableGrid(false)
+  !this.netQueriesTable.editableGrid(false)
+  !this.conQueriesTable.control = !this.netQueriesTable.handle()
+
+  --styles table control
+  !this.netStylesTable = object NETGRIDCONTROL()
+  !this.netStylesTable.addEventHandler('AfterSelectChange', !this, 'stylesAfterSelect')
+  !this.netStylesTable.fixedHeaders(false)
+  !this.netStylesTable.outlookGroupStyle(false)
+  !this.netStylesTable.columnExcelFilter(true)
+  !this.netStylesTable.headerSort(false)
+  !this.netStylesTable.columnSummaries(false)
+  !this.netStylesTable.singleRowSelection(true)
+  !this.netStylesTable.setAlternateRowColor('white')
+  !this.netStylesTable.bulkEditableGrid(false)
+  !this.netStylesTable.editableGrid(false)
+  !this.conStylesTable.control = !this.netStylesTable.handle()
+
+  --collections table control
+  !this.netCollectionsTable = object NETGRIDCONTROL()
+  !this.netCollectionsTable.addEventHandler('AfterSelectChange', !this, 'collectionsAfterSelect')
+  !this.netCollectionsTable.fixedHeaders(false)
+  !this.netCollectionsTable.outlookGroupStyle(false)
+  !this.netCollectionsTable.columnExcelFilter(true)
+  !this.netCollectionsTable.headerSort(false)
+  !this.netCollectionsTable.columnSummaries(false)
+  !this.netCollectionsTable.singleRowSelection(true)
+  !this.netCollectionsTable.setAlternateRowColor('white')
+  !this.netCollectionsTable.bulkEditableGrid(false)
+  !this.netCollectionsTable.editableGrid(false)
+  !this.conCollectionsTable.control = !this.netCollectionsTable.handle()
+
+  -- File browser default folder
+  !folderUser         = object FILE('%AVEVA_DESIGN_USER%')
+  !this.homeDirectory = !folderUser.fullname()
+
+endmethod
+
+------------------------------------------------------------------------
+--
+-- Method:   init
+--
+-- Description: initialise form
+--
+------------------------------------------------------------------------
+define method .init()
+
+  --refresh the config object
+  !this.config.vsqConfig(true)
+  if (!this.config.checkDataWorld()) then
+    --put the form in configure queries mode
+    !this.modePanel.visible = false
+    !this.tabs.visible      = true
+    !this.export.active     = true
+  else
+    --put the form in create data world mode
+    !this.modePanel.visible = true
+    !this.tabs.visible      = false
+    !this.export.active     = false
+  endif
+
+  --initialise
+  !this.loadStyles()
+  !this.loadCollections()
+  !this.loadQueries()
+  !this.loadSets()
+
+endmethod
+
+------------------------------------------------------------------------
+--
+-- Method:   createDataWorld
+--
+-- Description: create config containers
+--
+------------------------------------------------------------------------
+define method .createDataWorld()
+
+  --create the application data containers and reload the form
+  !this.config.createDataWorld()
+  !this.init()
+
+endmethod
+
+------------------------------------------------------------------------
+--
+-- Method:   loadStyles
+--
+-- Description: load style data into grid preserving row selection
+--
+------------------------------------------------------------------------
+define method .loadStyles()
+
+  --load styles grid
+  if (!this.selectedStyleRows.empty()) then
+    !selectRow = 1
+  else
+    !selectRow = !this.selectedStyleRows[1]
+  endif
+  !this.loadStyles(!selectRow)
+
+endmethod
+
+------------------------------------------------------------------------
+--
+-- Method:   loadStyles
+--
+-- Description: load style data into grid and select specified row
+--
+------------------------------------------------------------------------
+define method .loadStyles(!selectRow is REAL)
+
+  using namespace  'Aveva.Core.Presentation'
+
+  --load styles grid
+  !this.resetStyleGadgets()
+  !this.netStylesTable.clearGrid()
+  !this.stylesRowSet = !this.config.getViewStylesAsRowSet()
+  if (!this.stylesRowSet.empty().not()) then
+    !nds = object NETDATASOURCE('View Styles', !this.config.getViewStyleHeadings(), !this.stylesRowSet, true)
+    !this.netStylesTable.bindToDataSource(!nds)
+    !this.netStylesTable.autoFitColumns()
+    if (!selectRow.leq(!this.stylesRowSet.size())) then
+      !rows[1] = !selectRow
+    else
+      !rows[1] = 1
+    endif
+    !this.netStylesTable.setSelectedRowTags(!rows)
+    do !row indices !this.stylesRowSet
+      !colourName = !this.stylesRowSet[!row][2]
+      !colourObject = object COLOUR(!colourName)
+      handle any
+        !colourObject = object COLOUR(1)
+      endhandle
+      !colourNumber = !colourObject.code
+      !this.netStylesTable.setCellColor(!row, 2, !colourNumber)
+    enddo
+  endif
+  !this.activateGadgets()
+
+endmethod
+
+------------------------------------------------------------------------
+--
+-- Method:   loadCollections
+--
+-- Description: load collection data into grid preserving row selection
+--
+------------------------------------------------------------------------
+define method .loadCollections()
+
+  --load collections grid
+  if (!this.selectedCollectionRows.empty()) then
+    !selectRow = 1
+  else
+    !selectRow = !this.selectedCollectionRows[1]
+  endif
+  !this.loadCollections(!selectRow)
+
+endmethod
+
+------------------------------------------------------------------------
+--
+-- Method:   loadCollections
+--
+-- Description: load collection data into grid and select specified row
+--
+------------------------------------------------------------------------
+define method .loadCollections(!selectRow is REAL)
+
+  using namespace  'Aveva.Core.Presentation'
+
+  --load collections grid
+  !this.resetCollectionGadgets()
+  !this.netCollectionsTable.clearGrid()
+  !this.collectionsRowSet = !this.config.getTypeCollectionsAsRowSet()
+  if (!this.collectionsRowSet.empty().not()) then
+    !nds = object NETDATASOURCE('Type Collections', !this.config.getTypeCollectionHeadings(), !this.collectionsRowSet, true)
+    !this.netCollectionsTable.bindToDataSource(!nds)
+    !this.netCollectionsTable.autoFitColumns()
+    !this.setCollectionGadgetsFromRow(1)
+    if (!selectRow.leq(!this.collectionsRowSet.size())) then
+      !rows[1] = !selectRow
+    else
+      !rows[1] = 1
+    endif
+    !this.netCollectionsTable.setSelectedRowTags(!rows)
+  endif
+  !this.activateGadgets()
+
+endmethod
+
+------------------------------------------------------------------------
+--
+-- Method:   loadQueries
+--
+-- Description: load query data into grid preserving row selection
+--
+------------------------------------------------------------------------
+define method .loadQueries()
+
+  --load queries grid
+  if (!this.selectedQueryRows.empty()) then
+    !selectRow = 1
+  else
+    !selectRow = !this.selectedQueryRows[1]
+  endif
+  !this.loadQueries(!selectRow)
+
+endmethod
+
+------------------------------------------------------------------------
+--
+-- Method:   loadQueries
+--
+-- Description: load query data into grid and select specified row
+--
+------------------------------------------------------------------------
+define method .loadQueries(!selectRow is REAL)
+
+  using namespace  'Aveva.Core.Presentation'
+
+  --load queries grid
+  !this.resetQueryGadgets()
+  !this.netQueriesTable.clearGrid()
+  !this.queriesRowSet = !this.config.getVisualQueriesAsRowSet()
+  if (!this.queriesRowSet.empty().not()) then
+    !nds = object NETDATASOURCE('Visual Queries', !this.config.getVisualQueryHeadings(), !this.queriesRowSet, true)
+    !this.netQueriesTable.bindToDataSource(!nds)
+    !this.netQueriesTable.autoFitColumns()
+    !this.viewStyle.dtext      = !this.config.getViewStyleValueList()
+    !this.typeCollection.dtext = !this.config.getTypeCollectionList()
+    --alternative if we make these columns editable in the grid to select from value list
+    --!this.netQueriesTable.createValueList('ViewStyleList', !this.config.getViewStyleValueList())
+    --!this.netQueriesTable.createValueList('TypeCollectionList', !this.config.getTypeCollectionList())
+    --do !row indices !rowSet
+    --  !this.netQueriesTable.assignValueListToCell(!valueListName, !row, 3)
+    --  !this.netQueriesTable.setEditableCell(!row, 3, true)
+    --  !this.netQueriesTable.assignValueListToCell(!valueListName, !row, 4)
+    --  !this.netQueriesTable.setEditableCell(!row, 4, true)
+    --enddo
+    if (!selectRow.leq(!this.queriesRowSet.size())) then
+      !rows[1] = !selectRow
+    else
+      !rows[1] = 1
+    endif
+    !this.netQueriesTable.setSelectedRowTags(!rows)
+  endif
+  !this.activateGadgets()
+
+endmethod
+
+------------------------------------------------------------------------
+--
+-- Method:   loadSets
+--
+-- Description: load query sets data into grid preserving row selection
+--
+------------------------------------------------------------------------
+define method .loadSets()
+
+  --load sets grid
+  if (!this.selectedSetRows.empty()) then
+    !selectRow = 1
+  else
+    !selectRow = !this.selectedSetRows[1]
+  endif
+  !this.loadSets(!selectRow)
+
+endmethod
+
+------------------------------------------------------------------------
+--
+-- Method:   loadSets
+--
+-- Description: load query set data into grid and select specified row
+--
+------------------------------------------------------------------------
+define method .loadSets(!selectRow is REAL)
+
+  using namespace  'Aveva.Core.Presentation'
+
+  --load sets grid
+  !this.netSetsTable.clearGrid()
+  !this.netSetMembersTable.clearGrid()
+  !this.netAvailableTable.clearGrid()
+  !this.setsRowSet = !this.config.getSetsAsRowSet()
+  if (!this.setsRowSet.empty().not()) then
+    !nds = object NETDATASOURCE('Query Sets', !this.config.getSetHeadings(), !this.setsRowSet, true)
+    !this.netSetsTable.bindToDataSource(!nds)
+    !this.netSetsTable.autoFitColumns()
+    !this.netSetsTable.setEditableColumn(1, true)
+    if (!selectRow.leq(!this.setsRowSet.size())) then
+      !rows[1] = !selectRow
+    else
+      !rows[1] = 1
+    endif
+    !this.netSetsTable.setSelectedRowTags(!rows)
+    !this.loadSetMembers(!rows[1])
+    !this.loadAvailable(!rows[1])
+  endif
+  !this.activateGadgets()
+
+endmethod
+
+------------------------------------------------------------------------
+--
+-- Method:   loadSetMembers
+--
+-- Description: load set members data into grid preserving row selection
+--
+------------------------------------------------------------------------
+define method .loadSetMembers(!setRow is REAL)
+
+  --load set members grid
+  if (!this.selectedSetMemberRows.empty()) then
+    !selectRow = 1
+  else
+    !selectRow = !this.selectedSetMemberRows[1]
+  endif
+  !this.loadSetMembers(!setRow, !selectRow)
+
+endmethod
+
+------------------------------------------------------------------------
+--
+-- Method:   loadSetMembers
+--
+-- Description: load set members data into grid and select specified row
+--
+------------------------------------------------------------------------
+define method .loadSetMembers(!setRow is REAL, !selectRow is REAL)
+
+  using namespace  'Aveva.Core.Presentation'
+
+  --load member queries grid
+  !this.netSetMembersTable.clearGrid()
+  !this.setMembersRowSet = !this.config.getSetMembersAsRowSet(!setRow)
+  if (!this.setMembersRowSet.empty().not()) then
+    !nds = object NETDATASOURCE('Set Members', !this.config.getSetMembersHeadings(), !this.setMembersRowSet, true)
+    !this.netSetMembersTable.bindToDataSource(!nds)
+    !this.netSetMembersTable.autoFitColumns()
+    !this.netSetMembersTable.setColumnWidth(1, 16)
+    !this.netSetMembersTable.setColumnVisibility(3, false)
+    !this.netSetMembersTable.setColumnVisibility(4, false)
+    do !row indices !this.setMembersRowSet
+      !colourName = !this.setMembersRowSet[!row][4]
+      !colourObject = object COLOUR(!colourName)
+      handle any
+        !colourObject = object COLOUR(1)
+      endhandle
+      !colourNumber = !colourObject.code
+      !this.netSetMembersTable.setCellColor(!row, 1, !colourNumber)
+    enddo
+    if (!selectRow.leq(!this.setMembersRowSet.size())) then
+      !rows[1] = !selectRow
+    else
+      !rows[1] = 1
+    endif
+    !this.netSetMembersTable.setSelectedRowTags(!rows)
+  endif
+  !this.activateGadgets()
+
+endmethod
+
+------------------------------------------------------------------------
+--
+-- Method:   loadAvailable
+--
+-- Description: load available queries data into grid preserving row selection
+--
+------------------------------------------------------------------------
+define method .loadAvailable(!setRow is REAL)
+
+  --load queries grid
+  if (!this.selectedAvailableRows.empty()) then
+    !selectRow = 1
+  else
+    !selectRow = !this.selectedAvailableRows[1]
+  endif
+  !this.loadAvailable(!setRow, !selectRow)
+
+endmethod
+
+------------------------------------------------------------------------
+--
+-- Method:   loadAvailable
+--
+-- Description: load available queries data into grid and select specified row
+--
+------------------------------------------------------------------------
+define method .loadAvailable(!setRow is REAL, !selectRow is REAL)
+
+  using namespace  'Aveva.Core.Presentation'
+
+  --load available queries grid
+  !this.netAvailableTable.clearGrid()
+  !this.availableRowSet = !this.config.getAvailableAsRowSet(!setRow)
+  if (!this.availableRowSet.empty().not()) then
+    !nds = object NETDATASOURCE('Visual Queries', !this.config.getSetMembersHeadings(), !this.availableRowSet, true)
+    !this.netAvailableTable.bindToDataSource(!nds)
+    !this.netAvailableTable.autoFitColumns()
+    !this.netAvailableTable.setColumnWidth(1, 16)
+    !this.netAvailableTable.setColumnVisibility(3, false)
+    !this.netAvailableTable.setColumnVisibility(4, false)
+    do !row indices !this.availableRowSet
+      !colourName = !this.availableRowSet[!row][4]
+      !colourObject = object COLOUR(!colourName)
+      handle any
+        !colourObject = object COLOUR(1)
+      endhandle
+      !colourNumber = !colourObject.code
+      !this.netAvailableTable.setCellColor(!row, 1, !colourNumber)
+    enddo
+    if (!selectRow.leq(!this.availableRowSet.size())) then
+      !rows[1] = !selectRow
+    else
+      !rows[1] = 1
+    endif
+    !this.netAvailableTable.setSelectedRowTags(!rows)
+  endif
+  !this.activateGadgets()
+
+endmethod
+
+------------------------------------------------------------------------
+--
+-- Method:      resetStyleGadgets
+--
+-- Description: reset style gadgets for no selected rows
+--
+------------------------------------------------------------------------
+define method .resetStyleGadgets()
+
+  --set as first constructed
+  !this.styleDesc.val = ''
+  !this.colour(1)
+  !this.edges.val = false
+  !this.translucency(0)
+
+endmethod
+
+------------------------------------------------------------------------
+--
+-- Method:      resetCollectionGadgets
+--
+-- Description: reset collection gadgets for no selected rows
+--
+------------------------------------------------------------------------
+define method .resetCollectionGadgets()
+
+  --set as first constructed
+  !this.collectionDesc.val = ''
+  !this.typeList.val = ''
+
+endmethod
+
+------------------------------------------------------------------------
+--
+-- Method:      resetQueryGadgets
+--
+-- Description: reset query gadgets for no selected rows
+--
+------------------------------------------------------------------------
+define method .resetQueryGadgets()
+
+  --set as first constructed
+  !this.queryDesc.val = ''
+  !this.expression.val = ''
+  !this.viewStyle.clear()
+  !this.typeCollection.clear()
+
+endmethod
+
+------------------------------------------------------------------------
+--
+-- Method:      activateGadgets
+--
+-- Description: set gadgets active
+--
+------------------------------------------------------------------------
+define method .activateGadgets()
+
+  --set according to rows available
+  !writable                       = !this.config.getWritable()
+  !setSelected                    = (!this.selectedSetRows.empty().not())
+  !setMemberSelected              = (!this.selectedSetMemberRows.empty().not())
+  !availableSelected              = (!this.selectedAvailableRows.empty().not())
+  !querySelected                  = (!this.selectedQueryRows.empty().not())
+  !styleSelected                  = (!this.selectedStyleRows.empty().not())
+  !collectionSelected             = (!this.selectedCollectionRows.empty().not())
+  !this.moveSetUp.active          = (!writable and !setSelected and !this.selectedSetRows.findFirst(1).unset())
+  !this.moveSetDown.active        = (!writable and !setSelected and !this.selectedSetRows.findFirst(!this.setsRowSet.size()).unset())
+  !this.addSet.active             = (!writable)
+  !this.removeSet.active          = (!writable and !setSelected)
+  !this.moveMemberUp.active       = (!writable and !setMemberSelected and !this.selectedSetMemberRows.findFirst(1).unset())
+  !this.moveMemberDown.active     = (!writable and !setMemberSelected and !this.selectedSetMemberRows.findFirst(!this.setMembersRowSet.size()).unset())
+  !this.addMember.active          = (!writable and !setSelected and !availableSelected)
+  !this.removeMember.active       = (!writable and !setMemberSelected)
+  !this.moveQueryUp.active        = (!writable and !querySelected and !this.selectedQueryRows.findFirst(1).unset())
+  !this.moveQueryDown.active      = (!writable and !querySelected and !this.selectedQueryRows.findFirst(!this.queriesRowSet.size()).unset())
+  !this.addQuery.active           = (!writable)
+  !this.copyQuery.active          = (!writable and !querySelected)
+  !this.removeQuery.active        = (!writable and !querySelected)
+  !this.updateQuery.active        = (!writable and !querySelected)
+  !this.moveStyleUp.active        = (!writable and !styleSelected and !this.selectedStyleRows.findFirst(1).unset())
+  !this.moveStyleDown.active      = (!writable and !styleSelected and !this.selectedStyleRows.findFirst(!this.stylesRowSet.size()).unset())
+  !this.addStyle.active           = (!writable)
+  !this.copyStyle.active          = (!writable and !styleSelected)
+  !this.removeStyle.active        = (!writable and !styleSelected)
+  !this.updateStyle.active        = (!writable and !styleSelected)
+  !this.moveCollectionUp.active   = (!writable and !collectionSelected and !this.selectedCollectionRows.findFirst(1).unset())
+  !this.moveCollectionDown.active = (!writable and !collectionSelected and !this.selectedCollectionRows.findFirst(!this.collectionsRowSet.size()).unset())
+  !this.addCollection.active      = (!writable)
+  !this.copyCollection.active     = (!writable and !collectionSelected)
+  !this.removeCollection.active   = (!writable and !collectionSelected)
+  !this.updateCollection.active   = (!writable and !collectionSelected)
+  !this.reset.active              = (!writable)
+  !this.apply.active              = (!writable)
+
+endmethod
+
+------------------------------------------------------------------------
+--
+-- Method:      setStyleGadgetsFromRow
+--
+-- Description: set gadgets from styles grid control
+--
+------------------------------------------------------------------------
+define method .setStyleGadgetsFromRow(!row is REAL)
+
+  --populate for editing
+  if (!row.leq(!this.stylesRowSet.size())) then
+    !this.styleDesc.val = !this.stylesRowSet[!row][1]
+    !this.colour(!this.stylesRowSet[!row][2])
+    !this.edges.val = (!this.stylesRowSet[!row][4].eq('On'))
+    !this.translucency(!this.stylesRowSet[!row][3].real())
+  endif
+
+endmethod
+
+------------------------------------------------------------------------
+--
+-- Method:      stylesAfterSelect
+--
+-- Description: after select event for styles grid control
+--
+------------------------------------------------------------------------
+define method .stylesAfterSelect(!data is ARRAY)
+
+  --only process genuine user select events
+  if (!data[0].set()) then
+    --select items
+    !this.selectedStyleRows.clear()
+    do !val values !data[0]
+      !this.selectedStyleRows.append(!val.real())
+    enddo
+    --populate for editing
+    if (!this.selectedStyleRows.empty().not()) then
+      !this.setStyleGadgetsFromRow(!this.selectedStyleRows[1])
+    endif
+  else
+    !this.selectedStyleRows.clear()
+  endif
+  !this.activateGadgets()
+
+endmethod
+
+------------------------------------------------------------------------
+--
+-- Method:      setCollectionGadgetsFromRow
+--
+-- Description: set gadgets from collections grid control
+--
+------------------------------------------------------------------------
+define method .setCollectionGadgetsFromRow(!row is REAL)
+
+  --populate for editing
+  if (!row.leq(!this.collectionsRowSet.size())) then
+    !this.collectionDesc.val = !this.collectionsRowSet[!row][1]
+    !this.typeList.val       = !this.collectionsRowSet[!row][2]
+  endif
+
+endmethod
+
+------------------------------------------------------------------------
+--
+-- Method:      collectionsAfterSelect
+--
+-- Description: after select event for collections grid control
+--
+------------------------------------------------------------------------
+define method .collectionsAfterSelect(!data is ARRAY)
+
+  --only process genuine user select events
+  if (!data[0].set()) then
+    --select items
+    !this.selectedCollectionRows.clear()
+    do !val values !data[0]
+      !this.selectedCollectionRows.append(!val.real())
+    enddo
+    --populate for editing
+    if (!this.selectedCollectionRows.empty().not()) then
+      !this.setCollectionGadgetsFromRow(!this.selectedCollectionRows[1])
+    endif
+  else
+    !this.selectedCollectionRows.clear()
+  endif
+  !this.activateGadgets()
+
+endmethod
+
+------------------------------------------------------------------------
+--
+-- Method:      setQueryGadgetsFromRow
+--
+-- Description: set gadgets from queries grid control
+--
+------------------------------------------------------------------------
+define method .setQueryGadgetsFromRow(!row is REAL)
+
+  --populate for editing
+  if (!row.leq(!this.queriesRowSet.size())) then
+    !this.queryDesc.val  = !this.queriesRowSet[!row][1]
+    !this.expression.val = !this.queriesRowSet[!row][2]
+    !this.viewStyle.select('Dtext', !this.queriesRowSet[!row][3])
+    handle any
+    endhandle
+    !this.typeCollection.select('Dtext', !this.queriesRowSet[!row][4])
+    handle any
+    endhandle
+  endif
+
+endmethod
+
+------------------------------------------------------------------------
+--
+-- Method:      reloadQueryOptions
+--
+-- Description: reload the query lists after updating view styles and type collections
+--
+------------------------------------------------------------------------
+define method .reloadQueryOptions()
+
+  --reload the queries to pick up latest styles and collections
+  if (!this.selectedQueryRows.empty().not()) then
+    !this.config.setQueriesFrom()
+    !row = !this.selectedQueryRows[1]
+    !this.loadQueries(!row)
+    !this.viewStyle.select('Dtext', !this.queriesRowSet[!row][3])
+    handle any
+    endhandle
+    !this.typeCollection.select('Dtext', !this.queriesRowSet[!row][4])
+    handle any
+    endhandle
+  endif
+
+endmethod
+
+------------------------------------------------------------------------
+--
+-- Method:      queriesAfterSelect
+--
+-- Description: after select event for queries grid control
+--
+------------------------------------------------------------------------
+define method .queriesAfterSelect(!data is ARRAY)
+
+  --only process genuine user select events
+  if (!data[0].set()) then
+    --select items
+    !this.selectedQueryRows.clear()
+    do !val values !data[0]
+      !this.selectedQueryRows.append(!val.real())
+    enddo
+    --populate for editing
+    if (!this.selectedQueryRows.empty().not()) then
+      !queryRow = !this.selectedQueryRows[1]
+      !this.setQueryGadgetsFromRow(!queryRow)
+      --select the corresponding style
+      !styleRow = !this.config.styleIndexForQueryIndex(!queryRow)
+      if (!styleRow.set()) then
+        !this.loadStyles(!styleRow)
+      endif
+      --select the corresponding collection
+      !collectionRow = !this.config.collectionIndexForQueryIndex(!queryRow)
+      if (!collectionRow.set()) then
+        !this.loadCollections(!collectionRow)
+      endif
+    endif
+  else
+    !this.selectedQueryRows.clear()
+  endif
+  !this.activateGadgets()
+
+endmethod
+
+------------------------------------------------------------------------
+--
+-- Method:      setsAfterSelect
+--
+-- Description: after select event for query sets grid control
+--
+------------------------------------------------------------------------
+define method .setsAfterSelect(!data is ARRAY)
+
+  --only process genuine user select events
+  if (!data[0].set()) then
+    --select items
+    !this.selectedSetRows.clear()
+    do !val values !data[0]
+      !this.selectedSetRows.append(!val.real())
+    enddo
+    --populate for editing
+    if (!this.selectedSetRows.empty().not()) then
+      !this.loadSetMembers(!this.selectedSetRows[1])
+      !this.loadAvailable(!this.selectedSetRows[1])
+    endif
+  else
+    !this.selectedSetRows.clear()
+  endif
+  !this.activateGadgets()
+
+endmethod
+
+------------------------------------------------------------------------
+--
+-- Method:      setsBeforeCellUpdate
+--
+-- Description: cell edit event for editable steps grid
+--
+-- Arguments:
+--   [#] [R/RW] [Data Type] [Description]
+--    1   R      ARRAY       Grid data
+--                           [0] Value (STRING)
+--                           [1] Row
+--                           [2] Column heading
+--                           [3] Return Boolean
+--                           [4] Return error message
+--
+------------------------------------------------------------------------
+define method .setsBeforeCellUpdate(!data is ARRAY)
+
+  --store the value and cell location for use in after update callback
+  !this.setsCellEditData[1] = !data[0]
+  !this.setsCellEditData[2] = !data[1].real()
+  !this.setsCellEditData[3] = !data[2]
+
+endmethod
+
+------------------------------------------------------------------------
+--
+-- Method:      setsAfterCellUpdate
+--
+-- Description: cell edit event for editable steps grid
+--
+------------------------------------------------------------------------
+define method .setsAfterCellUpdate(!dummyData is ARRAY)
+
+  -- Retrieve the data stored in the before cell update callback
+  !value   = !this.setsCellEditData[1]
+  !row     = !this.setsCellEditData[2]
+  !heading = !this.setsCellEditData[3]
+
+  if (!heading.eq('Description')) then
+    !this.netSetsTable.allGridEvents(false)
+    !this.netSetsTable.setCellValue(!row, 1, !value)
+    !this.netSetsTable.setCellColor(!row, 1, 'cyan')
+    !this.netSetsTable.allGridEvents(true)
+    !this.config.updateSet(!row, !value)
+  endif
+
+endmethod
+
+------------------------------------------------------------------------
+--
+-- Method:      setMembersAfterSelect
+--
+-- Description: after select event for set members grid control
+--
+------------------------------------------------------------------------
+define method .setMembersAfterSelect(!data is ARRAY)
+
+  --only process genuine user select events
+  if (!data[0].set()) then
+    --select items
+    !this.selectedSetMemberRows.clear()
+    do !val values !data[0]
+      !this.selectedSetMemberRows.append(!val.real())
+    enddo
+  else
+    !this.selectedSetMemberRows.clear()
+  endif
+  !this.activateGadgets()
+
+endmethod
+
+------------------------------------------------------------------------
+--
+-- Method:      availableAfterSelect
+--
+-- Description: after select event for available queries grid control
+--
+------------------------------------------------------------------------
+define method .availableAfterSelect(!data is ARRAY)
+
+  --only process genuine user select events
+  if (!data[0].set()) then
+    --select items
+    !this.selectedAvailableRows.clear()
+    do !val values !data[0]
+      !this.selectedAvailableRows.append(!val.real())
+    enddo
+  else
+    !this.selectedAvailableRows.clear()
+  endif
+  !this.activateGadgets()
+
+endmethod
+
+------------------------------------------------------------------------
+--
+-- Method:   moveStyleUp
+--
+-- Description: move selected style rows up
+--
+------------------------------------------------------------------------
+define method .moveStyleUp()
+
+  using namespace  'Aveva.Core.Presentation'
+
+  if (!this.selectedStyleRows.findFirst(1).unset()) then
+    --move rows up
+    do !i values !this.selectedStyleRows
+      !this.config.moveStyleUp(!i)
+    enddo
+    --move selection to match
+    !selectedRows = !this.selectedStyleRows
+    do !i indices !selectedRows
+      !selectedRows[!i] = !selectedRows[!i] - 1
+    enddo
+    !this.loadStyles()
+    !this.netStylesTable.setSelectedRowTags(!selectedRows)
+  endif
+
+endmethod
+
+------------------------------------------------------------------------
+--
+-- Method:   moveStyleDown
+--
+-- Description: move selected style rows down
+--
+------------------------------------------------------------------------
+define method .moveStyleDown()
+
+  using namespace  'Aveva.Core.Presentation'
+
+  if (!this.selectedStyleRows.findFirst(!this.stylesRowSet.size()).unset()) then
+    --move rows down
+    do !i values !this.selectedStyleRows.invert()
+      !this.config.moveStyleDown(!i)
+    enddo
+    --move selection to match
+    !selectedRows = !this.selectedStyleRows
+    do !i indices !selectedRows
+      !selectedRows[!i] = !selectedRows[!i] + 1
+    enddo
+    !this.loadStyles()
+    !this.netStylesTable.setSelectedRowTags(!selectedRows)
+  endif
+
+endmethod
+
+------------------------------------------------------------------------
+--
+-- Method:   addStyle
+--
+-- Description: add style to grid
+--
+------------------------------------------------------------------------
+define method .addStyle()
+
+  using namespace  'Aveva.Core.Presentation'
+
+  --add new style
+  !this.config.addStyle()
+  !this.loadStyles()
+  !this.reloadQueryOptions()
+  !rows[1] = !this.stylesRowSet.size()
+  !this.netStylesTable.setSelectedRowTags(!rows)
+
+endmethod
+
+------------------------------------------------------------------------
+--
+-- Method:   copyStyle
+--
+-- Description: copy style from grid
+--
+------------------------------------------------------------------------
+define method .copyStyle()
+
+  --copy selected style
+  if (!this.selectedStyleRows.empty().not()) then
+    !row = !this.selectedStyleRows[1]
+    !this.config.copyStyle(!row)
+  endif
+  !this.loadStyles()
+  !this.reloadQueryOptions()
+  !rows[1] = !this.stylesRowSet.size()
+  !this.netStylesTable.setSelectedRowTags(!rows)
+
+endmethod
+
+------------------------------------------------------------------------
+--
+-- Method:   removeStyle
+--
+-- Description: remove style from grid
+--
+------------------------------------------------------------------------
+define method .removeStyle()
+
+  --remove selected style
+  if (!this.selectedStyleRows.empty().not()) then
+    !row = !this.selectedStyleRows[1]
+    if (!this.config.styleInUse(!row)) then
+      return error 1 'View Style is in use'
+    endif
+    !this.config.removeStyle(!row)
+  endif
+  !this.loadStyles()
+  !this.reloadQueryOptions()
+  !this.selectedStyleRows.clear()
+  !this.netStylesTable.clearRowSelection()
+
+endmethod
+
+------------------------------------------------------------------------
+--
+-- Method:   updateStyle
+--
+-- Description: update style in grid
+--
+------------------------------------------------------------------------
+define method .updateStyle()
+
+  using namespace  'Aveva.Core.Presentation'
+
+  --update style from gadgets
+  if (!this.selectedStyleRows.empty().not()) then
+    !row = !this.selectedStyleRows[1]
+    !this.config.updateStyle(!row, !this.styleDesc.val, !this.currentColour, !this.translucency.val.real(), !this.edges.val)
+    !this.loadStyles()
+    !this.reloadQueryOptions()
+    !rows[1] = !row
+    !this.netStylesTable.setSelectedRowTags(!rows)
+    !this.selectedStyleRows.clear()
+    !this.netStylesTable.clearRowSelection()
+  endif
+
+endmethod
+
+------------------------------------------------------------------------
+--
+-- Method:   moveCollectionUp
+--
+-- Description: move selected collection rows up
+--
+------------------------------------------------------------------------
+define method .moveCollectionUp()
+
+  using namespace  'Aveva.Core.Presentation'
+
+  if (!this.selectedCollectionRows.findFirst(1).unset()) then
+    --move rows up
+    do !i values !this.selectedCollectionRows
+      !this.config.moveCollectionUp(!i)
+    enddo
+    --move selection to match
+    !selectedRows = !this.selectedCollectionRows
+    do !i indices !selectedRows
+      !selectedRows[!i] = !selectedRows[!i] - 1
+    enddo
+    !this.loadCollections()
+    !this.netCollectionsTable.setSelectedRowTags(!selectedRows)
+  endif
+
+endmethod
+
+------------------------------------------------------------------------
+--
+-- Method:   moveCollectionDown
+--
+-- Description: move selected collection rows down
+--
+------------------------------------------------------------------------
+define method .moveCollectionDown()
+
+  using namespace  'Aveva.Core.Presentation'
+
+  if (!this.selectedCollectionRows.findFirst(!this.collectionsRowSet.size()).unset()) then
+    --move rows down
+    do !i values !this.selectedCollectionRows.invert()
+      !this.config.moveCollectionDown(!i)
+    enddo
+    --move selection to match
+    !selectedRows = !this.selectedCollectionRows
+    do !i indices !selectedRows
+      !selectedRows[!i] = !selectedRows[!i] + 1
+    enddo
+    !this.loadCollections()
+    !this.netCollectionsTable.setSelectedRowTags(!selectedRows)
+  endif
+
+endmethod
+
+------------------------------------------------------------------------
+--
+-- Method:   addCollection
+--
+-- Description: add collection to grid
+--
+------------------------------------------------------------------------
+define method .addCollection()
+
+  using namespace  'Aveva.Core.Presentation'
+
+  --add new collection
+  !this.config.addCollection()
+  !this.loadCollections(!this.collectionsRowSet.size() + 1)
+  !this.reloadQueryOptions()
+  !rows[1] = !this.collectionsRowSet.size()
+  !this.netCollectionsTable.setSelectedRowTags(!rows)
+
+endmethod
+
+------------------------------------------------------------------------
+--
+-- Method:   copyCollection
+--
+-- Description: copy collection from grid
+--
+------------------------------------------------------------------------
+define method .copyCollection()
+
+  --copy selected collection
+  if (!this.selectedCollectionRows.empty().not()) then
+    !row = !this.selectedCollectionRows[1]
+    !this.config.copyCollection(!row)
+  endif
+  !this.loadCollections()
+  !this.reloadQueryOptions()
+  !rows[1] = !this.collectionsRowSet.size()
+  !this.netCollectionsTable.setSelectedRowTags(!rows)
+
+endmethod
+
+------------------------------------------------------------------------
+--
+-- Method:   removeCollection
+--
+-- Description: remove collection from grid
+--
+------------------------------------------------------------------------
+define method .removeCollection()
+
+  --remove selected collection
+  if (!this.selectedCollectionRows.empty().not()) then
+    !row = !this.selectedCollectionRows[1]
+    if (!this.config.collectionInUse(!row)) then
+      return error 1 'Type Collection is in use'
+    endif
+    !this.config.removeCollection(!row)
+  endif
+  !this.loadCollections()
+  !this.reloadQueryOptions()
+
+endmethod
+
+------------------------------------------------------------------------
+--
+-- Method:   updateCollection
+--
+-- Description: update collection in grid
+--
+------------------------------------------------------------------------
+define method .updateCollection()
+
+  using namespace  'Aveva.Core.Presentation'
+
+  --update collection from gadgets
+  if (!this.selectedCollectionRows.empty().not()) then
+    !row = !this.selectedCollectionRows[1]
+    !this.config.updateCollection(!row, !this.collectionDesc.val, !this.typeList.val)
+    !this.loadCollections()
+    !this.reloadQueryOptions()
+    !rows[1] = !row
+    !this.netCollectionsTable.setSelectedRowTags(!rows)
+  endif
+
+endmethod
+
+------------------------------------------------------------------------
+--
+-- Method:   moveQueryUp
+--
+-- Description: move selected query rows up
+--
+------------------------------------------------------------------------
+define method .moveQueryUp()
+
+  using namespace  'Aveva.Core.Presentation'
+
+  if (!this.selectedQueryRows.findFirst(1).unset()) then
+    --move rows up
+    do !i values !this.selectedQueryRows
+      !this.config.moveQueryUp(!i)
+    enddo
+    --move selection to match
+    !selectedRows = !this.selectedQueryRows
+    do !i indices !selectedRows
+      !selectedRows[!i] = !selectedRows[!i] - 1
+    enddo
+    !this.loadQueries()
+    !this.netQueriesTable.setSelectedRowTags(!selectedRows)
+  endif
+
+endmethod
+
+------------------------------------------------------------------------
+--
+-- Method:   moveQueryDown
+--
+-- Description: move selected query rows down
+--
+------------------------------------------------------------------------
+define method .moveQueryDown()
+
+  using namespace  'Aveva.Core.Presentation'
+
+  if (!this.selectedQueryRows.findFirst(!this.queriesRowSet.size()).unset()) then
+    --move rows down
+    do !i values !this.selectedQueryRows.invert()
+      !this.config.moveQueryDown(!i)
+    enddo
+    --move selection to match
+    !selectedRows = !this.selectedQueryRows
+    do !i indices !selectedRows
+      !selectedRows[!i] = !selectedRows[!i] + 1
+    enddo
+    !this.loadQueries()
+    !this.netQueriesTable.setSelectedRowTags(!selectedRows)
+  endif
+
+endmethod
+
+------------------------------------------------------------------------
+--
+-- Method:   addQuery
+--
+-- Description: add query to grid
+--
+------------------------------------------------------------------------
+define method .addQuery()
+
+  using namespace  'Aveva.Core.Presentation'
+
+  --add new query
+  !this.config.addQuery()
+  !this.loadStyles()
+  !this.loadCollections()
+  !this.loadQueries(!this.queriesRowSet.size() + 1)
+
+endmethod
+
+------------------------------------------------------------------------
+--
+-- Method:   copyQuery
+--
+-- Description: copy query from grid
+--
+------------------------------------------------------------------------
+define method .copyQuery()
+
+  --copy selected query
+  if (!this.selectedQueryRows.empty().not()) then
+    !row = !this.selectedQueryRows[1]
+    !this.config.copyQuery(!row)
+  endif
+  !this.loadQueries(!this.queriesRowSet.size() + 1)
+
+endmethod
+
+------------------------------------------------------------------------
+--
+-- Method:   removeQuery
+--
+-- Description: remove query from grid
+--
+------------------------------------------------------------------------
+define method .removeQuery()
+
+  --remove selected query
+  if (!this.selectedQueryRows.empty().not()) then
+    !row = !this.selectedQueryRows[1]
+    if (!this.config.queryInUse(!row)) then
+      return error 1 'Query is in use'
+    endif
+    !this.config.removeQuery(!row)
+  endif
+  !this.loadQueries()
+
+endmethod
+
+------------------------------------------------------------------------
+--
+-- Method:   updateQuery
+--
+-- Description: update query in grid
+--
+------------------------------------------------------------------------
+define method .updateQuery()
+
+  using namespace  'Aveva.Core.Presentation'
+
+  --update query from gadgets
+  if (!this.selectedQueryRows.empty().not()) then
+    !row = !this.selectedQueryRows[1]
+    !expression = object EXPRESSION(!this.expression.val)
+    !this.config.updateQuery(!row, !this.queryDesc.val, !expression, !this.viewStyle.val, !this.typeCollection.val)
+    !this.loadQueries(!row)
+  endif
+
+endmethod
+
+------------------------------------------------------------------------
+--
+-- Method:   moveSetUp
+--
+-- Description: move selected query set rows up
+--
+------------------------------------------------------------------------
+define method .moveSetUp()
+
+  using namespace  'Aveva.Core.Presentation'
+
+  if (!this.selectedSetRows.findFirst(1).unset()) then
+    --move rows up
+    do !i values !this.selectedSetRows
+      !this.config.moveSetUp(!i)
+    enddo
+    --move selection to match
+    !selectedRows = !this.selectedSetRows
+    do !i indices !selectedRows
+      !selectedRows[!i] = !selectedRows[!i] - 1
+    enddo
+    !this.loadSets(!selectedRows[1])
+  endif
+
+endmethod
+
+------------------------------------------------------------------------
+--
+-- Method:   moveSetDown
+--
+-- Description: move selected query rows down
+--
+------------------------------------------------------------------------
+define method .moveSetDown()
+
+  using namespace  'Aveva.Core.Presentation'
+
+  if (!this.selectedSetRows.findFirst(!this.setsRowSet.size()).unset()) then
+    --move rows down
+    do !i values !this.selectedSetRows.invert()
+      !this.config.moveSetDown(!i)
+    enddo
+    --move selection to match
+    !selectedRows = !this.selectedSetRows
+    do !i indices !selectedRows
+      !selectedRows[!i] = !selectedRows[!i] + 1
+    enddo
+    !this.loadSets(!selectedRows[1])
+  endif
+
+endmethod
+
+------------------------------------------------------------------------
+--
+-- Method:   addSet
+--
+-- Description: add query set to grid
+--
+------------------------------------------------------------------------
+define method .addSet()
+
+  using namespace  'Aveva.Core.Presentation'
+
+  --add new query set
+  !this.config.addSet()
+  !this.loadSets(!this.setsRowSet.size() + 1)
+
+endmethod
+
+------------------------------------------------------------------------
+--
+-- Method:   removeSet
+--
+-- Description: remove query set from grid
+--
+------------------------------------------------------------------------
+define method .removeSet()
+
+  --remove selected set
+  if (!this.selectedSetRows.empty().not()) then
+    !row = !this.selectedSetRows[1]
+    !this.config.removeSet(!row)
+  endif
+  !this.loadSets()
+
+endmethod
+
+------------------------------------------------------------------------
+--
+-- Method:   moveMemberUp
+--
+-- Description: move selected set member rows up
+--
+------------------------------------------------------------------------
+define method .moveMemberUp()
+
+  using namespace  'Aveva.Core.Presentation'
+
+  if (!this.selectedSetMemberRows.findFirst(1).unset()) then
+    --move rows up
+    do !i values !this.selectedSetMemberRows
+      !this.config.moveMemberUp(!this.selectedSetRows[1], !i)
+    enddo
+    --move selection to match
+    !selectedRows = !this.selectedSetMemberRows
+    do !i indices !selectedRows
+      !selectedRows[!i] = !selectedRows[!i] - 1
+    enddo
+    !this.loadSetMembers(!this.selectedSetRows[1], !selectedRows[1])
+  endif
+
+endmethod
+
+------------------------------------------------------------------------
+--
+-- Method:   moveMemberDown
+--
+-- Description: move selected set member rows down
+--
+------------------------------------------------------------------------
+define method .moveMemberDown()
+
+  using namespace  'Aveva.Core.Presentation'
+
+  if (!this.selectedSetMemberRows.findFirst(!this.setMembersRowSet.size()).unset()) then
+    --move rows down
+    do !i values !this.selectedSetMemberRows.invert()
+      !this.config.moveMemberDown(!this.selectedSetRows[1], !i)
+    enddo
+    --move selection to match
+    !selectedRows = !this.selectedSetMemberRows
+    do !i indices !selectedRows
+      !selectedRows[!i] = !selectedRows[!i] + 1
+    enddo
+    !this.loadSetMembers(!this.selectedSetRows[1], !selectedRows[1])
+  endif
+
+endmethod
+
+------------------------------------------------------------------------
+--
+-- Method:   addMember
+--
+-- Description: add member to grid
+--
+------------------------------------------------------------------------
+define method .addMember()
+
+  using namespace  'Aveva.Core.Presentation'
+
+  --add new set member
+  if (!this.selectedAvailableRows.empty().not()) then
+    !this.config.addMember(!this.selectedSetRows[1], !this.selectedAvailableRows)
+    !this.loadSetMembers(!this.selectedSetRows[1], !this.setMembersRowSet.size() + 1)
+    !this.loadAvailable(!this.selectedSetRows[1])
+  endif
+
+endmethod
+
+------------------------------------------------------------------------
+--
+-- Method:   removeMember
+--
+-- Description: remove member from grid
+--
+------------------------------------------------------------------------
+define method .removeMember()
+
+  --remove selected set member
+  if (!this.selectedSetMemberRows.empty().not()) then
+    !this.config.removeMember(!this.selectedSetRows[1], !this.selectedSetMemberRows)
+    !this.loadSetMembers(!this.selectedSetRows[1])
+    !this.loadAvailable(!this.selectedSetRows[1])
+  endif
+
+endmethod
+
+------------------------------------------------------------------------
+--
+-- Method:      colour
+--
+-- Description: select display colour
+--
+------------------------------------------------------------------------
+
+define method .colour()
+
+  --display colour selection form
+  call !!colourSelectLoad(|!!vsqConfiguration.colour(!!colourSelectGet())|, |Color|, !this.currentColour)
+
+endmethod
+
+------------------------------------------------------------------------
+--
+-- Method:      colour
+--
+-- Description: set display colour
+--
+------------------------------------------------------------------------
+
+define method .colour(!colour is REAL)
+
+  --set display colour
+  !colourObject = object COLOUR(!colour)
+  handle any
+    !colourObject = object COLOUR(1)
+  endhandle
+  !this.colourName.val    = !colourObject.name
+  !this.colour.background = !colourObject.code
+  !this.currentColour     = !colourObject.code
+  !this.colourName.refresh()
+
+endmethod
+
+------------------------------------------------------------------------
+--
+-- Method:      colour
+--
+-- Description: set display colour
+--
+------------------------------------------------------------------------
+
+define method .colour(!colour is STRING)
+
+  --set display colour
+  !colourObject = object COLOUR(!colour)
+  handle any
+    !colourObject = object COLOUR(1)
+  endhandle
+  !this.colourName.val    = !colourObject.name
+  !this.colour.background = !colourObject.code
+  !this.currentColour     = !colourObject.code
+  !this.colourName.refresh()
+
+endmethod
+
+------------------------------------------------------------------------
+--
+-- Method:      translucency
+--
+-- Description: set display of translucency
+--
+------------------------------------------------------------------------
+
+define method .translucency(!translucency is REAL)
+
+  --set display of translucency
+  !this.translucency.val = !translucency.string()
+  !this.slide.val        = !translucency
+  !this.translucency.refresh()
+  !this.slide.refresh()
+
+endmethod
+
+------------------------------------------------------------------------
+--
+-- Method:      slide
+--
+-- Description: set translucency
+--
+------------------------------------------------------------------------
+
+define method .slide(!dummyGadget is GADGET, !action is STRING)
+
+  --slider events
+  if (!action eq |START|) then
+    --no action
+  elseif (!action eq |STOP|) then
+    --no action
+  elseif (!action eq |MOVE|) then
+    --update value
+    !this.translucency.val = !this.slide.val.string()
+    !this.translucency.refresh()
+  endif
+
+endmethod
+
+------------------------------------------------------------------------
+--
+-- Method:      nudge
+--
+-- Description: nudge slider
+--
+------------------------------------------------------------------------
+
+define method .nudge(!gadget is GADGET, !dummyAction is STRING)
+
+  --nudge button events
+  !translucency = !this.translucency.val.real()
+  if (!gadget eq !this.less) then
+    if (!translucency gt 0) then
+      !translucency = !translucency - 1
+    endif
+  elseif (!gadget eq !this.more) then
+    if (!translucency lt 99) then
+      !translucency = !translucency + 1
+    endif
+  endif
+  --update value
+  !this.translucency(!translucency)
+
+endmethod
+
+------------------------------------------------------------------------
+--
+-- Method:   expression
+--
+-- Description: check the expression is valid
+--
+------------------------------------------------------------------------
+define method .expression()
+
+  --check the expression
+  if (!this.expression.val.trim().subString(1, 1).neq(|(|)) then
+    !this.expression.val = |( | & !this.expression.val
+  endif
+  if (!this.expression.val.trim().subString(-1, 1).neq(|)|)) then
+    !this.expression.val = !this.expression.val & | )|
+  endif
+  !unusedExpression = object EXPRESSION(!this.expression.val)
+  handle any
+    !!alert.error(!!error.text)
+  endhandle
+
+endmethod
+
+------------------------------------------------------------------------
+--
+-- Method:   reset
+--
+-- Description: reset form content to last apply
+--
+------------------------------------------------------------------------
+define method .reset()
+
+  --refresh the config from the database
+  !this.init()
+
+endmethod
+
+------------------------------------------------------------------------
+--
+-- Method:   export
+--
+-- Description: output configuration to macro
+--
+------------------------------------------------------------------------
+define method .export()
+
+  using namespace 'Aveva.Core.Presentation'
+
+  --save configuration
+  !filename = 'vsqConfig.pmlmac'
+  !fileBrowser = object PMLFILEBROWSER('SAVE')
+  !fileBrowser.show(!this.homeDirectory, !filename, 'Save Visual Query Configuration', false, 'PML Macro files (*.pmlmac)|*.pmlmac', 1)
+  !filename = !fileBrowser.file()
+
+  -- Save if browser actioned
+  if( !filename.empty().not()) then
+    !file = object FILE(!filename)
+    !this.homeDirectory = !file.pathname()
+    !this.config.export(object FILE(!filename))
+  endif
+
+endmethod
+
+------------------------------------------------------------------------
+--
+-- Method:   apply
+--
+-- Description: save values to database
+--
+------------------------------------------------------------------------
+define method .apply()
+
+  --write config to database
+  !this.config.write()
+
+endmethod
+
+------------------------------------------------------------------------
+--
+-- Method:   close
+--
+-- Description: tidy up and close form
+--
+------------------------------------------------------------------------
+define method .close(!calledFrom is STRING)
+
+  -- Check for unsaved changes
+  if (!this.config.getPendingChanges()) then
+    !answer = !!alert.question('You have unsaved changes. Save changes before closing?')
+    if (!answer eq 'CANCEL') then
+      --error needed for this to remain open when called from quit call
+      if (!calledFrom.eq('QUIT')) then
+        return error 1 ''
+      else
+        return
+      endif
+    elseif (!answer eq 'YES') then
+      !this.apply()
+    endif
+  endif
+  !this.hide()
+
+endmethod

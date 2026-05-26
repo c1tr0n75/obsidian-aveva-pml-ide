@@ -1,0 +1,2081 @@
+------------------------------------------------------------------------
+--
+-- Copyright 1974 to current year. AVEVA Solutions Limited and its subsidiaries. All rights reserved in original code only.
+--
+-- File:            comformatsselect.pmlfrm
+--   Type:          Form Definition
+--   Group:         General Application
+
+--     Keyword:     GEN
+--   Module:        common
+--   Replaces:
+--
+-- Author:          A.Kirkland
+-- Created:         Mon Nov 8 15:34:26 "GMT 1999
+--
+--
+-- Description:
+-- form to select the units for the session
+--
+------------------------------------------------------------------------
+--
+-- Methods defined:
+--
+--  Method call                      Return              Description
+--  ===========                      ======              ===========
+--  changeAngle()                    -                   Set angle Format. Angle units not changed.
+--  changeBore()                     -                   Set distance unit
+--  changeCurrent()                  -
+--  changeDimension(STRING,STRING)   -                   Set unit for given dimension
+--  changeDistance()                 -                   Set distance unit
+--  changeEMF()                      -                   Set EMF unit
+--  changeEnergy()                   -                   Set energy unit
+--  changeForce()                    -                   Set force unit
+--  changeImpedance()                -                   Set impedance unit
+--  changeMass()                     -                   Set mass unit
+--  changePower()                    -                   Set power unit
+--  changePressure()                 -                   Set pressure unit
+--  changeTemperature()              -                   Set temperature unit
+--  changeTime()                     -                   Set time unit
+--  comFormatsSelect()               -                   Constructor
+--  getAllowedUnits(GADGET)          STRING              Get dtext array as comma separated string
+--  getDefaultUnitIndex(GADGET,STRING) REAL                Gets the index of the current saved unit for the dimension
+--  init()                           -                   initialise the form
+--  restoreSavedUnits(STRING,BOOLEAN) -                   restore the units from AVEVA_DESIGN_USER or AVEVA_DESIGN_DFLTS
+--  saveCurrentUnits()               -                   save the units to file for next PDMS entry session
+--  selectDimension()                -                   Select dimension from list
+--  setAngleFromCS(REAL)             -                   Sets the selected angle unit to the one selected in the backstage, then saves it to user defaults
+--  setBoreFromCS(REAL)              -                   Sets the selected bore unit to the one selected in the backstage, then saves it to user defaults
+--  setCurrentFromCS(REAL)           -                   Sets the selected current unit to the one selected in the backstage, then saves it to user defaults
+--  setDistanceFromCS(REAL)          -                   Sets the selected distance unit to the one selected in the backstage, then saves it to user defaults
+--  setEnergyFromCS(REAL)            -                   Sets the selected energy unit to the one selected in the backstage, then saves it to user defaults
+--  setForceFromCS(REAL)             -                   Sets the selected force unit to the one selected in the backstage, then saves it to user defaults
+--  setImpedanceFromCS(REAL)         -                   Sets the selected impedance unit to the one selected in the backstage, then saves it to user defaults
+--  setMassFromCS(REAL)              -                   Sets the selected mass unit to the one selected in the backstage, then saves it to user defaults
+--  setPowerFromCS(REAL)             -                   Sets the selected power unit to the one selected in the backstage, then saves it to user defaults
+--  setPressureFromCS(REAL)          -                   Sets the selected pressure unit to the one selected in the backstage, then saves it to user defaults
+--  setTemperatureFromCS(REAL)       -
+--  setTimeFromCS(REAL)              -                   Sets the selected time unit to the one selected in the backstage, then saves it to user defaults
+--  setVoltageFromCS(REAL)           -                   Sets the selected voltage unit to the one selected in the backstage, then saves it to user defaults
+--  updateAngle()                    -                   Update angle selection frame
+--  updateBore(BOOLEAN)              -                   set the global format to the selected format from the bore list
+--  updateCurrent()                  -                   Update electrical current selection frame
+--  updateDimension()                -                   Update dimension list
+--  updateDistance(BOOLEAN)          -                   set the global format to the selected format from the distance list
+--  updateEMF()                      -                   Update EMF selection frame
+--  updateEnergy()                   -                   Update energy selection frame
+--  updateForce()                    -                   Update force selection frame
+--  updateImpedance()                -                   Update impedance selection frame
+--  updateList(GADGET,STRING)        -                   Update gadget for given dimension
+--  updateMass()                     -                   Update mass selection frame
+--  updatePower()                    -                   Update power selection frame
+--  updatePressure()                 -                   Update pressure selection frame
+--  updateTemperature()              -                   Update temperature selection frame
+--  updateTime()                     -                   Update time selection frame
+--  validateIndex(REAL,ARRAY,STRING) REAL                Checks the index's value is valid and corrects it if not.
+--
+------------------------------------------------------------------------
+
+setup form !!comFormatsSelect resize
+
+  !this.formTitle       = 'Current Session Units'
+  !this.iconTitle       = 'Units'
+  !this.cancelCall      = ''
+
+  -- Body of form definition
+
+  list .dimension at x0.5 y0.2 anchor t+l+b width 20 length 18
+
+  frame    .distFrame       'Distance' at xmax.dimension+0.5 ymin.dimension anchor all
+    list   .distanceList                   at        ymax+0.1 anchor all   width 32 length 9
+    text   .distanceExample 'Example'      at xmin   ymax+0.5 anchor b+l+r width 14 is REAL format !!tryDistanceFmt
+    button .applyDist    'Set Distance Unit'   at x20    y10  anchor b+r   width 14
+  exit
+
+  frame    .boreFrame    'Bore'  at xmax.dimension+0.5 ymin.dimension anchor all
+    list   .boreList                       at        ymax+0.1 anchor all   width 32 length 6
+    para   .boreExample                    at xmin   ymax+0.5 anchor b+l+r  text 'Example' width 14 lines 1
+    button .applyBore    'Set Bore Unit'   at xmin.applyDist ymin.applyDist anchor b+r   width 14
+  exit
+
+  frame    .anglFrame    'Angle'       at xmax.dimension+0.5 ymin.dimension anchor all
+    list   .angleList                      at        ymax+0.1 anchor all   width 32 length 5
+    text   .angleExample 'Example'         at xmin   ymax+0.5 anchor b+l+r width 14 is REAL format !!tryAngleFmt
+    button .applyAngle   'Set Angle Format' at xmin.applyDist ymin.applyDist anchor b+r   width 14
+  exit
+
+  frame    .massFrame    'Mass'        at xmax.dimension+0.5 ymin.dimension anchor all
+    list   .massList                       at        ymax+0.1 anchor all   width 32 length 10
+    text   .massExample  'Example'         at xmin   ymax+0.5 anchor b+l+r width 14 is REAL format !!tryMassFmt
+    button .applyMass    'Set Mass Unit'   at xmin.applyDist ymin.applyDist anchor b+r   width 14
+  exit
+
+  frame    .presFrame    'Pressure'    at xmax.dimension+0.5 ymin.dimension anchor all
+    list   .presList                       at        ymax+0.1 anchor all   width 32 length 10
+    text   .presExample  'Example'         at xmin   ymax+0.5 anchor b+l+r width 14 is REAL format !!tryPresFmt
+    button .applyPres    'Set Pressure Unit'   at xmin.applyDist ymin.applyDist anchor b+r   width 14
+  exit
+
+  frame    .tempFrame    'Temperature' at xmax.dimension+0.5 ymin.dimension anchor all
+    list   .tempList                       at        ymax+0.1 anchor all   width 32 length 6
+    text   .tempExample  'Example'         at xmin   ymax+0.5 anchor b+l+r width 14 is REAL format !!tryTempFmt
+    button .applyTemp    'Set Temperature Unit' at xmin.applyDist ymin.applyDist anchor b+r   width 14
+  exit
+
+  frame    .forcFrame    'Force'       at xmax.dimension+0.5 ymin.dimension anchor all
+    list   .forcList                       at        ymax+0.1 anchor all   width 32 length 7
+    text   .forcExample  'Example'         at xmin   ymax+0.5 anchor b+l+r width 14 is REAL format !!tryForcFmt
+    button .applyForc    'Set Force Unit'  at xmin.applyDist ymin.applyDist anchor b+r   width 14
+  exit
+
+  frame    .enerFrame    'Energy'      at xmax.dimension+0.5 ymin.dimension anchor all
+    list   .enerList                       at        ymax+0.1 anchor all   width 32 length 7
+    text   .enerExample  'Example'         at xmin   ymax+0.5 anchor b+l+r width 14 is REAL format !!tryEnerFmt
+    button .applyEner    'Set Energy Unit' at xmin.applyDist ymin.applyDist anchor b+r   width 14
+  exit
+
+  frame    .poweFrame    'Power'       at xmax.dimension+0.5 ymin.dimension anchor all
+    list   .poweList                       at        ymax+0.1 anchor all   width 32 length 5
+    text   .poweExample  'Example'         at xmin   ymax+0.5 anchor b+l+r width 14 is REAL format !!tryPoweFmt
+    button .applyPowe    'Set Power Unit'  at xmin.applyDist ymin.applyDist anchor b+r   anchor b+r   width 14
+  exit
+
+  frame    .timeFrame    'Time'        at xmax.dimension+0.5 ymin.dimension anchor all
+    list   .timeList                       at        ymax+0.1 anchor all   width 32 length 5
+    text   .timeExample  'Example'         at xmin   ymax+0.5 anchor b+l+r width 14 is REAL format !!tryTimeFmt
+    button .applyTime    'Set Time Unit'   at xmin.applyDist ymin.applyDist anchor b+r   width 14
+  exit
+
+  frame    .currFrame    'Current'     at xmax.dimension+0.5 ymin.dimension anchor all
+    list   .currList                       at        ymax+0.1 anchor all   width 32 length 3
+    text   .currExample  'Example'         at xmin   ymax+0.5 anchor b+l+r width 14 is REAL format !!tryCurrFmt
+    button .applyCurr    'Set Current Unit'   at xmin.applyDist ymin.applyDist anchor b+r   width 14
+  exit
+
+  frame    .emfFrame     'Voltage'     at xmax.dimension+0.5 ymin.dimension anchor all
+    list   .emfList                        at        ymax+0.1 anchor all   width 32 length 3
+    text   .emfExample   'Example'         at xmin   ymax+0.5 anchor b+l+r width 14 is REAL format !!tryEmfFmt
+    button .applyEmf     'Set Voltage Unit'   at xmin.applyDist ymin.applyDist anchor b+r   width 14
+  exit
+
+  frame    .impeFrame    'Impedance'   at xmax.dimension+0.5 ymin.dimension anchor all
+    list   .impeList                       at        ymax+0.1 anchor all   width 32 length 3
+    text   .impeExample  'Example'         at xmin   ymax+0.5 anchor b+l+r width 14 is REAL format !!tryImpeFmt
+    button .applyImpe    'Set Impedance Unit' at xmin.applyDist ymin.applyDist anchor b+r   width 14
+  exit
+
+  frame .frmSaveRestoreSystem 'Save / Restore' at x0 ymax+0.25 anchor l+b+r width 59.8
+    button .btnRestore      'Project Defaults'  Anchor T+L callback '!this.restoreSavedUnits(|AVEVA_DESIGN_DFLTS|, true)' at x0.5 ymax
+    para   .parSaveRestoreUser at xmax+6 ymin anchor b+l  text 'User Settings:' width 13
+    button .btnSave         'Save   ' Anchor b+l callback '!this.saveCurrentUnits()' at xmax+1.7 ymin
+    button .btnRestoreSaved 'Restore' Anchor b+l callback '!this.restoreSavedUnits(|AVEVA_DESIGN_USER|, true)' at xmax+1 ymin
+  exit
+
+  button .cancel 'Cancel' at xmin.btnRestoreSaved ymax+.25 width 8 anchor b+r cancel
+
+  -- Dimension PTYP list handled by this form
+  member .dimensionPTypes        is ARRAY
+  -- name of dimension frame - tabulated against PTYP in dimension gadget
+  member .dimensionFrame         is ARRAY
+
+  -- index token for current displayed dimension frame
+  member .currentDimensionFrame  is REAL
+
+  -- token for last distance/bore format selected - user defined formats
+  member .lastDistanceToken      is STRING
+  member .lastBoreToken          is STRING
+
+  member .formatsControl       is COMFORMATSSELECTCONTROL
+
+exit
+-- End of form definition for !!comFormatsSelect
+
+------------------------------------------------------------------------
+--
+-- Method:      comFormatsSelect()
+--
+-- Description: Constructor
+--
+-- Method Type: Function/Procedure
+-- Arguments:
+--   [#] [R/RW] [Data Type] [Description]
+-- Return:
+--   [Data Type] [Description]
+--
+------------------------------------------------------------------------
+
+define method .comFormatsSelect()
+
+  !!tryDistanceFmt  = !!distanceFmt
+  !!tryBoreFmt      = !!boreFmt
+  !!tryAngleFmt     = !!angleFmt
+  !!tryMassFmt      = !!massFmt
+  !!tryPresFmt      = !!pressureFmt
+  !!tryTempFmt      = !!temperatureFmt
+  !!tryForcFmt      = !!forceFmt
+  !!tryEnerFmt      = !!energyFmt
+  !!tryPoweFmt      = !!powerFmt
+  !!tryTimeFmt      = !!timeFmt
+  !!tryCurrFmt      = !!currentFmt
+  !!tryEmfFmt       = !!emfFmt
+  !!tryImpeFmt      = !!impedanceFmt
+
+  -- callbacks
+  !this.callback                 = '!this.init()'
+  !this.distanceList.callback    = '!this.updateDistance(true)'
+  !this.applyDist.callback       = '!this.changeDistance()'
+  !this.boreList.callback        = '!this.updateBore(true)'
+  !this.applyBore.callback       = '!this.changeBore()'
+  !this.dimension.callback       = '!this.selectDimension()'
+
+  !this.angleList.callback       = '!this.updateAngle()'
+  !this.applyAngle.callback      = '!this.changeAngle()'
+  !this.massList.callback        = '!this.updateMass()'
+  !this.applyMass.callback       = '!this.changeMass()'
+  !this.presList.callback        = '!this.updatePressure()'
+  !this.applyPres.callback       = '!this.changePressure()'
+  !this.tempList.callback        = '!this.updateTemperature()'
+  !this.applyTemp.callback       = '!this.changeTemperature()'
+  !this.forcList.callback        = '!this.updateForce()'
+  !this.applyForc.callback       = '!this.changeForce()'
+  !this.enerList.callback        = '!this.updateEnergy()'
+  !this.applyEner.callback       = '!this.changeEnergy()'
+  !this.poweList.callback        = '!this.updatePower()'
+  !this.applyPowe.callback       = '!this.changePower()'
+  !this.timeList.callback        = '!this.updateTime()'
+  !this.applyTime.callback       = '!this.changeTime()'
+  !this.currList.callback        = '!this.updateCurrent()'
+  !this.applyCurr.callback       = '!this.changeCurrent()'
+  !this.emfList.callback         = '!this.updateEMF()'
+  !this.applyEmf.callback        = '!this.changeEMF()'
+  !this.impeList.callback        = '!this.updateImpedance()'
+  !this.applyImpe.callback       = '!this.changeImpedance()'
+
+  -- initialise dimensions list
+  !this.dimensionPTypes[1]  = 'DIST'
+  !this.dimensionPTypes[2]  = 'BORE'
+  !this.dimensionPTypes[3]  = 'MASS'
+  !this.dimensionPTypes[4]  = 'PRES'
+  !this.dimensionPTypes[5]  = 'TEMP'
+  !this.dimensionPTypes[6]  = 'FORC'
+  !this.dimensionPTypes[7]  = 'ENER'
+  !this.dimensionPTypes[8]  = 'POWE'
+  !this.dimensionPTypes[9]  = 'ANGL'
+  !this.dimensionPTypes[10] = 'TIME'
+  !this.dimensionPTypes[11] = 'CURR'
+  !this.dimensionPTypes[12] = 'EMF'
+  !this.dimensionPTypes[13] = 'IMPE'
+  --  !this.dimensionPTypes[14] = 'DENS'
+
+  -- get data for each PTYP
+  !this.dimensionFrame = ARRAY()
+  do !index indices !this.dimensionPTypes
+    !this.dimensionFrame[!index] = !this.dimensionPTypes[!index] + 'Frame'
+    !this.attribute(!this.dimensionFrame[!index]).visible = false
+    handle any
+    endhandle
+  enddo
+
+  !this.distFrame.visible        = true
+  !this.currentDimensionFrame    = 1
+
+  -- Tooltips
+  !this.distanceList.setTooltip('Select Required Distance Units')
+  !this.distanceExample.setTooltip('Enter a Value to Display an Example of Selected Distance Units')
+
+  !this.boreList.setTooltip('Select Required Bore Units')
+
+endmethod
+-- End of method definition for .comFormatsSelect()
+------------------------------------------------------------------------
+--
+-- Method:     init()
+--
+-- Description: initialise the form
+--
+-- Method Type: Function/Procedure
+-- Arguments:
+--   [#] [R/RW] [Data Type] [Description]
+-- Return:
+--   [Data Type] [Description]
+--
+------------------------------------------------------------------------
+
+define method .init()
+
+  -- initialise to first dimension in the list
+  !this.updateDimension()
+  !this.dimension.val    = 1
+  !this.selectDimension()
+
+  !this.updateDistance(false)
+  !this.updateBore(false)
+  !this.updateMass()
+  !this.updatePressure()
+  !this.updateTemperature()
+  !this.updateForce()
+  !this.updateEnergy()
+  !this.updatePower()
+  !this.updateAngle()
+  !this.updateTime()
+  !this.updateCurrent()
+  !this.updateEMF()
+  !this.updateImpedance()
+
+  -- Control ability of User to save and restore
+  !this.btnSave.active         = !!comFormats.allowUserSaveFile
+  !this.btnRestoreSaved.active = !!comFormats.allowUserSaveFile
+
+endmethod
+-- End of method definition for .init()
+
+------------------------------------------------------------------------
+--
+-- Method:     updateDimension()
+--
+-- Description: Update dimension list
+--
+-- Method Type: Function/Procedure
+-- Arguments:
+--   [#] [R/RW] [Data Type] [Description]
+-- Return:
+--   [Data Type] [Description]
+--
+------------------------------------------------------------------------
+
+define method .updateDimension()
+
+  if( !this.dimension.rText.empty() ) then
+    !currentDimension   = 1
+  else
+    !currentDimension   = !this.dimension.val
+  endif
+  if( !currentDimension eq 0 ) then
+    !currentDimension   = 1
+  endif
+
+  -- get data for each PTYP
+  !dText                = ARRAY()
+  do !index indices !this.dimensionPTypes
+    !dText[1][!index]   = !!comFormats.getDescriptionFromPtype(!this.dimensionPTypes[!index])
+    !currentUnit        = !!comFormats.getCurrentUnitsByPtype(!this.dimensionPTypes[!index])
+    if(!currentUnit.empty()) then
+      !dText[2][!index] = 'None'
+    else
+      !dText[2][!index] = !currentUnit
+    endif
+  enddo
+  !headings[1]          = 'Dimension'
+  !headings[2]          = 'Unit'
+  !this.dimension.setHeadings(!headings)
+  !this.dimension.setColumns(!dText)
+  !this.dimension.rText = !this.dimensionPTypes
+  !this.dimension.val   = !currentDimension
+
+endmethod
+-- End of method definition
+
+-----------------------------------------------------------------------
+--
+-- Method:     changeDistance()
+--
+-- Description: Set distance unit
+--
+-- Method Type: Function/Procedure
+-- Arguments:
+--   [#] [R/RW] [Data Type] [Description]
+-- Return:
+--   [Data Type] [Description]
+--
+------------------------------------------------------------------------
+
+define method .changeDistance()
+
+  !distanceSelection   = !this.distanceList.selection().upcase()
+  if( !distanceSelection.empty() ) then
+    !distanceSelection = 'NUMERIC'
+  endif
+
+  if( !distanceSelection.before(':') eq 'USER' ) then
+    !userSelection     = !distanceSelection.split(':')
+    !selectedUnit      = !!comFormats.userDefinitions[!userSelection[2].real()].units
+  else
+    !selectedUnit      = !distanceSelection
+  endif
+
+  UNITS $!selectedUnit DIST
+  handle any
+    -- leave units unchanged
+  endhandle
+
+  -- reset the global format to suit current unit and register cahange with core
+  !!comFormats.setGlobalDistanceFormat(!distanceSelection)
+  !!comformats.registerFormat('DIST', !!distanceFmt)
+
+  -- update dimension list and frame
+  !this.updateDimension()
+  !this.updateDistance(true)
+  !this.lastDistanceToken = !this.distanceList.selection()
+
+endmethod
+-- End of method definition
+
+------------------------------------------------------------------------
+--
+-- Method:     updateDistance()
+--
+-- Description: set the global format to the selected format from the distance list
+--
+-- Method Type: Function/Procedure
+-- Arguments:
+--   [#] [R/RW] [Data Type] [Description]
+-- Return:
+--   [Data Type] [Description]
+--
+------------------------------------------------------------------------
+
+define method .updateDistance(!useSelection is BOOLEAN)
+
+  !module         = !!module().fullName
+  handle any
+    !restrictUse  = false
+    !updateFormatObject = false
+  elsehandle none
+    !restrictUse  = !module.upcase() inset('DESIGN', 'OUTFITTING', 'SPOOLER')
+    !updateFormatObject = !module.upcase() eq 'DRAW'
+  endhandle
+
+  -- Get list of units where array[1] = dText
+  !isImperial     = !!isImperialLength('DIST')
+  !text = !this.formatsControl.getDistanceList(!restrictUse, !isImperial)
+  !dText = !text[1]
+  !rText = !text[2]
+
+  if( !this.distanceList.rText.empty()) then
+    -- first time the list has been created
+    !lastDistanceToken = ''
+  elseif(!useSelection ) then
+    -- use selected from list
+    !lastDistanceToken = !this.distanceList.selection()
+  else
+    -- reset to previous setting
+    !lastDistanceToken = !this.lastDistanceToken
+  endif
+
+  !index   = !rText.findFirst(!lastDistanceToken)
+  if( !index.unset() ) then
+    !index = 0
+  endif
+
+  if( !index eq 0 ) then
+    -- find current selected unit
+    !unit                   = !!comFormats.getCurrentUnitsByPtype('L')
+    !index                  = !rText.findFirst(!unit.upcase())
+    if( !index.unset() ) then
+      !index = 1
+    endif
+  endif
+
+  -- mark selected unit in list
+  !dText[!index]            = '> ' + !dText[!index] + ' <'
+  !this.distanceList.dText  = !dText
+  !this.distanceList.rText  = !rText
+  !this.distanceList.val    = !index
+
+  -- reset local distance format
+  !!tryDistanceFmt          = !!comFormats.distanceFormat(!rText[!index])
+
+  -- show the example
+  !value = !this.distanceExample.val
+  handle any
+    !value = object REAL()
+  endhandle
+
+  if (!value.unset()) then
+    !value = 0mm
+  endif
+  if( !value gt 0mm ) then
+    !this.distanceExample.val = !value
+  else
+    if( !isImperial ) then
+      !this.distanceExample.val = 50.675in
+    else
+      !this.distanceExample.val = 1234.567mm
+    endif
+  endif
+
+  !this.distanceExample.setFocus()
+
+  if (!updateFormatObject) then
+    if (defined(!!comformats)) then
+      !!distanceFmtForm = !!comformats.distanceFormatForm()
+    endif
+  endif
+
+endmethod
+-- End of method definition
+
+-----------------------------------------------------------------------
+--
+-- Method:     changeBore()
+--
+-- Description: Set distance unit
+--
+-- Method Type: Function/Procedure
+-- Arguments:
+--   [#] [R/RW] [Data Type] [Description]
+-- Return:
+--   [Data Type] [Description]
+--
+------------------------------------------------------------------------
+
+define method .changeBore()
+
+  !boreSelection = !this.boreList.selection().upcase()
+  if( !boreSelection.empty() ) then
+    !boreSelection = 'NUMERIC'
+  endif
+
+  if( !boreSelection.before(':') eq 'USER' ) then
+    !userSelection     = !boreSelection.split(':')
+    !selectedUnit      = !!comFormats.userDefinitions[!userSelection[2].real()].units
+  else
+    !selectedUnit      = !boreSelection
+  endif
+
+  UNITS $!selectedUnit BORE
+  handle any
+    -- leave units unchanged
+  endhandle
+
+  -- reset the global format to suit current unit and register with core
+  !!comFormats.setGlobalBoreFormat(!boreSelection)
+  !!comformats.registerFormat('BORE', !!boreFmt)
+
+  -- update dimension list and frame
+  !this.updateDimension()
+  !this.updateBore(true)
+
+endmethod
+-- End of method definition
+
+------------------------------------------------------------------------
+--
+-- Method:     updateBore()
+--
+-- Description: set the global format to the selected format from the bore list
+--
+-- Method Type: Function/Procedure
+-- Arguments:
+--   [#] [R/RW] [Data Type] [Description]
+-- Return:
+--   [Data Type] [Description]
+--
+------------------------------------------------------------------------
+
+define method .updateBore(!useSelection is BOOLEAN)
+
+  !isImperial = !!isImperialLength('BORE')
+  !dText[1]               = 'Millimetres'
+  !rText[1]               = 'MM'
+  !dText[2]               = 'Inch'
+  !rText[2]               = 'IN'
+
+  -- get user defined distance formats
+  !filteredFormats  = !!comFormats.getUserDefinedFormatTokens('BORE')
+
+  if( !filteredFormats.empty().not() ) then
+    !rText.appendArray(!filteredFormats)
+    !dText.appendArray(!!comFormats.getUserDefinedFormatDescriptions('USER: ',!filteredFormats))
+  endif
+
+  if( !this.boreList.rText.empty()) then
+    -- first time the list has been created
+    !index   = 0
+    !this.lastBoreToken = ''
+  elseif(!useSelection ) then
+    -- use selected from list
+    !index   = !this.boreList.val
+    !this.lastBoreToken = !this.boreList.selection()
+  else
+    -- reset to previous setting
+    !index   = !rText.findFirst(!this.lastBoreToken)
+    if( !index.unset() ) then
+      !index = 0
+    else
+      !this.lastBoreToken = !this.boreList.selection()
+    endif
+  endif
+
+  if( !index eq 0 ) then
+    if( !isImperial ) then
+      !index = 2
+    else
+      !index = 1
+    endif
+  endif
+
+  -- mark selected unit in list
+  !dText[!index]        = '> ' + !dText[!index] + ' <'
+  !this.boreList.dText  = !dText
+  !this.boreList.rText  = !rText
+  !this.boreList.val    = !index
+
+  !!tryBoreFmt = !!comFormats.boreFormat(!rText[!index])
+  !!tryBoreFmt.dimension = 'DIST'
+  if( !!tryBoreFmt.units.upcase().match('IN') gt 0 ) then
+    !value     = 4in
+  else
+    !value     = 100mm
+  endif
+
+  !this.boreExample.val = 'Example    ' + !value.string(!!tryBoreFmt)
+
+endmethod
+-- End of method definition for .exampleBore()
+
+------------------------------------------------------------------------
+--
+-- Method:     updateAngle()
+--
+-- Description: Update angle selection frame
+--
+-- Method Type: Function/Procedure
+-- Arguments:
+--   [#] [R/RW] [Data Type] [Description]
+-- Return:
+--   [Data Type] [Description]
+--
+------------------------------------------------------------------------
+
+define method .updateAngle()
+
+  !dText[1]               = 'Degrees'
+  !dText[2]               = 'Radians'
+  !dText[3]               = 'Gradians'
+  !dText[4]               = 'None'
+  !rText[1]               = 'DEGREE'
+  !rText[2]               = 'RADIAN'
+  !rText[3]               = 'GRAD'
+  !rText[4]               = ''
+
+  if( !this.angleList.rText.empty() ) then
+    -- initialise the list
+    !this.angleList.dText = !dText
+    !this.angleList.rText = !rText
+  endif
+
+  !angleSelection         = !this.angleList.selection()
+  !index                  = !this.angleList.val
+  !index                  = !this.validateIndex(!index, !rText, 'ANGLE')
+
+  !dText[!index]          = '> ' + !dText[!index] + ' <'
+  !this.angleList.dText   = !dText
+  !this.angleList.rText   = !rText
+  !this.angleList.val     = !index
+
+  -- reset local angle format
+  !!tryAngleFmt           = !!comFormats.angleFormat(!angleSelection.upcase())
+  if( !angleSelection.empty() ) then
+    !!tryAngleFmt.units   = 'DEGREE'
+    !!tryAngleFmt.label   = ''
+  else
+    !!tryAngleFmt.units   = !angleSelection
+  endif
+
+  !this.angleExample.val  = 1.23 radian
+  !this.angleExample.setFocus()
+
+endmethod
+-- End of method definition for .updateAngle()
+
+------------------------------------------------------------------------
+--
+-- Method:     changeAngle()
+--
+-- Description: Set angle Format. Angle units not changed.
+--
+-- Method Type: Function/Procedure
+-- Arguments:
+--   [#] [R/RW] [Data Type] [Description]
+-- Return:
+--   [Data Type] [Description]
+--
+------------------------------------------------------------------------
+
+define method .changeAngle()
+
+  !angleSelection = !this.angleList.selection().upcase()
+  if( !angleSelection.empty() ) then
+    !angleSelection = 'DEGREE'
+  endif
+
+  -- reset the global format to suit current unit
+  !!comFormats.setGlobalAngleFormat(!!comFormats.angleFormat(!angleSelection))
+
+  -- tell the core format manager that the angle unit has changed
+  import 'Aveva.Core.Presentation'
+  handle any
+  endhandle
+  using namespace 'Aveva.Core.Presentation'
+  -- PMLFORMATMANAGER is an interface to a global C# object so
+  -- we can work with a local instance of the interface
+  !formatManager = object PMLFORMATMANAGER()
+  !formatManager.addCurrentUnits(object MEASURE('ANGLE'), object UNIT(!angleSelection))
+  handle any
+  endhandle
+
+  -- update dimension list and frame
+  !this.updateDimension()
+  !this.updateAngle()
+
+endmethod
+-- End of method definition for .changeAngle()
+
+------------------------------------------------------------------------
+--
+-- Method:     updateMass()
+--
+-- Description: Update mass selection frame
+--
+-- Method Type: Function/Procedure
+-- Arguments:
+--   [#] [R/RW] [Data Type] [Description]
+-- Return:
+--   [Data Type] [Description]
+--
+------------------------------------------------------------------------
+
+define method .updateMass()
+
+  !this.updateList(!this.massList, 'MASS')
+
+  -- reset local mass format
+  !massSelection          = !this.massList.selection()
+  !!tryMassFmt            = !!comFormats.massFormat(!massSelection.upcase())
+  if( !massSelection.empty() ) then
+    !!tryMassFmt.units    = 'KG'
+    !!tryMassFmt.label    = ''
+  else
+    !!tryMassFmt.units    = !massSelection
+  endif
+
+  !this.massExample.val   = 1234.5678 kg
+  !this.massExample.setFocus()
+
+endmethod
+-- End of method definition for .updateMass()
+
+------------------------------------------------------------------------
+--
+-- Method:     changeMass()
+--
+-- Description: Set mass unit
+--
+-- Method Type: Function/Procedure
+-- Arguments:
+--   [#] [R/RW] [Data Type] [Description]
+-- Return:
+--   [Data Type] [Description]
+--
+------------------------------------------------------------------------
+
+define method .changeMass()
+
+  !massSelection = !this.massList.selection().upcase()
+
+  !this.changeDimension(!massSelection, 'MASS')
+
+  -- reset the global format to suit current unit
+  !!comFormats.setGlobalMassFormat()
+  !!comformats.registerFormat('MASS', !!massFmt)
+
+  -- update dimension list and frame
+  !this.updateDimension()
+  !this.updateMass()
+
+endmethod
+-- End of method definition for .changeMass()
+
+------------------------------------------------------------------------
+--
+-- Method:     updatePressure()
+--
+-- Description: Update pressure selection frame
+--
+-- Method Type: Function/Procedure
+-- Arguments:
+--   [#] [R/RW] [Data Type] [Description]
+-- Return:
+--   [Data Type] [Description]
+--
+------------------------------------------------------------------------
+
+define method .updatePressure()
+
+  !this.updateList(!this.presList, 'PRES')
+
+  -- reset local mass format
+  !pressureSelection      = !this.presList.selection()
+  !!tryPresFmt            = !!comFormats.pressureFormat(!pressureSelection.upcase())
+  if(!pressureSelection.empty()) then
+    !!tryPresFmt.units    = 'PASCAL'
+    !!tryPresFmt.label    = ''
+  else
+    !!tryPresFmt.units    = !pressureSelection
+  endif
+
+  !this.presExample.val   = 12.3456 bar
+  !this.presExample.setFocus()
+
+endmethod
+-- End of method definition for .updatePressure)
+
+------------------------------------------------------------------------
+--
+-- Method:     changePressure()
+--
+-- Description: Set pressure unit
+--
+-- Method Type: Function/Procedure
+-- Arguments:
+--   [#] [R/RW] [Data Type] [Description]
+-- Return:
+--   [Data Type] [Description]
+--
+------------------------------------------------------------------------
+
+define method .changePressure()
+
+  !pressureSelection = !this.presList.selection().upcase()
+  !this.changeDimension(!pressureSelection, 'PRES')
+
+  -- reset the global format to suit current unit
+  !!comFormats.setGlobalPressureFormat()
+  !!comformats.registerFormat('PRES', !!pressureFmt)
+
+  -- update dimension list and frame
+  !this.updateDimension()
+  !this.updatePressure()
+
+endmethod
+-- End of method definition for .changePressure()
+
+------------------------------------------------------------------------
+--
+-- Method:     updateTemperature()
+--
+-- Description: Update temperature selection frame
+--
+-- Method Type: Function/Procedure
+-- Arguments:
+--   [#] [R/RW] [Data Type] [Description]
+-- Return:
+--   [Data Type] [Description]
+--
+------------------------------------------------------------------------
+
+define method .updateTemperature()
+
+  !this.updateList(!this.tempList, 'TEMP')
+
+  -- reset local temperature format
+  !temperatureSelection   = !this.tempList.selection()
+  !!tryTempFmt            = !!comFormats.temperatureFormat(!temperatureSelection.upcase())
+  if( !temperatureSelection.empty() ) then
+    -- units disabled
+    !!tryTempFmt.units    = 'degC'
+    !!tryTempFmt.label    = ''
+  else
+    !!tryTempFmt.units      = !temperatureSelection
+  endif
+
+  !this.tempExample.val   = 100degC
+  !this.tempExample.setFocus()
+
+endmethod
+-- End of method definition for .updateTemperature()
+
+------------------------------------------------------------------------
+--
+-- Method:     changeTemperature()
+--
+-- Description: Set temperature unit
+--
+-- Method Type: Function/Procedure
+-- Arguments:
+--   [#] [R/RW] [Data Type] [Description]
+-- Return:
+--   [Data Type] [Description]
+--
+------------------------------------------------------------------------
+
+define method .changeTemperature()
+
+  !temperatureSelection   = !this.tempList.selection().upcase()
+  !this.changeDimension(!temperatureSelection, 'TEMP')
+
+  -- reset the global format to suit current unit
+  !!comFormats.setGlobalTemperatureFormat()
+  !!comformats.registerFormat('TEMP', !!temperatureFmt)
+
+  -- update dimension list and frame
+  !this.updateDimension()
+  !this.updateTemperature()
+
+endmethod
+-- End of method definition for .changeTemperature()
+
+------------------------------------------------------------------------
+--
+-- Method:     updatePower()
+--
+-- Description: Update power selection frame
+--
+-- Method Type: Function/Procedure
+-- Arguments:
+--   [#] [R/RW] [Data Type] [Description]
+-- Return:
+--   [Data Type] [Description]
+--
+------------------------------------------------------------------------
+
+define method .updatePower()
+
+  !this.updateList(!this.poweList, 'POWE')
+
+  -- reset local power format
+  !powerSelection         = !this.poweList.selection()
+  !!tryPoweFmt            = !!comFormats.powerFormat(!powerSelection.upcase())
+  if(!powerSelection.empty()) then
+    !!tryPoweFmt.units    = 'KW'
+    !!tryPoweFmt.label    = ''
+  else
+    !!tryPoweFmt.units    = !powerSelection
+  endif
+
+  !this.poweExample.val   = 1 kw
+  !this.poweExample.setFocus()
+
+endmethod
+-- End of method definition for .updatePower()
+
+------------------------------------------------------------------------
+--
+-- Method:     changePower()
+--
+-- Description: Set power unit
+--
+-- Method Type: Function/Procedure
+-- Arguments:
+--   [#] [R/RW] [Data Type] [Description]
+-- Return:
+--   [Data Type] [Description]
+--
+------------------------------------------------------------------------
+
+define method .changePower()
+
+  !powerSelection = !this.poweList.selection().upcase()
+  !this.changeDimension(!powerSelection, 'POWE')
+
+  -- reset the global format to suit current unit
+  !!comFormats.setGlobalPowerFormat()
+  !!comFormats.registerFormat('POWE', !!powerFmt)
+
+  -- update dimension list and frame
+  !this.updateDimension()
+  !this.updatePower()
+
+endmethod
+-- End of method definition for .changePower()
+
+------------------------------------------------------------------------
+--
+-- Method:     updateEnergy()
+--
+-- Description: Update energy selection frame
+--
+-- Method Type: Function/Procedure
+-- Arguments:
+--   [#] [R/RW] [Data Type] [Description]
+-- Return:
+--   [Data Type] [Description]
+--
+------------------------------------------------------------------------
+
+define method .updateEnergy()
+
+  !this.updateList(!this.enerList,'ENER')
+
+  -- reset local energy format
+  !energySelection        = !this.enerList.selection()
+  !!tryEnerFmt            = !!comFormats.energyFormat(!energySelection.upcase())
+  if(!energySelection.empty()) then
+    !!tryEnerFmt.units    = 'JOULE'
+    !!tryEnerFmt.label    = ''
+  else
+    !!tryEnerFmt.units      = !energySelection
+  endif
+
+  !this.enerExample.val   = 1 kwh
+  !this.enerExample.setFocus()
+
+endmethod
+-- End of method definition for .updateEnergy()
+
+------------------------------------------------------------------------
+--
+-- Method:     changeEnergy()
+--
+-- Description: Set energy unit
+--
+-- Method Type: Function/Procedure
+-- Arguments:
+--   [#] [R/RW] [Data Type] [Description]
+-- Return:
+--   [Data Type] [Description]
+--
+------------------------------------------------------------------------
+
+define method .changeEnergy()
+
+  !energySelection = !this.enerList.selection().upcase()
+  !this.changeDimension(!energySelection, 'ENER')
+
+  -- reset the global format to suit current unit
+  !!comFormats.setGlobalEnergyFormat()
+  !!comFormats.registerFormat('ENER', !!energyFmt)
+
+  -- update dimension list and frame
+  !this.updateDimension()
+  !this.updateEnergy()
+
+endmethod
+-- End of method definition for .changeEnergy()
+
+------------------------------------------------------------------------
+--
+-- Method:     updateForce()
+--
+-- Description: Update force selection frame
+--
+-- Method Type: Function/Procedure
+-- Arguments:
+--   [#] [R/RW] [Data Type] [Description]
+-- Return:
+--   [Data Type] [Description]
+--
+------------------------------------------------------------------------
+
+define method .updateForce()
+
+  !this.updateList(!this.forcList, 'FORC')
+
+  -- reset local force format
+  !forceSelection         = !this.forcList.selection()
+  !!tryForcFmt            = !!comFormats.forceFormat(!forceSelection.upcase())
+  if(!forceSelection.empty()) then
+    !!tryForcFmt.units    = 'NEWTON'
+    !!tryForcFmt.label    = ''
+  else
+    !!tryForcFmt.units    = !forceSelection
+  endif
+
+  !this.forcExample.val   = 1 newton
+  !this.forcExample.setFocus()
+
+endmethod
+-- End of method definition for .updateForce()
+
+------------------------------------------------------------------------
+--
+-- Method:     changeForce()
+--
+-- Description: Set force unit
+--
+-- Method Type: Function/Procedure
+-- Arguments:
+--   [#] [R/RW] [Data Type] [Description]
+-- Return:
+--   [Data Type] [Description]
+--
+------------------------------------------------------------------------
+
+define method .changeForce()
+
+  !forceSelection = !this.forcList.selection().upcase()
+  !this.changeDimension(!forceSelection, 'FORC')
+
+  -- reset the global format to suit current unit
+  !!comFormats.setGlobalForceFormat()
+  !!comFormats.registerFormat('FORC', !!forceFmt)
+
+  -- update dimension list and frame
+  !this.updateDimension()
+  !this.updateForce()
+
+endmethod
+-- End of method definition for .changeForce()
+
+------------------------------------------------------------------------
+--
+-- Method:     updateTime()
+--
+-- Description: Update time selection frame
+--
+-- Method Type: Function/Procedure
+-- Arguments:
+--   [#] [R/RW] [Data Type] [Description]
+-- Return:
+--   [Data Type] [Description]
+--
+------------------------------------------------------------------------
+
+define method .updateTime()
+
+  !dText[1]               = 'Second'
+  !dText[2]               = 'Minute'
+  !dText[3]               = 'Hour'
+  !dText[4]               = 'None'
+  !rText[1]               = 'SECOND'
+  !rText[2]               = 'MINUTE'
+  !rText[3]               = 'HOUR'
+  !rText[4]               = ''
+
+  if( !this.timeList.rText.empty() ) then
+    -- initialise the list
+    !this.timeList.dText  = !dText
+    !this.timeList.rText  = !rText
+  endif
+
+  !timeSelection          = !this.timeList.selection()
+  !index                  = !this.timeList.val
+  !index                  = !this.validateIndex(!index, !rText, 'TIME')
+
+  !dText[!index]          = '> ' + !dText[!index] + ' <'
+  !this.timeList.dText    = !dText
+  !this.timeList.rText    = !rText
+  !this.timeList.val      = !index
+
+  -- reset local force format
+  !!tryTimeFmt            = !!comFormats.timeFormat(!timeSelection.upcase())
+  if(!timeSelection.empty()) then
+    !!tryTimeFmt.units    = 'SECOND'
+    !!tryTimeFmt.label    = ''
+  else
+    !!tryTimeFmt.units    = !timeSelection
+  endif
+
+  !this.timeExample.val   = 1 hour
+  !this.timeExample.setFocus()
+
+endmethod
+-- End of method definition for .updateTime()
+
+------------------------------------------------------------------------
+--
+-- Method:     changeTime()
+--
+-- Description: Set time unit
+--
+-- Method Type: Function/Procedure
+-- Arguments:
+--   [#] [R/RW] [Data Type] [Description]
+-- Return:
+--   [Data Type] [Description]
+--
+------------------------------------------------------------------------
+
+define method .changeTime()
+
+  !timeSelection = !this.timeList.selection().upcase()
+  if( !timeSelection.empty() ) then
+    !timeSelection = 'NUMERIC'
+  endif
+
+  UNITS $!timeSelection TIME
+  handle any
+    -- leave units unchanged
+  endhandle
+
+  -- reset the global format to suit current unit
+  !!comFormats.setGlobalTimeFormat()
+  !!comFormats.registerFormat('TIME', !!timeFmt)
+
+  -- update dimension list and frame
+  !this.updateDimension()
+  !this.updateTime()
+
+endmethod
+-- End of method definition for .changeTime()
+
+------------------------------------------------------------------------
+--
+-- Method:     updateCurrent()
+--
+-- Description: Update electrical current selection frame
+--
+-- Method Type: Function/Procedure
+-- Arguments:
+--   [#] [R/RW] [Data Type] [Description]
+-- Return:
+--   [Data Type] [Description]
+--
+------------------------------------------------------------------------
+
+define method .updateCurrent()
+
+  !dText[1]               = 'Amps'
+  !dText[2]               = 'None'
+  !rText[1]               = 'AMP'
+  !rText[2]               = ''
+
+  if( !this.currList.rText.empty() ) then
+    -- initialise the list
+    !this.currList.dText  = !dText
+    !this.currList.rText  = !rText
+  endif
+
+  !currSelection          = !this.currList.selection()
+  !index                  = !this.currList.val
+  !index                  = !this.validateIndex(!index, !rText, 'CURR')
+
+  !dText[!index]          = '> ' + !dText[!index] + ' <'
+  !this.currList.dText    = !dText
+  !this.currList.rText    = !rText
+  !this.currList.val      = !index
+
+  -- reset local force format
+  !!tryCurrFmt            = !!comFormats.currentFormat(!currSelection.upcase())
+  if(!currSelection.empty()) then
+    !!tryCurrFmt.units    = 'AMP'
+    !!tryCurrFmt.label    = ''
+  else
+    !!tryCurrFmt.units    = !currSelection
+  endif
+
+  !this.currExample.val   = 1.234 amp
+  !this.currExample.setFocus()
+
+endmethod
+-- End of method definition for .updateCurrent()
+
+------------------------------------------------------------------------
+--
+-- Method:     changeCurr()
+--
+-- Description: Set electrical current unit
+--
+-- Method Type: Function/Procedure
+-- Arguments:
+--   [#] [R/RW] [Data Type] [Description]
+-- Return:
+--   [Data Type] [Description]
+--
+------------------------------------------------------------------------
+
+define method .changeCurrent()
+
+  !currSelection = !this.currList.selection().upcase()
+  if( !currSelection.empty() ) then
+    !currSelection = 'NUMERIC'
+  endif
+
+  UNITS $!currSelection CURRENT
+  handle any
+    -- leave units unchanged
+  endhandle
+
+  -- reset the global format to suit current unit
+  !!comFormats.setGlobalCurrentFormat()
+  !!comFormats.registerFormat('CURR', !!currentFmt)
+
+  -- update dimension list and frame
+  !this.updateDimension()
+  !this.updateCurrent()
+
+endmethod
+-- End of method definition for .changeCurrent()
+
+------------------------------------------------------------------------
+--
+-- Method:     updateEMF()
+--
+-- Description: Update EMF selection frame
+--
+-- Method Type: Function/Procedure
+-- Arguments:
+--   [#] [R/RW] [Data Type] [Description]
+-- Return:
+--   [Data Type] [Description]
+--
+------------------------------------------------------------------------
+
+define method .updateEMF()
+
+  !dText[1]               = 'Volts'
+  !dText[2]               = 'None'
+  !rText[1]               = 'VOLT'
+  !rText[2]               = ''
+
+  if( !this.emfList.rText.empty() ) then
+    -- initialise the list
+    !this.emfList.dText   = !dText
+    !this.emfList.rText   = !rText
+  endif
+
+  !emfSelection           = !this.emfList.selection()
+  !index                  = !this.emfList.val
+  !index                  = !this.validateIndex(!index, !rText, 'EMF')
+
+  !dText[!index]          = '> ' + !dText[!index] + ' <'
+  !this.emfList.dText     = !dText
+  !this.emfList.rText     = !rText
+  !this.emfList.val       = !index
+
+  -- reset local force format
+  !!tryEmfFmt             = !!comFormats.emfFormat(!emfSelection.upcase())
+  if(!emfSelection.empty()) then
+    !!tryEmfFmt.units     = 'VOLT'
+    !!tryEmfFmt.label     = ''
+  else
+    !!tryEmfFmt.units     = !emfSelection
+  endif
+
+  !this.emfExample.val   = 1000.234 volt
+  !this.emfExample.setFocus()
+
+endmethod
+-- End of method definition for .updateCurrent()
+
+------------------------------------------------------------------------
+--
+-- Method:     changeEMF()
+--
+-- Description: Set EMF unit
+--
+-- Method Type: Function/Procedure
+-- Arguments:
+--   [#] [R/RW] [Data Type] [Description]
+-- Return:
+--   [Data Type] [Description]
+--
+------------------------------------------------------------------------
+
+define method .changeEMF()
+
+  !emfSelection = !this.emfList.selection().upcase()
+  if( !emfSelection.empty() ) then
+    !emfSelection = 'NUMERIC'
+  endif
+
+  UNITS $!emfSelection EMF
+  handle any
+    -- leave units unchanged
+  endhandle
+
+  -- reset the global format to suit EMF unit
+  !!comFormats.setGlobalEmfFormat()
+  !!comFormats.registerFormat('EMF', !!emfFmt)
+
+  -- update dimension list and frame
+  !this.updateDimension()
+  !this.updateEMF()
+
+endmethod
+-- End of method definition for .changeEMF()
+
+------------------------------------------------------------------------
+--
+-- Method:     updateImpedance()
+--
+-- Description: Update impedance selection frame
+--
+-- Method Type: Function/Procedure
+-- Arguments:
+--   [#] [R/RW] [Data Type] [Description]
+-- Return:
+--   [Data Type] [Description]
+--
+------------------------------------------------------------------------
+
+define method .updateImpedance()
+
+  !dText[1]               = 'Ohms'
+  !dText[2]               = 'None'
+  !rText[1]               = 'OHM'
+  !rText[2]               = ''
+
+  if( !this.impeList.rText.empty() ) then
+    -- initialise the list
+    !this.impeList.dText  = !dText
+    !this.impeList.rText  = !rText
+  endif
+
+  !impeSelection          = !this.impeList.selection()
+  !index                  = !this.impeList.val
+  !index                  = !this.validateIndex(!index, !rText, 'IMPE')
+
+  !dText[!index]          = '> ' + !dText[!index] + ' <'
+  !this.impeList.dText    = !dText
+  !this.impeList.rText    = !rText
+  !this.impeList.val      = !index
+
+  -- reset local impedance format
+  !!tryImpeFmt            = !!comFormats.impedanceFormat(!impeSelection.upcase())
+  if(!impeSelection.empty()) then
+    !!tryImpeFmt.units    = 'OHM'
+    !!tryImpeFmt.label    = ''
+  else
+    !!tryImpeFmt.units    = !impeSelection
+  endif
+
+  !this.impeExample.val   = 123.456 ohm
+  !this.impeExample.setFocus()
+
+endmethod
+-- End of method definition for .updateCurrent()
+
+------------------------------------------------------------------------
+--
+-- Method:     changeImpedance()
+--
+-- Description: Set impedance unit
+--
+-- Method Type: Function/Procedure
+-- Arguments:
+--   [#] [R/RW] [Data Type] [Description]
+-- Return:
+--   [Data Type] [Description]
+--
+------------------------------------------------------------------------
+
+define method .changeImpedance()
+
+  !impeSelection = !this.impeList.selection().upcase()
+  if( !impeSelection.empty() ) then
+    !impeSelection = 'NUMERIC'
+  endif
+
+  UNITS $!impeSelection IMPEDANCE
+  handle any
+    -- leave units unchanged
+  endhandle
+
+  -- reset the global format to suit impedance unit
+  !!comFormats.setGlobalImpedanceFormat()
+  !!comFormats.registerFormat('IMPE', !!impedanceFmt)
+
+  -- update dimension list and frame
+  !this.updateDimension()
+  !this.updateImpedance()
+
+endmethod
+-- End of method definition for .changeImpedance()
+
+------------------------------------------------------------------------
+--
+-- Method:     saveCurrentUnits()
+--
+-- Description: save the units to file for next PDMS entry session
+--
+-- Method Type: Function/Procedure
+-- Arguments:
+--   [#] [R/RW] [Data Type] [Description]
+-- Return:
+--   [Data Type] [Description]
+--
+------------------------------------------------------------------------
+
+define method .saveCurrentUnits()
+
+  -- save the current units to file
+  !!comFormats.saveCurrentUnits()
+
+endmethod
+-- End of method definition for .saveCurrentUnits()
+------------------------------------------------------------------------
+--
+-- Method:     restoreSavedUnits()
+--
+-- Description: restore the units from AVEVA_DESIGN_USER or AVEVA_DESIGN_DFLTS
+--
+-- Method Type: Function/Procedure
+-- Arguments:
+--   [#] [R/RW] [Data Type] [Description]
+--    1    R     STRING      Key word AVEVA_DESIGN_USER or AVEVA_DESIGN_DFLTS
+--    2    R     BOOLEAN     Output a warning message
+-- Return:
+--   [Data Type] [Description]
+--
+------------------------------------------------------------------------
+
+define method .restoreSavedUnits(!location is STRING, !warn is BOOLEAN)
+
+  -- Clear out the last Distance Tokens
+  !this.lastDistanceToken = ''
+  !this.lastBoreToken = ''
+
+  -- Restore the units from file
+  !!comFormats.restoreSavedUnits(!location, !warn)
+
+  -- Refresh the form
+  !this.init()
+
+endmethod
+-- End of method definition for .restoreSavedUnits()
+------------------------------------------------------------------------
+--
+-- Method:     selectDimension()
+--
+-- Description: Select dimension from list
+--
+-- Method Type: Function/Procedure
+-- Arguments:
+--   [#] [R/RW] [Data Type] [Description]
+-- Return:
+--   [Data Type] [Description]
+--
+------------------------------------------------------------------------
+
+define method .selectDimension()
+
+  !dimensionIndex = !this.dimension.val
+  !this.attribute(!this.dimensionFrame[!this.currentDimensionFrame]).visible = false
+  !this.attribute(!this.dimensionFrame[!dimensionIndex]).visible             = true
+  !this.currentDimensionFrame = !dimensionIndex
+
+  -- update dimension list in case it was changed outside of this form
+  !this.updateDimension()
+
+  if( !this.distFrame.visible ) then
+    !this.updateDistance(false)
+  elseif( !this.boreFrame.visible ) then
+    !this.updateBore(false)
+  elseif( !this.anglFrame.visible ) then
+    -- reset to current settings
+    !this.angleList.clear()
+    !this.updateAngle()
+  elseif( !this.massFrame.visible ) then
+    -- reset to current settings
+    !this.massList.clear()
+    !this.updateMass()
+  elseif( !this.presFrame.visible ) then
+    -- reset to current settings
+    !this.presList.clear()
+    !this.updatePressure()
+  elseif( !this.tempFrame.visible ) then
+    -- reset to current settings
+    !this.tempList.clear()
+    !this.updateTemperature()
+  elseif( !this.poweFrame.visible ) then
+    -- reset to current settings
+    !this.poweList.clear()
+    !this.updatePower()
+  elseif( !this.forcFrame.visible ) then
+    -- reset to current settings
+    !this.forcList.clear()
+    !this.updateForce()
+  elseif( !this.enerFrame.visible ) then
+    -- reset to current settings
+    !this.enerList.clear()
+    !this.updateEnergy()
+  elseif( !this.timeFrame.visible ) then
+    -- reset to current settings
+    !this.timeList.clear()
+    !this.updateTime()
+  elseif( !this.currFrame.visible ) then
+    -- reset to current settings
+    !this.currList.clear()
+    !this.updateCurrent()
+  elseif( !this.emfFrame.visible ) then
+    -- reset to current settings
+    !this.emfList.clear()
+    !this.updateEMF()
+  elseif( !this.impeFrame.visible ) then
+    -- reset to current settings
+    !this.impeList.clear()
+    !this.updateImpedance()
+  else
+  endif
+
+endmethod
+-- End of method definition
+
+------------------------------------------------------------------------
+--
+-- Method:     updateList()
+--
+-- Description: Update gadget for given dimension
+--
+-- Method Type: Function/Procedure
+-- Arguments:
+--   [#] [R/RW] [Data Type] [Description]
+-- Return:
+--   [Data Type] [Description]
+--
+------------------------------------------------------------------------
+
+define method .updateList(!list is GADGET, !pType is STRING)
+
+  !dimension             = object MEASURE(!pType)
+  !unitsOfDimension      = !dimension.unitsOf()
+  !dText                 = ARRAY()
+  !rText                 = ARRAY()
+  do !i indices !unitsOfDimension
+    !dText.append(!unitsOfDimension[!i].description())
+    !unitQualifier       = !unitsOfDimension[!i].unitQualifier().upcase()
+    !rText.append(!unitQualifier)
+    -- special cases
+    if( !unitQualifier eq 'PASCAL' ) then
+      !dText.append('kiloPascal')
+      !rText.append('KILOPASCAL')
+      !dText.append('megaPascal')
+      !rText.append('MEGAPASCAL')
+    elseif( !unitQualifier eq 'CALORIE' ) then
+      !dText.append('kiloCalorie')
+      !rText.append('KILOCALORIE')
+    elseif( !unitQualifier eq 'NEWTON' ) then
+      !dText.append('kiloNewton')
+      !rText.append('KILONEWTON')
+    endif
+  enddo
+  !dText.append('None')
+  !rText.append('')
+
+  !index = !list.val
+
+  if( !list.rText.empty() ) then
+    -- initialise the list
+    !list.dText          = !dText
+    !list.rText          = !rText
+  endif
+
+  !index = !this.validateIndex(!index, !rText, !pType)
+
+  !list.val              = !index
+
+  !row                   = !list.val
+  !dText[!row]           = '> ' + !dText[!row] + ' <'
+  !list.dText            = !dText
+  !list.rText            = !rText
+  !list.val              = !row
+
+endmethod
+-- End of method definition
+
+------------------------------------------------------------------------
+--
+-- Method:     validateIndex()
+--
+-- Description: Checks the index's value is valid and corrects it if not.
+--
+-- Method Type: Function/Procedure
+-- Arguments:
+--   [#] [R/RW] [Data Type] [Description]
+--    1   R      REAL        The current index
+--    2   R      ARRAY       List of rText for the unit
+--    3   R      STRING      The unit's pType
+-- Return:
+--   [Data Type] [Description]
+--    REAL        Valid index
+--
+------------------------------------------------------------------------
+define method .validateIndex(!index is REAL, !rText is ARRAY, !pType is STRING) is REAL
+
+  if( !index eq 0 OR !index.unset()) then
+    if(!pType eq 'ANGLE') then
+      !unit = !!angleFmt.units.upcase()
+    else
+      !unit = !!comFormats.getCurrentUnitsByPtype(!pType).upcase()
+    endif
+    !index = !rText.findFirst(!unit)
+    if( !index.unset() ) then
+      !index = 1
+    endif
+  endif
+
+  return !index
+
+endmethod
+-- End of method definition
+
+------------------------------------------------------------------------
+--
+-- Method:     changeDimension()
+--
+-- Description: Set unit for given dimension
+--
+-- Method Type: Function/Procedure
+-- Arguments:
+--   [#] [R/RW] [Data Type] [Description]
+-- Return:
+--   [Data Type] [Description]
+--
+------------------------------------------------------------------------
+
+define method .changeDimension(!unitString is STRING, !dimensionString is STRING)
+
+  !dimension = object MEASURE(!dimensionString)
+  if( !unitString.empty() ) then
+    UNITS NUMERIC $!dimension
+  else
+    !unit      = object UNIT(!unitString)
+    !dimension.setUnits(!unit)
+  endif
+
+endmethod
+-- End of method definition
+-----------------------------------------------------------------------
+--
+-- Method:     getAllowedUnits()
+--
+-- Description: Get dtext array as comma separated string
+--
+-- Method Type: Function/Procedure
+-- Arguments:
+--   [#] [R/RW] [Data Type] [Description]
+--    1    R      GADGET     The dimension list to get units from
+-- Return:
+--   [Data Type] [Description]
+--    STRING      List of units separated with commas
+--
+------------------------------------------------------------------------
+
+define method .getAllowedUnits(!dimension is GADGET) is STRING
+
+  !unitList = ''
+
+  do !unit values !dimension.dtext
+    !unitList = !unitList + !unit + ','
+  enddo
+
+  return !unitList
+
+endmethod
+-- End of method definition
+-----------------------------------------------------------------------
+--
+-- Method:     getDefaultUnitIndex()
+--
+-- Description: Gets the index of the current saved unit for the dimension
+--
+-- Method Type: Function/Procedure
+-- Arguments:
+--   [#] [R/RW] [Data Type] [Description]
+--    1   R      GADGET      Dimension list
+--    2   R      STRING      Ptype of the dimension
+-- Return:
+--   [Data Type] [Description]
+--    REAL        Index of the default dimension unit
+--
+------------------------------------------------------------------------
+
+define method .getDefaultUnitIndex(!list is GADGET, !pType is STRING) is REAL
+
+  !unit                = !!comFormats.getCurrentUnitsByPtype(!pType).upcase()
+
+  -- Time is a special case where the rText for Minute does not match the value in the common units object
+  if (!pType eq 'TIME') then
+    !timeUnits = !list.rtext
+    !timeUnits[2] = 'MIN'
+    !index               = !timeUnits.findFirst(!unit)
+  else
+    !index               = !list.rText.findFirst(!unit)
+  endif
+
+  if( !index.unset() ) then
+    !index = 1
+  endif
+
+  return !index
+
+endmethod
+-- End of method definition
+-----------------------------------------------------------------------
+--
+-- Method:     setDistanceFromCS()
+--
+-- Description: Sets the selected distance unit to the one selected in the backstage, then saves it to user defaults
+--
+-- Method Type: Function/Procedure
+-- Arguments:
+--   [#] [R/RW] [Data Type] [Description]
+--    1   R      REAL        Index of selected unit
+-- Return:
+--   [Data Type] [Description]
+--
+------------------------------------------------------------------------
+
+define method .setDistanceFromCS(!index is REAL)
+
+  !this.distanceList.val = !index
+  !this.changeDistance()
+
+endmethod
+-- End of method definition
+-----------------------------------------------------------------------
+--
+-- Method:     setBoreFromCS()
+--
+-- Description: Sets the selected bore unit to the one selected in the backstage, then saves it to user defaults
+--
+-- Method Type: Function/Procedure
+-- Arguments:
+--   [#] [R/RW] [Data Type] [Description]
+--    1   R      REAL        Index of selected unit
+-- Return:
+--   [Data Type] [Description]
+--
+------------------------------------------------------------------------
+
+define method .setBoreFromCS(!index is REAL)
+
+  !this.boreList.val = !index
+  !this.changeBore()
+
+endmethod
+-- End of method definition
+-----------------------------------------------------------------------
+--
+-- Method:     setMassFromCS()
+--
+-- Description: Sets the selected mass unit to the one selected in the backstage, then saves it to user defaults
+--
+-- Method Type: Function/Procedure
+-- Arguments:
+--   [#] [R/RW] [Data Type] [Description]
+--    1   R      REAL        Index of selected unit
+-- Return:
+--   [Data Type] [Description]
+--
+------------------------------------------------------------------------
+
+define method .setMassFromCS(!index is REAL)
+
+  !this.massList.val = !index
+  !this.changeMass()
+
+endmethod
+-- End of method definition
+-----------------------------------------------------------------------
+--
+-- Method:     setPressureFromCS()
+--
+-- Description: Sets the selected pressure unit to the one selected in the backstage, then saves it to user defaults
+--
+-- Method Type: Function/Procedure
+-- Arguments:
+--   [#] [R/RW] [Data Type] [Description]
+--    1   R      REAL        Index of selected unit
+-- Return:
+--   [Data Type] [Description]
+--
+------------------------------------------------------------------------
+
+define method .setPressureFromCS(!index is REAL)
+
+  !this.presList.val = !index
+  !this.changePressure()
+
+endmethod
+-- End of method definition
+-----------------------------------------------------------------------
+--
+-- Method:     setTemperaturFromCS()
+--
+-- Description: Sets the selected temperature unit to the one selected in the backstage, then saves it to user defaults
+--
+-- Method Type: Function/Procedure
+-- Arguments:
+--   [#] [R/RW] [Data Type] [Description]
+--    1   R      REAL        Index of selected unit
+-- Return:
+--   [Data Type] [Description]
+--
+------------------------------------------------------------------------
+
+define method .setTemperatureFromCS(!index is REAL)
+
+  !this.tempList.val = !index
+  !this.changeTemperature()
+
+endmethod
+-- End of method definition
+-----------------------------------------------------------------------
+--
+-- Method:     setForceFromCS()
+--
+-- Description: Sets the selected force unit to the one selected in the backstage, then saves it to user defaults
+--
+-- Method Type: Function/Procedure
+-- Arguments:
+--   [#] [R/RW] [Data Type] [Description]
+--    1   R      REAL        Index of selected unit
+-- Return:
+--   [Data Type] [Description]
+--
+------------------------------------------------------------------------
+
+define method .setForceFromCS(!index is REAL)
+
+  !this.forcList.val = !index
+  !this.changeForce()
+
+endmethod
+-- End of method definition
+-----------------------------------------------------------------------
+--
+-- Method:     setEnergyFromCS()
+--
+-- Description: Sets the selected energy unit to the one selected in the backstage, then saves it to user defaults
+--
+-- Method Type: Function/Procedure
+-- Arguments:
+--   [#] [R/RW] [Data Type] [Description]
+--    1   R      REAL        Index of selected unit
+-- Return:
+--   [Data Type] [Description]
+--
+------------------------------------------------------------------------
+
+define method .setEnergyFromCS(!index is REAL)
+
+  !this.enerList.val = !index
+  !this.changeEnergy()
+
+endmethod
+-- End of method definition
+-----------------------------------------------------------------------
+--
+-- Method:     setPowerFromCS()
+--
+-- Description: Sets the selected power unit to the one selected in the backstage, then saves it to user defaults
+--
+-- Method Type: Function/Procedure
+-- Arguments:
+--   [#] [R/RW] [Data Type] [Description]
+--    1   R      REAL        Index of selected unit
+-- Return:
+--   [Data Type] [Description]
+--
+------------------------------------------------------------------------
+
+define method .setPowerFromCS(!index is REAL)
+
+  !this.poweList.val = !index
+  !this.changePower()
+
+endmethod
+-- End of method definition
+-----------------------------------------------------------------------
+--
+-- Method:     setAngleFromCS()
+--
+-- Description: Sets the selected angle unit to the one selected in the backstage, then saves it to user defaults
+--
+-- Method Type: Function/Procedure
+-- Arguments:
+--   [#] [R/RW] [Data Type] [Description]
+--    1   R      REAL        Index of selected unit
+-- Return:
+--   [Data Type] [Description]
+--
+------------------------------------------------------------------------
+
+define method .setAngleFromCS(!index is REAL)
+
+  !this.angleList.val = !index
+  !this.changeAngle()
+
+endmethod
+-- End of method definition
+-----------------------------------------------------------------------
+--
+-- Method:     setTimeFromCS()
+--
+-- Description: Sets the selected time unit to the one selected in the backstage, then saves it to user defaults
+--
+-- Method Type: Function/Procedure
+-- Arguments:
+--   [#] [R/RW] [Data Type] [Description]
+--    1   R      REAL        Index of selected unit
+-- Return:
+--   [Data Type] [Description]
+--
+------------------------------------------------------------------------
+
+define method .setTimeFromCS(!index is REAL)
+
+  !this.timeList.val = !index
+  !this.changeTime()
+
+endmethod
+-- End of method definition
+-----------------------------------------------------------------------
+--
+-- Method:     setCurrentFromCS()
+--
+-- Description: Sets the selected current unit to the one selected in the backstage, then saves it to user defaults
+--
+-- Method Type: Function/Procedure
+-- Arguments:
+--   [#] [R/RW] [Data Type] [Description]
+--    1   R      REAL        Index of selected unit
+-- Return:
+--   [Data Type] [Description]
+--
+------------------------------------------------------------------------
+
+define method .setCurrentFromCS(!index is REAL)
+
+  !this.currList.val = !index
+  !this.changeCurrent()
+
+endmethod
+-- End of method definition
+-----------------------------------------------------------------------
+--
+-- Method:     setVoltageFromCS()
+--
+-- Description: Sets the selected voltage unit to the one selected in the backstage, then saves it to user defaults
+--
+-- Method Type: Function/Procedure
+-- Arguments:
+--   [#] [R/RW] [Data Type] [Description]
+--    1   R      REAL        Index of selected unit
+-- Return:
+--   [Data Type] [Description]
+--
+------------------------------------------------------------------------
+
+define method .setVoltageFromCS(!index is REAL)
+
+  !this.emfList.val = !index
+  !this.changeEMF()
+
+endmethod
+-- End of method definition
+-----------------------------------------------------------------------
+--
+-- Method:     setImpedanceFromCS()
+--
+-- Description: Sets the selected impedance unit to the one selected in the backstage, then saves it to user defaults
+--
+-- Method Type: Function/Procedure
+-- Arguments:
+--   [#] [R/RW] [Data Type] [Description]
+--    1   R      REAL        Index of selected unit
+-- Return:
+--   [Data Type] [Description]
+--
+------------------------------------------------------------------------
+
+define method .setImpedanceFromCS(!index is REAL)
+
+  !this.impeList.val = !index
+  !this.changeImpedance()
+
+endmethod
+-- End of method definition
