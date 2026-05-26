@@ -88,7 +88,7 @@ This script programmatically validates:
 
 ## ─── 4. Repository Evolution & Growth Stages ───
 
-Over weeks, months, and years, the `obsidian-aveva-pml` repository will evolve through three distinct stages of growth, shifting from a personal tool to an indestructible piece of institutional intelligence:
+Over weeks, months, and years, the `obsidian-aveva-pml-ide` repository will evolve through three distinct stages of growth, shifting from a personal tool to an indestructible piece of institutional intelligence:
 
 ### 🚀 Stage 1: Organic Compounding (Weeks 1 – 4)
 * **The Workflow**: As you actively pair with your agent to write PML scripts or resolve E3D design database modifications:
