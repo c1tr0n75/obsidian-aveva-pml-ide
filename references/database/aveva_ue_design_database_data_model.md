@@ -23935,4 +23935,4 @@ Distributed Attribute Base Element Element (XPITEM) - Design - Unified
 
 
 ### World Element (`WORLD`)
-**Legal Members:** `XPIFLD`, `™`, `AVEVA Group Limited`, `High Cross`, `Madingley Road`, `Cambridge`, `CB3 0HB`, `UK`, `Tel +44 (0)1223 556655`, `www.aveva.com`, `To find your local AVEVA office, visit`, `www.aveva.com/en/about/about-aveva/locations/`, `AVEVA believes the information in this publication is correct as of its publication date. As part of continued product development, such information is subject to`, `change without prior notice and is related to the current software release. AVEVA is not responsible for any inadvertent errors. All product names mentioned are`, `the trademarks of their respective holders.`
+**Legal Members:** `XPIFLD`
