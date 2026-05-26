@@ -49,7 +49,7 @@ if missing_dirs:
 
 # --- SKILL.md frontmatter ---
 skill = (root / 'SKILL.md').read_text(encoding='utf-8')
-if not skill.startswith('---') or 'name: aveva-pml-coding' not in skill or 'description:' not in skill:
+if not skill.startswith('---') or ('name: aveva-pml-coding' not in skill and 'name: obsidian-aveva-pml-ide' not in skill) or 'description:' not in skill:
     print('SKILL.md frontmatter is invalid.')
     sys.exit(1)
 

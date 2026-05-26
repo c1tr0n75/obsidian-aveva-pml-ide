@@ -84,6 +84,46 @@ This script programmatically validates:
 * **Orphaned files** (flags files in `references/object-types/` not registered in the index).
 * **Relative links** in `SKILL.md` are active and resolve to real files on disk.
 
+### ⚙️ C. Ingestion Automation, Triggers & Real-World Walkthrough
+
+To understand how this closed-loop ingest system functions in practice, here is a complete walkthrough of a real-world scenario, explaining the cognitive triggers, agentic automation, and automated CI/CD guardrails:
+
+#### 1. The Scenario & The Cognitive Trigger
+Suppose you and the AI agent are pair-programming to query custom piping specifications. During this task, you discover a tricky quirk: querying the `.spec` attribute on a `BRANCH` element returns a `DBREF` object instead of a string, and trying to print it directly causes a runtime crash unless you explicitly query its `.name` or evaluate it first.
+
+You and the agent develop a successful, safe work-around:
+```pml
+$* Query the spec attribute safely
+!specRef = !branch.spec
+!specName = !specRef.name
+$P Specification name is: |!specName|
+```
+
+Once this issue is successfully resolved, a **Cognitive Trigger** in the agent's [SKILL.md](SKILL.md) is activated. The agent is explicitly instructed:
+> *“Whenever you solve a complex PML bug, discover an undocumented E3D attribute behavior, or write an elegant new reusable gadget or macro: Proactively offer to file the pattern back into the repository.”*
+
+Hearing the trigger, the agent prompts you: *“We've resolved this branching specification behavior. Should I file this discovery back into your vault?”*
+
+#### 2. Agentic Automation (The Ingestion Process)
+Once you authorize the ingestion, the AI agent automates the entire process using its file-system manipulation tools:
+* **Updates Reference Sheets**: It updates [aveva_introduction_to_attributes.md](references/database/aveva_introduction_to_attributes.md) under the `BRANCH` attributes section to document that `.spec` returns a `DBREF` and requires `.name` for string extraction.
+* **Writes Curated Template**: It creates a clean, runnable template `query_branch_spec.pmlfnc` in `examples/`.
+* **Syncs Indices**: It updates [database-data-model-index.md](references/database/database-data-model-index.md) to register the newly added template and documentation page.
+* **Appends to Ledger (`log.md`)**: It appends a parseable entry to the repository's [log.md](log.md):
+  ```markdown
+  ## [YYYY-MM-DD] ingest | Documented BRANCH Spec attribute parsing
+  - Updated [aveva_introduction_to_attributes.md](references/database/aveva_introduction_to_attributes.md) to clarify .spec output type.
+  - Created runnable template `examples/query_branch_spec.pmlfnc`.
+  ```
+
+#### 3. Programmatic Guardrail Validation
+To ensure the AI agent's automated edits did not introduce any broken paths, malformed log syntaxes, or index drift:
+* **Local Pre-commit**: You or the agent runs the structural validator locally:
+  ```bash
+  python3 scripts/validate_skill_structure.py
+  ```
+* **CI/CD Automation**: When you commit and open a Git Pull Request, a GitHub Action triggers the exact same script automatically. If the agent made an error, the build fails instantly, identifying the precise relative link or missing registration to correct.
+
 ---
 
 ## ─── 4. Repository Evolution & Growth Stages ───
