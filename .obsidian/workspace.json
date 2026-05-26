@@ -15,7 +15,7 @@
               "state": {
                 "file": "Untitled.canvas",
                 "viewState": {
-                  "x": 2190,
+                  "x": 2177.5454515690035,
                   "y": -122,
                   "zoom": -1.7432981877725315
                 }
@@ -97,7 +97,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "references/database/aveva_ue_design_database_data_model.md",
+                "file": "Untitled.canvas",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -107,7 +107,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "Backlinks for aveva_ue_design_database_data_model"
+              "title": "Backlinks for Untitled"
             }
           },
           {
@@ -170,7 +170,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 784.5
+    "width": 644.5
   },
   "left-ribbon": {
     "hiddenItems": {
@@ -180,7 +180,8 @@
       "daily-notes:Open today's daily note": false,
       "templates:Insert template": false,
       "command-palette:Open command palette": false,
-      "bases:Create new base": false
+      "bases:Create new base": false,
+      "obsidian-git:Open Git source control": false
     }
   },
   "active": "620a098d689ac3eb",
