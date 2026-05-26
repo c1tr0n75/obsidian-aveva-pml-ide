@@ -1,5 +1,5 @@
 ---
-name: aveva-pml-coding-in-design
+name: obsidian-aveva-pml-ide
 description: Use this skill when writing, reviewing, debugging, refactoring, documenting, or explaining AVEVA PML/PML2 code for AVEVA Engineering, AVEVA E3D Design, or AVEVA Unified Engineering. This skill covers PML syntax, PML objects, global functions, forms, menus, gadgets (including container hosting of PMLNet controls), collections, DBREF/object methods, file I/O, alerts, and PML file organization.
 ---
 
