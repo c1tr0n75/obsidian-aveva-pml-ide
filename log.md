@@ -3,7 +3,7 @@
 All significant changes, ingests, queries, and refactoring actions are recorded chronologically in this file using the format: `## [YYYY-MM-DD] action | title`.
 
 ## [2026-05-26] ingest | Initialized LLM Wiki Integration
-- Configured the three-layer architecture (Raw Sources, Wiki, Schema) within the `obsidian-aveva-pml` repository.
+- Configured the three-layer architecture (Raw Sources, Wiki, Schema) within the `obsidian-aveva-pml-ide` repository.
 - Initialized chronological ledger `log.md`.
 - Scheduled linter updates to enforce structural reference integrity.
 
