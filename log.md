@@ -19,4 +19,16 @@ All significant changes, ingests, queries, and refactoring actions are recorded 
 - Created `.obsidian/graph.json` with premium color presets (Green for object-types, Blue for references, Orange for examples, Red for raw files, Purple for logs).
 - Extended linter checks in `validate_skill_structure.py` to audit the new directories and paths.
 
+## [2026-05-26] lint | Deployed Premium Color Configurations for Obsidian Graph View
+- Configured `.obsidian/graph.json` color groups with high-contrast, premium HSL-derived RGB values.
+- Mapped distinct colors to Object Types (Emerald Green), Database Data Model (Teal/Cyan), Language/UI/Utilities Core References (Vibrant Blue), Curated Examples (Vibrant Orange), Production Raw references (Crimson Red), and Meta/System Files (Vibrant Purple).
+- Verified repository structure and link integrity (Linter exit code `0`).
+
+## [2026-05-26] lint | Removed Document Page Column from Object Type Index
+- Cleaned up [object-type-index.md](references/object-type-index.md) by completely stripping the "Document page" column and updating the header explanation.
+- Maintained all relative Markdown links in clean two-column table format (`Entry` | `Reference file`).
+- Verified vault integrity and ran structural validation checks (Linter exit code `0`).
+
+
+
 

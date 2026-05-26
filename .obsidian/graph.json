@@ -6,7 +6,50 @@
   "hideUnresolved": false,
   "showOrphans": true,
   "collapse-color-groups": false,
-  "colorGroups": [],
+  "colorGroups": [
+    {
+      "query": "path:references/object-types/",
+      "color": {
+        "a": 1,
+        "rgb": 1096065
+      }
+    },
+    {
+      "query": "path:references/database/",
+      "color": {
+        "a": 1,
+        "rgb": 440020
+      }
+    },
+    {
+      "query": "path:references/language/ OR path:references/ui/ OR path:references/utilities/ OR path:references/object-type-index.md",
+      "color": {
+        "a": 1,
+        "rgb": 3899930
+      }
+    },
+    {
+      "query": "path:examples/",
+      "color": {
+        "a": 1,
+        "rgb": 16347926
+      }
+    },
+    {
+      "query": "path:production-reference/",
+      "color": {
+        "a": 1,
+        "rgb": 15680580
+      }
+    },
+    {
+      "query": "file:log.md OR file:SKILL.md OR file:README.md OR file:LLM_WIKI_CONCEPT.md",
+      "color": {
+        "a": 1,
+        "rgb": 9133302
+      }
+    }
+  ],
   "collapse-display": false,
   "showArrow": false,
   "textFadeMultiplier": 0,
@@ -17,6 +60,6 @@
   "repelStrength": 10,
   "linkStrength": 1,
   "linkDistance": 250,
-  "scale": 1.0048233335301335,
+  "scale": 1.0860267840609166,
   "close": true
 }

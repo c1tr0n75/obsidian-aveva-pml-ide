@@ -1,8 +1,5 @@
 # AVEVA — Pseudo Attributes Reference
 
-> © 2015-2026 AVEVA Group Limited and its subsidiaries. All rights reserved.
-> Source: Hull and Outfitting SP5 — Pseudo Attributes
-
 Pseudo attributes are computed or derived attributes available on AVEVA database elements, organized by functional category.
 
 ---

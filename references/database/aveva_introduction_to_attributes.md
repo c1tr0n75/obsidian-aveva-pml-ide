@@ -1,8 +1,5 @@
 # AVEVA Unified Engineering — Introduction to Attributes
 
-> © 2015-2026 AVEVA Group Limited and its subsidiaries. All rights reserved.
-> Source: AVEVA™ Unified Engineering Introduction to Attributes
-
 ## Introduction
 
 All attributes can be queried and set by you. However, many are automatically set as a result of commands. Attributes fall into two categories:

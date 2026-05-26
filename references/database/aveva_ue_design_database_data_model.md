@@ -1,10 +1,5 @@
 # AVEVA™ Unified Engineering — Design Database Reference
 
-> © 2015-2026 AVEVA Group Limited and its subsidiaries. All rights reserved.
-
----
-
-
 ## Design Database Hierarchy - Top Level
 
 The Top Level hierarchy of the Design database is displayed below:
