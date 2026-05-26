@@ -86,7 +86,36 @@ This script programmatically validates:
 
 ---
 
-## ─── 4. Install & Recommended Prompts ───
+## ─── 4. Repository Evolution & Growth Stages ───
+
+Over weeks, months, and years, the `obsidian-aveva-pml` repository will evolve through three distinct stages of growth, shifting from a personal tool to an indestructible piece of institutional intelligence:
+
+### 🚀 Stage 1: Organic Compounding (Weeks 1 – 4)
+* **The Workflow**: As you actively pair with your agent to write PML scripts or resolve E3D design database modifications:
+  * You will inevitably uncover undocumented E3D database attributes, custom piping specifications, or quirky PML constructor behaviors.
+  * Once resolved, you tell the agent: *"File this discovery under `references/database/` and write a clean functional script in `examples/`."*
+* **The Result**: The `examples/` folder gathers a highly optimized collection of canonical, company-vetted E3D PML scripts, and your database references capture hard-won, real-world E3D facts.
+
+### 👥 Stage 2: Team Collaboration & CI/CD (Months 2 – 6)
+Because the entire repository is standard Markdown and Git-controlled, you can scale this across a team of engineers:
+* **Pull Requests (PRs)**: Different developers clone the vault. As their local AI agents make changes and additions to their vaults, they open Git PRs to merge their knowledge back to the main branch.
+* **Continuous Integration (CI)**: You add a GitHub Action that automatically executes:
+  ```bash
+  python3 scripts/validate_skill_structure.py
+  ```
+  If a developer (or their AI agent) commits a broken path, an orphaned split file, or a malformed log entry, the CI build fails instantly and tells the contributor exactly what relative path needs to be corrected.
+* **The Result**: Your team builds a unified, mathematically audited "Expert Vault" representing the absolute state-of-the-art of your organization's E3D design standards, with zero risk of documentation rot.
+
+### 🧠 Stage 3: Deep Institutional Memory (Long-Term)
+* **Legacy Migrations**: As E3D versions advance, your agent can reference the vault to safely migrate legacy PML1 `.mac` macros into modern, structured PML2 global classes according to the exact rules in `SKILL.md`.
+* **Finetuning Dataset**: High-density, structurally validated Markdown is the gold-standard training data for AI models. If your organization ever decides to train or finetune a private, local LLM on custom AVEVA CAD engineering standards, this repository is 100% formatted to act as a premium, zero-noise training dataset.
+
+### 🎯 The Ultimate Goal
+Over time, the vault becomes your team's ultimate competitive advantage. The AI agent is not just a general coder; it has deep, permanent, and verified memory of every database attribute, standard form layout, and engineering rule your company has ever developed.
+
+---
+
+## ─── 5. Install & Recommended Prompts ───
 
 ### Install
 * **Claude Code (Project-Local)**: Place the unzipped folder under `<project>/.claude/skills/aveva-pml-coding/`.
@@ -98,3 +127,4 @@ This script programmatically validates:
 * *"Review this PML2 function and find syntax and scoping errors."*
 * *"Create a PML form with a list, a text input, and a run button."*
 * *"Explain this PML code line by line, stating variable scopes and methods used."*
+
