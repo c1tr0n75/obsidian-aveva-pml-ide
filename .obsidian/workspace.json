@@ -11,10 +11,17 @@
             "id": "620a098d689ac3eb",
             "type": "leaf",
             "state": {
-              "type": "graph",
-              "state": {},
-              "icon": "lucide-git-fork",
-              "title": "Graph view"
+              "type": "canvas",
+              "state": {
+                "file": "Untitled.canvas",
+                "viewState": {
+                  "x": 2190,
+                  "y": -122,
+                  "zoom": -1.7432981877725315
+                }
+              },
+              "icon": "lucide-layout-dashboard",
+              "title": "Untitled"
             }
           }
         ]
@@ -90,6 +97,7 @@
             "state": {
               "type": "backlink",
               "state": {
+                "file": "references/database/aveva_ue_design_database_data_model.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -99,7 +107,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "Backlinks"
+              "title": "Backlinks for aveva_ue_design_database_data_model"
             }
           },
           {
@@ -177,6 +185,8 @@
   },
   "active": "620a098d689ac3eb",
   "lastOpenFiles": [
+    "Untitled.canvas",
+    "OBSID.md",
     "references/database/aveva_pseudo_attributes.md",
     "references/object-type-index.md",
     "references/utilities/AVEVA_PML_RVM_Export.md",
@@ -201,7 +211,6 @@
     "production-reference/DBListing-examples/DBOutput_HVAC.txt",
     "production-reference/DBListing-examples/DBOutput_GRIDS-and-WorkPacks.txt",
     "production-reference/DBListing-examples/DBOutput_EQUIPMENT.txt",
-    "Untitled.canvas",
     "references/database-data-model-index.md",
     "README.md",
     "LLM_WIKI_CONCEPT.md",
