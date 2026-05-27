@@ -186,6 +186,7 @@
   },
   "active": "620a098d689ac3eb",
   "lastOpenFiles": [
+    "examples/export_current_element_dblisting.pmlfnc",
     "examples/create_site_and_equipments.pmlfnc",
     "AURA.md",
     "Untitled.canvas",
@@ -213,7 +214,6 @@
     "production-reference/DBListing-examples/DBOutput_PIPING.txt",
     "production-reference/DBListing-examples/DBOutput_HVAC.txt",
     "production-reference/DBListing-examples/DBOutput_GRIDS-and-WorkPacks.txt",
-    "production-reference/DBListing-examples/DBOutput_EQUIPMENT.txt",
     "references/database-data-model-index.md",
     "README.md",
     "LLM_WIKI_CONCEPT.md",

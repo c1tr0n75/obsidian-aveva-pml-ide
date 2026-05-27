@@ -1,0 +1,79 @@
+import 'pmlfilebrowser'
+handle any
+endhandle
+
+$*------------------------------------------------------------------
+$* Function: !!export_current_element_dblisting
+$* Purpose: Prompts for a local text file and writes a DB listing for
+$*          the current element.
+$* File: examples/export_current_element_dblisting.pmlfnc
+$*------------------------------------------------------------------
+
+define function !!export_current_element_dblisting()
+    using namespace 'Aveva.Core.Presentation'
+
+    !ceRef = !!CE
+    if (!ceRef.BadRef()) then
+        !!Alert.Error('Current element is a bad DB reference. Select a valid design element and try again.')
+        return
+    endif
+
+    !ceType = !ceRef.type
+    !ceText = !ceRef.String()
+    !seedFile = !ceType & '_DBListing.txt'
+
+    !browser = object PMLFILEBROWSER('SAVE')
+    !browser.show('%AVEVA_DESIGN_USER%', !seedFile, 'Save Current Element DB Listing', false, 'Text files (*.txt)|*.txt|All files (*.*)|*.*', 1)
+    handle any
+        !errorText = !!Error.Text
+        !!Alert.Error('Could not open the file save dialog: ' & !errorText)
+        return
+    endhandle
+
+    !outFileName = !browser.file()
+    if (!outFileName eq '') then
+        !!Alert.Warning('DB listing export cancelled.')
+        return
+    endif
+
+    !now = object DATETIME()
+    !timestamp = !now.String()
+    !options = 'INDEX TABULATE2'
+
+    ALPHA FILE END
+    handle(61,274)
+    endhandle
+
+    ALPHA FILE "$!outFileName" OVERWRITE
+    handle any
+        !errorText = !!Error.Text
+        !!Alert.Error('Could not open DB listing output file: ' & !errorText)
+        return
+    endhandle
+
+    WRITEALPHAFILE '$S-'
+    WRITEALPHAFILE '-- ----------------------------------------------------------------'
+    WRITEALPHAFILE '-- Current Element DB Listing'
+    WRITEALPHAFILE '-- Element : $!ceText'
+    WRITEALPHAFILE '-- Date    : $!timestamp'
+    WRITEALPHAFILE '-- ----------------------------------------------------------------'
+    WRITEALPHAFILE ''
+
+    OUTPUT $!options $!ceText
+    handle any
+        !errorText = !!Error.Text
+        ALPHA FILE END
+        handle any
+        endhandle
+        !!Alert.Error('DB listing output failed: ' & !errorText)
+        return
+    endhandle
+
+    WRITEALPHAFILE ''
+    WRITEALPHAFILE '-- ----------------------------------------------------------------'
+    WRITEALPHAFILE '-- End Current Element DB Listing'
+    WRITEALPHAFILE '-- ----------------------------------------------------------------'
+    ALPHA FILE END
+
+    !!Alert.Message('DB listing written to: ' & !outFileName)
+endfunction

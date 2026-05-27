@@ -11,7 +11,9 @@ define function !!create_site_and_equipments()
     !sec = !now.Second()
     !min = !now.Minute()
     !hour = !now.Hour()
-    !seed = !sec * 3600 + !min * 60 + !hour
+    !seed = !hour * 3600
+    !seed = !seed + (!min * 60)
+    !seed = !seed + !sec
 
     $* Characters for the random UDA value
     !chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
@@ -31,8 +33,11 @@ define function !!create_site_and_equipments()
         $* Generate random 5-character string for UDA
         !randStr = ''
         do !c from 1 to 5
-            !seed = (!seed * 1103515245 + 12345).MODULO(2147483648)
-            !idx = (!seed.MODULO(36)).Int() + 1
+            !seedProduct = !seed * 1103515245
+            !seedSum = !seedProduct + 12345
+            !seed = !seedSum.MODULO(2147483648)
+            !idxBase = !seed.MODULO(36)
+            !idx = !idxBase.Int() + 1
             !charVal = !chars.Substring(!idx, 1)
             !randStr = !randStr & !charVal
         enddo
@@ -52,21 +57,21 @@ define function !!create_site_and_equipments()
         ZLENGTH 150
         POSITION E 0 N 0 U 75
         
-        $* 2. Motor (Horizontal Cylinder along East-West)
+        $* 2. Motor, horizontal cylinder along East-West
         NEW CYLI
         DIAMETER 400
         HEIGHT 600
         ORI Y IS N AND Z IS E
         POSITION E -300 N 0 U 350
         
-        $* 3. Coupling (Horizontal Cylinder along East-West)
+        $* 3. Coupling, horizontal cylinder along East-West
         NEW CYLI
         DIAMETER 150
         HEIGHT 150
         ORI Y IS N AND Z IS E
         POSITION E 75 N 0 U 350
         
-        $* 4. Pump Casing (Vertical Cylinder)
+        $* 4. Pump casing, vertical cylinder
         NEW CYLI
         DIAMETER 500
         HEIGHT 500
@@ -88,8 +93,11 @@ define function !!create_site_and_equipments()
         $* Generate random 5-character string for UDA
         !randStr = ''
         do !c from 1 to 5
-            !seed = (!seed * 1103515245 + 12345).MODULO(2147483648)
-            !idx = (!seed.MODULO(36)).Int() + 1
+            !seedProduct = !seed * 1103515245
+            !seedSum = !seedProduct + 12345
+            !seed = !seedSum.MODULO(2147483648)
+            !idxBase = !seed.MODULO(36)
+            !idx = !idxBase.Int() + 1
             !charVal = !chars.Substring(!idx, 1)
             !randStr = !randStr & !charVal
         enddo
@@ -102,14 +110,14 @@ define function !!create_site_and_equipments()
         $* Assign the User Defined Attribute (UDA)
         :uda-descript = !randStr
         
-        $* 1. Shell (Horizontal Cylinder along East-West)
+        $* 1. Shell, horizontal cylinder along East-West
         NEW CYLI
         DIAMETER 1200
         HEIGHT 4500
         ORI Y IS N AND Z IS E
         POSITION E -2250 N 0 U 1500
         
-        $* 2. West Head (Dish oriented West)
+        $* 2. West head, dish oriented West
         NEW DISH
         DIAMETER 1200
         HEIGHT 300
@@ -117,7 +125,7 @@ define function !!create_site_and_equipments()
         ORI Y IS N AND Z IS W
         POSITION E -2250 N 0 U 1500
         
-        $* 3. East Head (Dish oriented East)
+        $* 3. East head, dish oriented East
         NEW DISH
         DIAMETER 1200
         HEIGHT 300
@@ -125,14 +133,14 @@ define function !!create_site_and_equipments()
         ORI Y IS N AND Z IS E
         POSITION E 2250 N 0 U 1500
         
-        $* 4. Support Saddle 1 (Box support)
+        $* 4. Support saddle 1
         NEW BOX
         XLENGTH 300
         YLENGTH 1400
         ZLENGTH 900
         POSITION E -1500 N 0 U 450
         
-        $* 5. Support Saddle 2 (Box support)
+        $* 5. Support saddle 2
         NEW BOX
         XLENGTH 300
         YLENGTH 1400

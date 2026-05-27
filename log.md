@@ -40,6 +40,10 @@ All significant changes, ingests, queries, and refactoring actions are recorded 
 - Re-aligned subsequent section index and verified formatting.
 - Executed local structure tests and audited relative link pathways (Linter exit code `0`).
 
+## [2026-05-28] ingest | Added current element DB listing export example
+- Created [export_current_element_dblisting.pmlfnc](examples/export_current_element_dblisting.pmlfnc) to prompt for a local text output path and write a DB listing for `!!CE`.
+- Grounded the implementation in the production `rptoutput.pmlfrm` `PMLFILEBROWSER`, `ALPHA FILE`, `WRITEALPHAFILE`, and `OUTPUT` patterns.
+- Updated [manifest.json](manifest.json) example inventory.
 
 
 
