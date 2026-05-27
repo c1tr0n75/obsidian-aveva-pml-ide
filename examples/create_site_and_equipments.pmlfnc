@@ -1,0 +1,148 @@
+$*------------------------------------------------------------------
+$* Function: !!create_site_and_equipments
+$* Purpose: Creates a Site with two Zones containing Pumps and Exchangers
+$*          with realistic 3D primitives and randomized :uda-descript values.
+$* File: examples/create_site_and_equipments.pmlfnc
+$*------------------------------------------------------------------
+
+define function !!create_site_and_equipments()
+    $* Initialize random seed using DATETIME parts
+    !now = object DATETIME()
+    !sec = !now.Second()
+    !min = !now.Minute()
+    !hour = !now.Hour()
+    !seed = !sec * 3600 + !min * 60 + !hour
+
+    $* Characters for the random UDA value
+    !chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+
+    $* Create a new Site
+    NEW SITE /SITE_EXAMPLE
+    
+    $* --------------------------------------------------------------
+    $* ZONE 1: PUMPS
+    $* --------------------------------------------------------------
+    NEW ZONE /ZONE_PUMPS
+    
+    do !p from 1 to 3
+        $* Calculate position spacing for each pump
+        !eastPos = (!p - 1) * 3000
+        
+        $* Generate random 5-character string for UDA
+        !randStr = ''
+        do !c from 1 to 5
+            !seed = (!seed * 1103515245 + 12345).MODULO(2147483648)
+            !idx = (!seed.MODULO(36)).Int() + 1
+            !charVal = !chars.Substring(!idx, 1)
+            !randStr = !randStr & !charVal
+        enddo
+        
+        $* Construct Pump Equipment
+        !pumpName = '/PUMP_' & !p.String('D2')
+        NEW EQUI $!pumpName
+        POSITION E $!eastPos N 0 U 0 WRT /*
+        
+        $* Assign the User Defined Attribute (UDA)
+        :uda-descript = !randStr
+        
+        $* 1. Baseplate
+        NEW BOX
+        XLENGTH 1600
+        YLENGTH 800
+        ZLENGTH 150
+        POSITION E 0 N 0 U 75
+        
+        $* 2. Motor (Horizontal Cylinder along East-West)
+        NEW CYLI
+        DIAMETER 400
+        HEIGHT 600
+        ORI Y IS N AND Z IS E
+        POSITION E -300 N 0 U 350
+        
+        $* 3. Coupling (Horizontal Cylinder along East-West)
+        NEW CYLI
+        DIAMETER 150
+        HEIGHT 150
+        ORI Y IS N AND Z IS E
+        POSITION E 75 N 0 U 350
+        
+        $* 4. Pump Casing (Vertical Cylinder)
+        NEW CYLI
+        DIAMETER 500
+        HEIGHT 500
+        POSITION E 400 N 0 U 400
+    enddo
+
+    $* Navigate back to Site level to create the next Zone
+    /SITE_EXAMPLE
+    
+    $* --------------------------------------------------------------
+    $* ZONE 2: EXCHANGERS
+    $* --------------------------------------------------------------
+    NEW ZONE /ZONE_EXCHANGERS
+    
+    do !e from 1 to 2
+        $* Calculate position spacing for each exchanger
+        !eastPos = (!e - 1) * 5000
+        
+        $* Generate random 5-character string for UDA
+        !randStr = ''
+        do !c from 1 to 5
+            !seed = (!seed * 1103515245 + 12345).MODULO(2147483648)
+            !idx = (!seed.MODULO(36)).Int() + 1
+            !charVal = !chars.Substring(!idx, 1)
+            !randStr = !randStr & !charVal
+        enddo
+        
+        $* Construct Exchanger Equipment
+        !exchName = '/EXCH_' & !e.String('D2')
+        NEW EQUI $!exchName
+        POSITION E $!eastPos N 5000 U 0 WRT /*
+        
+        $* Assign the User Defined Attribute (UDA)
+        :uda-descript = !randStr
+        
+        $* 1. Shell (Horizontal Cylinder along East-West)
+        NEW CYLI
+        DIAMETER 1200
+        HEIGHT 4500
+        ORI Y IS N AND Z IS E
+        POSITION E -2250 N 0 U 1500
+        
+        $* 2. West Head (Dish oriented West)
+        NEW DISH
+        DIAMETER 1200
+        HEIGHT 300
+        RADIUS 120
+        ORI Y IS N AND Z IS W
+        POSITION E -2250 N 0 U 1500
+        
+        $* 3. East Head (Dish oriented East)
+        NEW DISH
+        DIAMETER 1200
+        HEIGHT 300
+        RADIUS 120
+        ORI Y IS N AND Z IS E
+        POSITION E 2250 N 0 U 1500
+        
+        $* 4. Support Saddle 1 (Box support)
+        NEW BOX
+        XLENGTH 300
+        YLENGTH 1400
+        ZLENGTH 900
+        POSITION E -1500 N 0 U 450
+        
+        $* 5. Support Saddle 2 (Box support)
+        NEW BOX
+        XLENGTH 300
+        YLENGTH 1400
+        ZLENGTH 900
+        POSITION E 1500 N 0 U 450
+    enddo
+    
+    $* Return focus to the newly created Site
+    /SITE_EXAMPLE
+    
+    $* Print status output to command window
+    $P Site /SITE_EXAMPLE created successfully with randomized UDAs.
+endfunction

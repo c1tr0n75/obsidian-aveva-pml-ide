@@ -109,6 +109,19 @@ $* RIGHT — evaluate first, interpolate the variable
 !lenStr = !len.String()
 $P Pipe length is |!lenStr|
 ```
+### Method chaining on arithmetic expressions
+
+Do not attempt to chain multiple methods or invoke dot-notation directly on parenthesized arithmetic expressions. Evaluate intermediate results into separate local variables step-by-step to prevent syntax and parsing errors.
+
+```pml
+$* WRONG — Attempting to chain methods directly on an expression
+!seed = (!number * 11098748 + 1234).MODULO(365).Int()
+
+$* RIGHT — Deconstruct into sequential assignments and method calls
+!seedNum = (!number * 11098748 + 1234)
+!seed    = !seedNum.MODULO(365)
+!seed    = !seed.Int()
+```
 
 ### Method calls on parenthesised expressions
 
