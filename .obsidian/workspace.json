@@ -11,17 +11,10 @@
             "id": "620a098d689ac3eb",
             "type": "leaf",
             "state": {
-              "type": "canvas",
-              "state": {
-                "file": "Untitled.canvas",
-                "viewState": {
-                  "x": 2177.5454515690035,
-                  "y": -122,
-                  "zoom": -1.7432981877725315
-                }
-              },
-              "icon": "lucide-layout-dashboard",
-              "title": "Untitled"
+              "type": "graph",
+              "state": {},
+              "icon": "lucide-git-fork",
+              "title": "Graph view"
             }
           }
         ]
@@ -97,7 +90,6 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Untitled.canvas",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -107,7 +99,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "Backlinks for Untitled"
+              "title": "Backlinks"
             }
           },
           {
@@ -186,10 +178,14 @@
   },
   "active": "620a098d689ac3eb",
   "lastOpenFiles": [
+    "AURA.md",
+    "LLM_WIKI_CONCEPT.md",
+    "Untitled.canvas",
+    "references/database/aveva_ue_design_database_data_model.md",
+    "examples/pid_visible_equipment_nozzle_connections.csv",
+    "examples/pid_visible_equipment_dblisting.txt",
     "examples/export_current_element_dblisting.pmlfnc",
     "examples/create_site_and_equipments.pmlfnc",
-    "AURA.md",
-    "Untitled.canvas",
     "OBSID.md",
     "references/database/aveva_pseudo_attributes.md",
     "references/object-type-index.md",
@@ -200,7 +196,6 @@
     "references/database/aveva_introduction_to_attributes.md",
     "references/database/database_modification.md",
     "references/database/database_navigation_query_syntax.md",
-    "references/database/aveva_ue_design_database_data_model.md",
     "references/database/database-data-model-index.md",
     "references/language/AVEVA_PML_Error_Handling.md",
     "references/language/methods-available-to-all-objects.md",
@@ -211,12 +206,8 @@
     "references/language",
     "production-reference/DBListing-examples/DBOutput_SUPPORTS.txt",
     "production-reference/DBListing-examples/DBOutput_STRUCTURAL.txt",
-    "production-reference/DBListing-examples/DBOutput_PIPING.txt",
-    "production-reference/DBListing-examples/DBOutput_HVAC.txt",
-    "production-reference/DBListing-examples/DBOutput_GRIDS-and-WorkPacks.txt",
     "references/database-data-model-index.md",
     "README.md",
-    "LLM_WIKI_CONCEPT.md",
     "SKILL.md",
     "references/AVEVA_PML_Error_Handling.md",
     "log.md"
