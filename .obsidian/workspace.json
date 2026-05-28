@@ -4,17 +4,21 @@
     "type": "split",
     "children": [
       {
-        "id": "8c3e979a01de18ed",
+        "id": "a0e86df3ed39fd8b",
         "type": "tabs",
         "children": [
           {
-            "id": "620a098d689ac3eb",
+            "id": "fc300c8b27755d4c",
             "type": "leaf",
             "state": {
-              "type": "graph",
-              "state": {},
-              "icon": "lucide-git-fork",
-              "title": "Graph view"
+              "type": "markdown",
+              "state": {
+                "file": "examples/README.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "README"
             }
           }
         ]
@@ -90,6 +94,7 @@
             "state": {
               "type": "backlink",
               "state": {
+                "file": "examples/README.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -99,7 +104,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "Backlinks"
+              "title": "Backlinks for README"
             }
           },
           {
@@ -157,8 +162,19 @@
               "icon": "lucide-list",
               "title": "Outline"
             }
+          },
+          {
+            "id": "ec054dd05c91ddfe",
+            "type": "leaf",
+            "state": {
+              "type": "git-view",
+              "state": {},
+              "icon": "git-pull-request",
+              "title": "Source Control"
+            }
           }
-        ]
+        ],
+        "currentTab": 5
       }
     ],
     "direction": "horizontal",
@@ -176,22 +192,29 @@
       "obsidian-git:Open Git source control": false
     }
   },
-  "active": "620a098d689ac3eb",
+  "active": "fc300c8b27755d4c",
   "lastOpenFiles": [
     "project-knowledge/README.md",
+    "examples/kpi-reports/model-health-demo/README.md",
+    "examples/kpi-reports/mto-readiness-demo/README.md",
+    "examples/kpi-reports/piping-demo/README.md",
+    "examples/kpi-reports/report-index.csv",
+    "examples/kpi-reports/report-index.json",
+    "examples/kpi-reports/mto-readiness-demo/exports/route-readiness.csv",
+    "examples/kpi-reports/mto-readiness-demo/exports/mto-signals.csv",
+    "examples/kpi-reports/mto-readiness-demo/exports/metrics.csv",
+    "examples/kpi-reports/mto-readiness-demo/summary.md",
+    "examples/kpi-reports/mto-readiness-demo/report.json",
+    "examples/kpi-reports/mto-readiness-demo/mto-readiness-demo.html",
+    "examples/kpi-reports/mto-readiness-demo/mto-readiness-demo-data.json",
+    "examples/kpi-reports/mto-readiness-demo/exports",
+    "examples/kpi-reports/mto-readiness-demo",
+    "examples/kpi-reports/model-health-demo/summary.md",
+    "examples/kpi-reports/piping-demo/summary.md",
+    "examples/kpi-reports/piping-supports-demo/README.md",
     "examples/kpi-reports/README.md",
     "examples/pml-patterns/README.md",
     "examples/README.md",
-    "examples/pml-patterns/safe_write_lines_to_file.pmlfnc",
-    "examples/pml-patterns/print_current_element_members.pmlfnc",
-    "examples/pml-patterns/pid_visible_equipment_nozzle_connections.csv",
-    "examples/pml-patterns/pid_visible_equipment_dblisting.txt",
-    "examples/pml-patterns/get_equipment_creation_dates.pmlfnc",
-    "examples/pml-patterns/exportpipestocsv.pmlfnc",
-    "examples/pml-patterns/export_current_element_dblisting.pmlfnc",
-    "examples/pml-patterns/create_site_and_equipments.pmlfnc",
-    "examples/pml-patterns/ceform.pmlfrm",
-    "project-knowledge",
     "AURA.md",
     "LLM_WIKI_CONCEPT.md",
     "Untitled.canvas",
@@ -206,14 +229,6 @@
     "references/database/aveva_introduction_to_attributes.md",
     "references/database/database_modification.md",
     "references/database/database_navigation_query_syntax.md",
-    "references/database/database-data-model-index.md",
-    "references/language/AVEVA_PML_Error_Handling.md",
-    "references/language/methods-available-to-all-objects.md",
-    "references/language/pml2-language-reference.md",
-    "references/database-data-model-index.md",
-    "README.md",
-    "SKILL.md",
-    "references/AVEVA_PML_Error_Handling.md",
-    "log.md"
+    "references/database/database-data-model-index.md"
   ]
 }

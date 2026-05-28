@@ -22,7 +22,8 @@
     },
     "examples": {
       "pml_patterns": 9,
-      "kpi_reports": 0
+      "kpi_reports": 3,
+      "kpi_report_indexes": 2
     },
     "project_knowledge": {
       "documents": 1

@@ -1,0 +1,35 @@
+{
+  "title": "Piping Demo KPI Dashboard",
+  "slug": "piping-demo",
+  "discipline": "piping",
+  "status": "demo",
+  "generatedAt": "2026-05-28T17:25:26.768Z",
+  "generator": "scripts/generate_demo_kpi_reports.js",
+  "sourceFiles": [
+    "production-reference/DBListing-examples/DBOutput_PIPING.txt"
+  ],
+  "formats": [
+    "README.md",
+    "piping-demo.html",
+    "piping-demo-data.json",
+    "summary.md",
+    "exports/*.csv"
+  ],
+  "views": [
+    "overview",
+    "mix",
+    "routes",
+    "qa"
+  ],
+  "metrics": [
+    "records",
+    "pipes",
+    "branches",
+    "components",
+    "namedItems",
+    "globalPoints",
+    "specCount",
+    "taggedInstruments",
+    "shopPercent"
+  ]
+}

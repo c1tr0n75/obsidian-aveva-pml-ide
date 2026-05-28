@@ -84,6 +84,8 @@ For project-specific deliverables, the agent also distinguishes reusable artifac
 
 Interactive KPI reports should use a package folder with a Markdown wrapper and an embedded HTML dashboard. The wrapper becomes the Obsidian graph node, while the HTML file can render histograms, chart filters, tables, and drill-down views through an `<iframe>` or a browser link.
 
+Each package should also include `summary.md` for Obsidian-native reading, `report.json` for indexing, and `exports/*.csv` for engineering review outside Obsidian. The report catalog can be browsed from [examples/kpi-reports/README.md](examples/kpi-reports/README.md), with machine-readable indexes in [report-index.json](examples/kpi-reports/report-index.json) and [report-index.csv](examples/kpi-reports/report-index.csv).
+
 ---
 
 ## ─── 4. Scalability Principles ───

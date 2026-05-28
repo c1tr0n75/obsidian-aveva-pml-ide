@@ -23,6 +23,8 @@ required = [
     'examples/README.md',
     'examples/pml-patterns/README.md',
     'examples/kpi-reports/README.md',
+    'examples/kpi-reports/report-index.json',
+    'examples/kpi-reports/report-index.csv',
     'project-knowledge/README.md',
     'examples/pml-patterns/get_equipment_creation_dates.pmlfnc',
     'examples/pml-patterns/safe_write_lines_to_file.pmlfnc',
@@ -162,6 +164,18 @@ markdown_files_to_check = [
     root / 'references' / 'database' / 'database-data-model-index.md',
 ]
 
+kpi_root = root / 'examples' / 'kpi-reports'
+kpi_report_dirs = [
+    p for p in kpi_root.iterdir()
+    if p.is_dir() and not p.name.startswith('.')
+]
+
+for report_dir in kpi_report_dirs:
+    markdown_files_to_check.extend([
+        report_dir / 'README.md',
+        report_dir / 'summary.md',
+    ])
+
 for md_file in markdown_files_to_check:
     broken = verify_markdown_links(md_file)
     if broken:
@@ -170,11 +184,52 @@ for md_file in markdown_files_to_check:
             print(f" - {link}")
         sys.exit(1)
 
+# --- KPI Report Package Verification ---
+kpi_package_errors = []
+for report_dir in kpi_report_dirs:
+    slug = report_dir.name
+    required_package_files = [
+        report_dir / 'README.md',
+        report_dir / 'report.json',
+        report_dir / f'{slug}.html',
+        report_dir / f'{slug}-data.json',
+        report_dir / 'summary.md',
+    ]
+    required_package_dirs = [
+        report_dir / 'exports',
+    ]
+    for path_obj in required_package_files:
+        if not path_obj.exists():
+            kpi_package_errors.append(f"{path_obj.relative_to(root)} missing")
+    for path_obj in required_package_dirs:
+        if not path_obj.is_dir():
+            kpi_package_errors.append(f"{path_obj.relative_to(root)} missing")
+    if (report_dir / 'exports').is_dir() and not list((report_dir / 'exports').glob('*.csv')):
+        kpi_package_errors.append(f"{(report_dir / 'exports').relative_to(root)} has no CSV exports")
+    if (report_dir / 'report.json').exists():
+        try:
+            import json
+            report_meta = json.loads((report_dir / 'report.json').read_text(encoding='utf-8'))
+            if report_meta.get('slug') != slug:
+                kpi_package_errors.append(f"{(report_dir / 'report.json').relative_to(root)} slug does not match folder name")
+            for source_file in report_meta.get('sourceFiles', []):
+                if not (root / source_file).exists():
+                    kpi_package_errors.append(f"{(report_dir / 'report.json').relative_to(root)} references missing source {source_file}")
+        except Exception as exc:
+            kpi_package_errors.append(f"{(report_dir / 'report.json').relative_to(root)} invalid JSON: {exc}")
+
+if kpi_package_errors:
+    print("KPI report package errors:")
+    for error in kpi_package_errors:
+        print(" -", error)
+    sys.exit(1)
+
 # --- Summary ---
 pml_pattern_files = [p for p in (root / 'examples' / 'pml-patterns').glob('*.*') if p.name != 'README.md']
 kpi_report_files = list((root / 'examples' / 'kpi-reports').glob('**/*.html'))
 print('Skill structure OK')
 print(f'  Object/gadget reference files: {len(obj_files)}')
 print(f'  PML pattern examples: {len(pml_pattern_files)}')
+print(f'  KPI report packages: {len(kpi_report_dirs)}')
 print(f'  KPI HTML reports: {len(kpi_report_files)}')
 print(f'  Production reference dirs: {len([d for d in required_dirs if "production" in d])}')

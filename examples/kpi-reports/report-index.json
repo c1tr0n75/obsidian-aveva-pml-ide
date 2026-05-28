@@ -1,0 +1,26 @@
+[
+  {
+    "title": "Piping Demo KPI Dashboard",
+    "slug": "piping-demo",
+    "status": "demo",
+    "discipline": "piping",
+    "generatedAt": "2026-05-28T17:25:26.768Z",
+    "source": "DBOutput_PIPING.txt"
+  },
+  {
+    "title": "Model Health Demo Dashboard",
+    "slug": "model-health-demo",
+    "status": "demo",
+    "discipline": "piping",
+    "generatedAt": "2026-05-28T17:25:26.795Z",
+    "source": "DBOutput_PIPING.txt"
+  },
+  {
+    "title": "MTO Readiness Demo Dashboard",
+    "slug": "mto-readiness-demo",
+    "status": "demo",
+    "discipline": "piping",
+    "generatedAt": "2026-05-28T17:25:26.796Z",
+    "source": "DBOutput_PIPING.txt"
+  }
+]

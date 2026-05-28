@@ -61,4 +61,13 @@ All significant changes, ingests, queries, and refactoring actions are recorded 
 - Updated the vault documentation to describe Obsidian iframe wrappers for histograms, filters, tables, charts, and drill-down report views.
 - Updated the validator to count HTML KPI reports recursively inside report package folders.
 
+## [2026-05-28] ingest | Added Piping KPI demo dashboard
+- Created [piping-demo](examples/kpi-reports/piping-demo/README.md), an Obsidian-wrapped HTML dashboard generated from [DBOutput_PIPING.txt](production-reference/DBListing-examples/DBOutput_PIPING.txt).
+- Added KPI cards, component rankings, a component donut, stacked shop/built status bars, elevation bands, plan scatter, QA signals, and searchable route/item tables.
+- Stored parsed KPI data in `examples/kpi-reports/piping-demo/piping-demo-data.json` and updated `manifest.json` KPI report count.
 
+## [2026-05-28] ingest | Added KPI report package standard and demos
+- Added [generate_demo_kpi_reports.js](scripts/generate_demo_kpi_reports.js) to regenerate standardized demo report packages from [DBOutput_PIPING.txt](production-reference/DBListing-examples/DBOutput_PIPING.txt).
+- Expanded [piping-demo](examples/kpi-reports/piping-demo/README.md) and added [model-health-demo](examples/kpi-reports/model-health-demo/README.md) plus [mto-readiness-demo](examples/kpi-reports/mto-readiness-demo/README.md).
+- Added `report.json`, `summary.md`, and CSV exports to each demo package, plus [report-index.json](examples/kpi-reports/report-index.json) and [report-index.csv](examples/kpi-reports/report-index.csv).
+- Updated KPI documentation, manifest counts, and structural validation to enforce report package completeness.

@@ -302,7 +302,7 @@ Final pass before returning code. Pure verification — all coding rules live ab
 ### examples/
 - [examples/README.md](examples/README.md) — Entry point for reusable and generated artifacts.
 - [pml-patterns/](examples/pml-patterns/README.md) — Small, self-contained, purpose-built PML/PML2 templates for new code generation.
-- [kpi-reports/](examples/kpi-reports/README.md) — Generated HTML KPI dashboards and interactive AVEVA E3D project/database reports. Use one subfolder per report with a Markdown wrapper, an HTML dashboard, and optional data assets.
+- [kpi-reports/](examples/kpi-reports/README.md) — Generated HTML KPI dashboards and interactive AVEVA E3D project/database reports. Use one self-contained package per report with a Markdown wrapper, `report.json`, an HTML dashboard, JSON data, `summary.md`, and CSV exports.
 
 ### project-knowledge/
 - [project-knowledge/README.md](project-knowledge/README.md) — Project standards, naming rules, EPC good practices, bills of materials, engineering specifications, and client context used to ground generated work.

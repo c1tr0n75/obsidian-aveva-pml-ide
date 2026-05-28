@@ -1,0 +1,6 @@
+label,value,tone
+Components without POS,195,warning
+Unset SHOP flag,206,info
+Named instruments,12,ok
+Global plotted points,1285,ok
+QA rows,206,warning
