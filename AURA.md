@@ -95,7 +95,7 @@ Aura is a **learning agent**. During pair-programming sessions inside E3D, if Au
 2. Aura prompts the engineer inside E3D: *"I've successfully mapped this custom piping attribute. Should I ingest this rule back into our company's shared Vault?"*
 3. On approval, Aura's background file writer edits the shared Obsidian vault:
    * Updates [aveva_introduction_to_attributes.md](references/database/aveva_introduction_to_attributes.md) with the new mapping.
-   * Adds reusable PML templates under [examples/pml-patterns/](examples/pml-patterns/README.md), generated KPI dashboards under [examples/kpi-reports/](examples/kpi-reports/README.md), or project standards under [project-knowledge/](project-knowledge/README.md), depending on the discovery.
+   * Adds reusable PML templates under [examples/pml-patterns/](examples/pml-patterns/README.md), generated KPI dashboard packages under [examples/kpi-reports/](examples/kpi-reports/README.md), or project standards under [project-knowledge/](project-knowledge/README.md), depending on the discovery. KPI packages use a Markdown wrapper plus an interactive HTML dashboard and optional data files.
    * Appends an entry to [log.md](log.md) marking the action as `ingest`.
    * Automatically executes `python3 scripts/validate_skill_structure.py` to ensure the shared vault remains perfectly healthy and has zero broken paths.
 

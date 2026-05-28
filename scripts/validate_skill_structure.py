@@ -135,6 +135,7 @@ def verify_markdown_links(file_path):
     if not file_path.exists():
         return []
     content = file_path.read_text(encoding='utf-8')
+    content = re.sub(r'```.*?```', '', content, flags=re.DOTALL)
     links = re.findall(r'\[[^\]]+?\]\(([^)]+?)\)', content)
     broken = []
     for link in links:
@@ -171,7 +172,7 @@ for md_file in markdown_files_to_check:
 
 # --- Summary ---
 pml_pattern_files = [p for p in (root / 'examples' / 'pml-patterns').glob('*.*') if p.name != 'README.md']
-kpi_report_files = [p for p in (root / 'examples' / 'kpi-reports').glob('*.html')]
+kpi_report_files = list((root / 'examples' / 'kpi-reports').glob('**/*.html'))
 print('Skill structure OK')
 print(f'  Object/gadget reference files: {len(obj_files)}')
 print(f'  PML pattern examples: {len(pml_pattern_files)}')

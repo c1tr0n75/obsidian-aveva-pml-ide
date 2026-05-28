@@ -45,7 +45,7 @@ Your repository implements a surgical three-layer architecture to minimize conte
 * **`references/object-types/`** — 87 highly granular split reference sheets representing each object type (e.g. `ARRAY`, `DBREF`, `COLLECTION`, `FILE`, `MENU`).
 * **Indices** — `references/object-type-index.md` (root references) and `references/database/database-data-model-index.md` enable surgical, index-and-drill retrieval.
 * **`examples/pml-patterns/`** — Curated, runnable PML/PML2 templates and small companion outputs used as known-good implementation patterns.
-* **`examples/kpi-reports/`** — On-demand generated HTML KPI dashboards and interactive reports derived from AVEVA E3D project/database context.
+* **`examples/kpi-reports/`** — On-demand generated HTML KPI dashboards and interactive reports derived from AVEVA E3D project/database context. Each report should live in its own folder with a Markdown wrapper, HTML dashboard, and optional data assets.
 * **`project-knowledge/`** — Project and engineering grounding material: naming rules, EPC practices, bills of materials, mechanical specifications, and client standards.
 
 ### 🔹 Layer 3: The Schema (AI Rules & Constraints)

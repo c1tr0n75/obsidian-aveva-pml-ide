@@ -46,4 +46,4 @@ Since all knowledge is stored in **standard, local-first plaintext Markdown**, o
 * **Graph View**: Visually maps the connections between `SKILL.md`, structural indices, and your 87+ split object reference pages, showing documentation density and cluster relationships in real-time.
 * **Backlink & Mention Panels**: Instantly tracks incoming and outgoing links to see exactly where individual objects, concepts, or rules are referenced.
 * **Closed-Loop Development**: Watch the agent update, format, and structure files in your local workspace, and see the nodes and connections shift instantly in your Obsidian workspace.
-* **Artifact Clusters**: `examples/pml-patterns/`, `examples/kpi-reports/`, and `project-knowledge/` form separate graph regions for reusable PML, generated dashboards, and durable engineering context.
+* **Artifact Clusters**: `examples/pml-patterns/`, `examples/kpi-reports/`, and `project-knowledge/` form separate graph regions for reusable PML, generated dashboards, and durable engineering context. KPI report packages use Markdown wrappers so interactive HTML dashboards remain visible and linkable inside Obsidian.

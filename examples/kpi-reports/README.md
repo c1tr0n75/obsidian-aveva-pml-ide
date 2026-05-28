@@ -9,3 +9,31 @@ Use it for on-demand outputs such as:
 - Exportable HTML summaries requested by users during project work.
 
 Reports in this folder are generated artifacts, not canonical engineering rules. If a report reveals a reusable rule, naming convention, or project standard, file that knowledge back into [project-knowledge/](../../project-knowledge/README.md) or the appropriate reference page.
+
+## Report Package Convention
+
+Create one subfolder per report. Each report package should contain:
+
+```text
+examples/kpi-reports/
+  piping-progress/
+    README.md
+    piping-progress.html
+    piping-progress-data.json
+```
+
+- `README.md` is the Obsidian-facing wrapper and graph node.
+- `<report-name>.html` is the interactive dashboard, suitable for histograms, charts, filters, tables, and drill-down views.
+- `<report-name>-data.json`, `.csv`, or similar companion files hold extracted project/database data when the report should remain inspectable or regenerable.
+
+Use an Obsidian wrapper like this:
+
+```md
+# Piping Progress KPI
+
+[Open interactive report](piping-progress.html)
+
+<iframe src="piping-progress.html" width="100%" height="900"></iframe>
+```
+
+Keep each package self-contained so the report can be viewed from Obsidian, opened in a browser, linked from project notes, and archived with the exact data that produced it.

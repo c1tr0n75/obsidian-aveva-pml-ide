@@ -82,6 +82,8 @@ If the agent is asked to query database structures, it doesn't guess the schema.
 
 For project-specific deliverables, the agent also distinguishes reusable artifacts from grounding knowledge: PML/PML2 implementation patterns come from [examples/pml-patterns/](examples/pml-patterns/README.md), generated HTML dashboards are written to [examples/kpi-reports/](examples/kpi-reports/README.md), and durable naming rules or engineering standards live in [project-knowledge/](project-knowledge/README.md).
 
+Interactive KPI reports should use a package folder with a Markdown wrapper and an embedded HTML dashboard. The wrapper becomes the Obsidian graph node, while the HTML file can render histograms, chart filters, tables, and drill-down views through an `<iframe>` or a browser link.
+
 ---
 
 ## ─── 4. Scalability Principles ───

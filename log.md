@@ -56,5 +56,9 @@ All significant changes, ingests, queries, and refactoring actions are recorded 
 - Added [project-knowledge/](project-knowledge/README.md) for naming rules, EPC practices, BOM conventions, engineering specifications, and project standards.
 - Updated vault documentation, validator paths, manifest metadata, and Obsidian graph color groups for the new structure.
 
+## [2026-05-28] lint | Documented Obsidian KPI report packages
+- Documented the [examples/kpi-reports/](examples/kpi-reports/README.md) package convention: one folder per report, with a Markdown wrapper, interactive HTML dashboard, and optional data assets.
+- Updated the vault documentation to describe Obsidian iframe wrappers for histograms, filters, tables, charts, and drill-down report views.
+- Updated the validator to count HTML KPI reports recursively inside report package folders.
 
 
