@@ -1,0 +1,5 @@
+title,slug,status,discipline,generatedAt,source
+Model Health Demo Dashboard,model-health-demo,demo,piping,2026-05-28T21:56:02.206Z,pml-coding-assistant/production-reference/DBListing-examples/DBOutput_PIPING.txt
+MTO Readiness Demo Dashboard,mto-readiness-demo,demo,piping,2026-05-28T21:56:02.207Z,pml-coding-assistant/production-reference/DBListing-examples/DBOutput_PIPING.txt
+Piping Demo KPI Dashboard,piping-demo,demo,piping,2026-05-28T21:56:02.174Z,pml-coding-assistant/production-reference/DBListing-examples/DBOutput_PIPING.txt
+Vault Health Demo Dashboard,vault-health-demo,demo,vault,2026-05-28T21:53:09.001Z,.

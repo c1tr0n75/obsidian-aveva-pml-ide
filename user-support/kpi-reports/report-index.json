@@ -1,0 +1,34 @@
+[
+  {
+    "title": "Model Health Demo Dashboard",
+    "slug": "model-health-demo",
+    "status": "demo",
+    "discipline": "piping",
+    "generatedAt": "2026-05-28T21:56:02.206Z",
+    "source": "pml-coding-assistant/production-reference/DBListing-examples/DBOutput_PIPING.txt"
+  },
+  {
+    "title": "MTO Readiness Demo Dashboard",
+    "slug": "mto-readiness-demo",
+    "status": "demo",
+    "discipline": "piping",
+    "generatedAt": "2026-05-28T21:56:02.207Z",
+    "source": "pml-coding-assistant/production-reference/DBListing-examples/DBOutput_PIPING.txt"
+  },
+  {
+    "title": "Piping Demo KPI Dashboard",
+    "slug": "piping-demo",
+    "status": "demo",
+    "discipline": "piping",
+    "generatedAt": "2026-05-28T21:56:02.174Z",
+    "source": "pml-coding-assistant/production-reference/DBListing-examples/DBOutput_PIPING.txt"
+  },
+  {
+    "title": "Vault Health Demo Dashboard",
+    "slug": "vault-health-demo",
+    "status": "demo",
+    "discipline": "vault",
+    "generatedAt": "2026-05-28T21:53:09.001Z",
+    "source": "."
+  }
+]

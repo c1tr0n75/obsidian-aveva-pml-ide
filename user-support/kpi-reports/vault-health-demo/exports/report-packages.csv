@@ -1,0 +1,5 @@
+slug,hasReadme,hasManifest,hasHtml,hasData,hasSummary,csvExports
+model-health-demo,true,true,true,true,true,3
+mto-readiness-demo,true,true,true,true,true,3
+piping-demo,true,true,true,true,true,4
+vault-health-demo,true,true,true,true,true,3

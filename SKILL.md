@@ -1,17 +1,21 @@
 ---
 name: obsidian-aveva-pml-ide
-description: Use this skill when writing, reviewing, debugging, refactoring, documenting, or explaining AVEVA PML/PML2 code for AVEVA Engineering, AVEVA E3D Design, or AVEVA Unified Engineering. This skill covers PML syntax, PML objects, global functions, forms, menus, gadgets (including container hosting of PMLNet controls), collections, DBREF/object methods, file I/O, alerts, and PML file organization.
+description: Use this skill when writing, reviewing, debugging, refactoring, documenting, or explaining AVEVA PML/PML2 code for AVEVA Engineering, AVEVA E3D Design, or AVEVA Unified Engineering, including Drawing-to-E3D workflows that turn drawings, P&IDs, PFDs, line lists, or unstructured engineering inputs into auditable model intent and reviewable PML/PML2. This skill covers PML syntax, PML objects, global functions, forms, menus, gadgets (including container hosting of PMLNet controls), collections, DBREF/object methods, file I/O, DBOUTPUT/DBLISTING, alerts, and PML file organization.
 ---
 
 # AVEVA PML Coding Skill
 
 ## Scope
 
-Use this skill for PML/PML2 code only:
+Use this skill first and foremost for PML/PML2 code and AVEVA E3D automation:
 - Creating `.pmlfnc`, `.pmlobj`, `.pmlfrm`, and `.mac` files.
 - Writing or reviewing PML2 functions, methods, constructors, form callbacks, menus, gadgets, DBREF logic, collections, file I/O.
+- Creating DBOUTPUT/DBLISTING workflows and database extraction scripts.
+- Converting drawing evidence, P&IDs, PFDs, line lists, tables, PDFs, or other structured/unstructured engineering inputs into auditable model intent and then into reviewable PML/PML2.
 - Debugging PML syntax, variable scope, array/string/real/date methods, and form behaviour.
 - Producing AVEVA Engineering / E3D Design / UE examples that are safe, testable, and structured.
+
+KPI dashboards and project knowledge are on-demand support areas. Load KPI/report references only when the user asks for dashboards, reports, exports, or visual project status. Load project knowledge when the user asks to use project documentation, when project-specific rules already exist and should constrain generated PML/forms/DBOUTPUT/DBLISTING, or when an important AI-assisted project decision or modification should be documented.
 
 
 ## Mandatory response behavior
@@ -24,21 +28,31 @@ When the user asks for PML code:
 
    | Task                                                       | Reference                                                  |
    |------------------------------------------------------------|------------------------------------------------------------|
-   | General PML2 syntax                                        | [pml2-language-reference.md](references/language/pml2-language-reference.md)                    |
-   | Forms, gadgets, UI                                         | [forms-ui-reference.md](references/ui/forms-ui-reference.md)                         |
-   | Methods available on all objects                           | [methods-available-to-all-objects.md](references/language/methods-available-to-all-objects.md)           |
-   | Specific object/gadget methods                             | [object-type-index.md](references/object-type-index.md) → `references/object-types/<file>` |
-   | Element types, attributes, hierarchy                       | [database-data-model-index.md](references/database/database-data-model-index.md) (entry point), then load only the matching section from [aveva_ue_design_database_data_model.md](references/database/aveva_ue_design_database_data_model.md) |
-   | Database navigation / queries / collections                | [database_navigation_query_syntax.md](references/database/database_navigation_query_syntax.md)           |
-   | Creating, deleting, modifying, copying DB elements         | [database_modification.md](references/database/database_modification.md)                      |
-   | Verifying an attribute name, data type, qualifier          | [aveva_introduction_to_attributes.md](references/database/aveva_introduction_to_attributes.md)           |
-   | Computed/derived pseudo attributes (CoG, length, etc.)     | [aveva_pseudo_attributes.md](references/database/aveva_pseudo_attributes.md)                    |
-   | Real attribute values in practice (formats, hierarchy)     | [DBListing-examples/](production-reference/DBListing-examples/) (raw database listings)    |
-   | Command-line `Q` / `LIST` queries, marking, colouring      | [command-line-queries.md](references/utilities/command-line-queries.md)                       |
-   | General utility commands, units, tolerances, precision     | [general_commands.md](references/utilities/general_commands.md)                           |
-   | PML error handling (`handle`/`elsehandle`, `onerror`)      | [AVEVA_PML_Error_Handling.md](references/language/AVEVA_PML_Error_Handling.md)                   |
-   | RVM export macros                                          | [AVEVA_PML_RVM_Export.md](references/utilities/AVEVA_PML_RVM_Export.md)                       |
-   | Production patterns when curated examples are insufficient | `production-reference/` (see Bundled reference map for subdirectories) |
+   | General PML2 syntax                                        | [pml2-language-reference.md](pml-coding-assistant/references/language/pml2-language-reference.md)                    |
+   | Forms, gadgets, UI                                         | [forms-ui-reference.md](pml-coding-assistant/references/ui/forms-ui-reference.md)                         |
+   | Methods available on all objects                           | [methods-available-to-all-objects.md](pml-coding-assistant/references/language/methods-available-to-all-objects.md)           |
+   | Specific object/gadget methods                             | [object-type-index.md](pml-coding-assistant/references/object-type-index.md) → `pml-coding-assistant/references/object-types/<file>` |
+   | Element types, attributes, hierarchy                       | [database-data-model-index.md](pml-coding-assistant/references/database/database-data-model-index.md) (entry point), then load only the matching section from [aveva_ue_design_database_data_model.md](pml-coding-assistant/references/database/aveva_ue_design_database_data_model.md) |
+   | Database navigation / queries / collections                | [database_navigation_query_syntax.md](pml-coding-assistant/references/database/database_navigation_query_syntax.md)           |
+   | Creating, deleting, modifying, copying DB elements         | [database_modification.md](pml-coding-assistant/references/database/database_modification.md)                      |
+   | Verifying an attribute name, data type, qualifier          | [aveva_introduction_to_attributes.md](pml-coding-assistant/references/database/aveva_introduction_to_attributes.md)           |
+   | Computed/derived pseudo attributes (CoG, length, etc.)     | [aveva_pseudo_attributes.md](pml-coding-assistant/references/database/aveva_pseudo_attributes.md)                    |
+   | Real attribute values in practice (formats, hierarchy)     | [DBListing-examples/](pml-coding-assistant/production-reference/DBListing-examples/) (raw database listings)    |
+   | Command-line `Q` / `LIST` queries, marking, colouring      | [command-line-queries.md](pml-coding-assistant/references/utilities/command-line-queries.md)                       |
+   | General utility commands, units, tolerances, precision     | [general_commands.md](pml-coding-assistant/references/utilities/general_commands.md)                           |
+   | PML error handling (`handle`/`elsehandle`, `onerror`)      | [AVEVA_PML_Error_Handling.md](pml-coding-assistant/references/language/AVEVA_PML_Error_Handling.md)                   |
+   | RVM export macros                                          | [AVEVA_PML_RVM_Export.md](pml-coding-assistant/references/utilities/AVEVA_PML_RVM_Export.md)                       |
+   | Production patterns when curated examples are insufficient | `pml-coding-assistant/production-reference/` (see Bundled reference map for subdirectories) |
+   | Drawing-to-E3D workflows                                    | [drawing-to-e3d/README.md](drawing-to-e3d/README.md), then the matching subfolder |
+   | Project-specific standards or decisions                     | [user-support/project-knowledge/README.md](user-support/project-knowledge/README.md) |
+   | User-requested KPI dashboards or reports                    | [user-support/kpi-reports/README.md](user-support/kpi-reports/README.md), [user-support/kpi-reports/references/kpi-definitions.md](user-support/kpi-reports/references/kpi-definitions.md) |
+
+For Drawing-to-E3D requests, first identify the deliverable boundary:
+- **Interpretation deliverable**: extracted model intent, assumptions, missing data, confidence, and traceability back to drawing evidence.
+- **Generation deliverable**: PML/PML2 files that create, query, or validate E3D model elements from reviewed intent.
+- **Validation deliverable**: DBOUTPUT/DBLISTING scripts, comparison reports, or dashboards that prove what was created and what still needs engineering review.
+
+Never silently invent missing engineering data. If bore, spec, coordinates, service, owner, connection, or tag meaning is uncertain, mark it as missing or requiring review before generating modifying PML.
 
 3. **Do not invent method names, members, or commands.** If a name is not in the references, say so explicitly.
 
@@ -159,14 +173,14 @@ Applies to any method (`.String()`, `.Real()`, `.Substring()`, ...) and any comp
 - `do !i from 1 to !arr.Size()` — indexed loop.
 - `do !item values !arr` — when index is not needed.
 - `do !i indices !arr` — when the array may be sparse.
-- ARRAY methods differ between making elements undefined vs re-indexing. Verify exact behaviour of `DeleteFrom`, `RemoveFrom`, `Compress`, `Unique`, `Sort`, and `SortedIndices` against [pml2-language-reference.md](references/language/pml2-language-reference.md) before relying on them.
+- ARRAY methods differ between making elements undefined vs re-indexing. Verify exact behaviour of `DeleteFrom`, `RemoveFrom`, `Compress`, `Unique`, `Sort`, and `SortedIndices` against [pml2-language-reference.md](pml-coding-assistant/references/language/pml2-language-reference.md) before relying on them.
 
 ### Database and collection operations
 
 - Use `DBREF` and `COLLECTION` patterns when extracting model elements.
 - Use `COLLECTION.Type`, `AddType`, `Types`, `Scope`, `AddScope`, `Filter`, `Results`, `Next`, `Index`, `Size` only as documented.
-- **Variable Navigation**: When navigating to an element stored in a variable `!ref` (of type `DBREF` or `STRING`), you must prefix the variable with the command expansion operator `$`, e.g., `$!ref`. Never use `!ref` directly. Never use the `NAVIGATE` command since it doesn't exist.
-- **Deleting elements**: use `DELETE <Element Type>` (e.g. `DELETEPIPE`, `DELETE ZONE`, `DELETE PNOD`). For the current element dynamically: `DELETE $!!CE.Type`.
+- **Variable Navigation**: When navigating to an element stored in a variable `!ref` (of type `DBREF` or `STRING`), you must prefix the variable with the command expansion operator `$`, e.g., `$!ref`. Never use `!ref` directly to navigate. Never use the `NAVIGATE` command since it doesn't exist.
+- **Deleting elements**: use `DELETE <Element Type>` (e.g. `DELETE PIPE`, `DELETE ZONE`, `DELETE PNOD`). For the current element dynamically: `DELETE $!!CE.Type`.
 - **No `UNDOABLE` blocks**: Do not use `UNDOABLE` blocks or the `UNDOABLE` object in any PML code or deliverables. Undo/redo logic is managed externally by the host C# application.
 - Prefer string/object methods over `EXPRESSION` for filtering. Only use `EXPRESSION` when no other route works.
 
@@ -174,12 +188,12 @@ Applies to any method (`.String()`, `.Real()`, `.Substring()`, ...) and any comp
 
 **Trigger:** any request involving `DBLISTING`, `DBOUTPUT`, `DATAL` / `datals`, or creating/modifying elements in the design database — whether generating new output, reading existing listings, or troubleshooting syntax.
 
-**Before writing the command**, consult [DBListing-examples/](production-reference/DBListing-examples/) to verify exact syntax and locate a worked example for the element type involved (pipe, branch, equipment, structure, etc.). Those raw text dumps are the source of truth for format; do not infer syntax from general PML knowledge.
+**Before writing the DBListing or DBOUTPUT commands to create or modify 3D design database elements**, consult [DBListing-examples/](pml-coding-assistant/production-reference/DBListing-examples/) to verify exact syntax and locate a worked example for the element type involved (pipe, branch, equipment, structure, etc.). Those raw text dumps are the source of truth for format; do not infer syntax from general PML knowledge.
 
 **Workflow for listing + modification requests**:
-1. Start with [database-data-model-index.md](references/database/database-data-model-index.md) to confirm the element/attribute exists.
-2. Check [DBListing-examples/](production-reference/DBListing-examples/) for the matching listing pattern.
-3. If the request modifies elements, also consult [database_modification.md](references/database/database_modification.md).
+1. Start with [database-data-model-index.md](pml-coding-assistant/references/database/database-data-model-index.md) to confirm the element/attribute exists.
+2. Check [DBListing-examples/](pml-coding-assistant/production-reference/DBListing-examples/) for the matching listing pattern.
+3. If the request modifies elements, also consult [database_modification.md](pml-coding-assistant/references/database/database_modification.md).
 4. Apply the syntax; do not improvise.
 
 ### Forms and UI
@@ -218,7 +232,7 @@ The only exception is pixmap (icon) buttons, where `height` and `width` modify t
 - Wrap likely-to-fail operations in `handle any ... endhandle`: DB navigation, file I/O, type conversions, collection evaluation, user input parsing.
 - Inside handlers, use `!!error.text`, `!!error.line`, `!!error.command` for diagnostics.
 - Prefer explicit validation before executing DB changes — handlers are a safety net, not a substitute for checks.
-- See [AVEVA_PML_Error_Handling.md](references/language/AVEVA_PML_Error_Handling.md) for `handle`/`elsehandle`, `onerror` modes, and re-throwing patterns.
+- See [AVEVA_PML_Error_Handling.md](pml-coding-assistant/references/language/AVEVA_PML_Error_Handling.md) for `handle`/`elsehandle`, `onerror` modes, and re-throwing patterns.
 
 ## Output formats
 
@@ -236,8 +250,8 @@ To transform this skill into a self-compounding expert system, follow these work
 Whenever you solve a complex PML bug, discover an undocumented E3D attribute behavior, or write an elegant new reusable gadget or macro:
 - **Do not let it vanish into the conversation history.**
 - Proactively offer to **file the pattern back** into the repository.
-- Write/update runnable PML templates under [examples/pml-patterns/](examples/pml-patterns/README.md), generated HTML dashboards under [examples/kpi-reports/](examples/kpi-reports/README.md), project standards under [project-knowledge/](project-knowledge/README.md), or reference material under `references/` (e.g. updating [aveva_introduction_to_attributes.md](references/database/aveva_introduction_to_attributes.md) or a split file under `references/object-types/`).
-- If you add or modify a reference file, ensure you update [object-type-index.md](references/object-type-index.md) or [database-data-model-index.md](references/database/database-data-model-index.md) to keep all indexes synchronized.
+- Write/update runnable PML templates under [pml-coding-assistant/examples/pml-patterns/](pml-coding-assistant/examples/pml-patterns/README.md), Drawing-to-E3D interpretation or model-intent rules under [drawing-to-e3d/](drawing-to-e3d/README.md), user-requested generated KPI/report packages under [user-support/kpi-reports/](user-support/kpi-reports/README.md), optional project standards or decisions under [user-support/project-knowledge/](user-support/project-knowledge/README.md), or reference material under `pml-coding-assistant/references/` (e.g. updating [aveva_introduction_to_attributes.md](pml-coding-assistant/references/database/aveva_introduction_to_attributes.md) or a split file under `pml-coding-assistant/references/object-types/`).
+- If you add or modify a reference file, ensure you update [object-type-index.md](pml-coding-assistant/references/object-type-index.md) or [database-data-model-index.md](pml-coding-assistant/references/database/database-data-model-index.md) to keep all indexes synchronized.
 
 ### 2. The Append-Only Change Log (`log.md`)
 On every successful knowledge ingest or significant refactoring action, append a line to the chronological ledger `log.md` at the repository root.
@@ -246,8 +260,8 @@ On every successful knowledge ingest or significant refactoring action, append a
 - **Example**:
   ```markdown
   ## [2026-05-26] ingest | Added File I/O Error Handlers
-  - Updated [AVEVA_PML_Error_Handling.md](references/language/AVEVA_PML_Error_Handling.md) with file permission handles.
-  - Added safe template `examples/pml-patterns/safe_write_lines_to_file.pmlfnc`.
+  - Updated [AVEVA_PML_Error_Handling.md](pml-coding-assistant/references/language/AVEVA_PML_Error_Handling.md) with file permission handles.
+  - Added safe template `pml-coding-assistant/examples/pml-patterns/safe_write_lines_to_file.pmlfnc`.
   ```
 
 ## Pre-commit checklist
@@ -274,42 +288,57 @@ Final pass before returning code. Pure verification — all coding rules live ab
 ### Chronological Log (Root)
 - [log.md](log.md) — Chronological ledger of all changes, ingests, and lint validations following the `## [YYYY-MM-DD] action | title` format.
 
-### references/ (Root)
-- [object-type-index.md](references/object-type-index.md) — generated index of every object/gadget/topic.
-- [object-types/](references/object-types/) — per-object/gadget files for focused loading.
+### pml-coding-assistant/references/
+- [object-type-index.md](pml-coding-assistant/references/object-type-index.md) — generated index of every object/gadget/topic.
+- [object-types/](pml-coding-assistant/references/object-types/) — per-object/gadget files for focused loading.
 
-### references/language/
-- [pml2-language-reference.md](references/language/pml2-language-reference.md) — PML2 syntax, variables, types, operators, loops, error handling, string/array/real methods, file I/O, user-defined objects, PMLLIB organization.
-- [methods-available-to-all-objects.md](references/language/methods-available-to-all-objects.md) — full source for universal methods (`Attribute`, `Attributes`, `Delete`, `EQ`, `LT`, `Max`, `Min`, `NEQ`, `ObjectType`, `Set`, `String`, `Unset`).
-- [AVEVA_PML_Error_Handling.md](references/language/AVEVA_PML_Error_Handling.md) — `handle`/`elsehandle`, `onerror`, `!!error.text`, re-throwing.
+### pml-coding-assistant/references/language/
+- [pml2-language-reference.md](pml-coding-assistant/references/language/pml2-language-reference.md) — PML2 syntax, variables, types, operators, loops, error handling, string/array/real methods, file I/O, user-defined objects, PMLLIB organization.
+- [methods-available-to-all-objects.md](pml-coding-assistant/references/language/methods-available-to-all-objects.md) — full source for universal methods (`Attribute`, `Attributes`, `Delete`, `EQ`, `LT`, `Max`, `Min`, `NEQ`, `ObjectType`, `Set`, `String`, `Unset`).
+- [AVEVA_PML_Error_Handling.md](pml-coding-assistant/references/language/AVEVA_PML_Error_Handling.md) — `handle`/`elsehandle`, `onerror`, `!!error.text`, re-throwing.
 
-### references/database/
-- [database-data-model-index.md](references/database/database-data-model-index.md) — entry-point index for the data model; lists categories, element types, and line ranges so you can load only the relevant section.
-- [aveva_ue_design_database_data_model.md](references/database/aveva_ue_design_database_data_model.md) — full UE Design data model; element types, attributes, legal owners/members, hierarchy. Use the index first.
-- [database_navigation_query_syntax.md](references/database/database_navigation_query_syntax.md) — navigation via CE, DBREF, relative hierarchy, query syntaxes.
-- [database_modification.md](references/database/database_modification.md) — creating, copying, modifying, deleting, reorganising DB elements.
-- [aveva_introduction_to_attributes.md](references/database/aveva_introduction_to_attributes.md) — full A–Y alphabetical attribute listing with data types, qualifiers, descriptions.
-- [aveva_pseudo_attributes.md](references/database/aveva_pseudo_attributes.md) — computed/derived pseudo attributes by functional category (Piping, Branch, Cabling, Structural, etc.).
+### pml-coding-assistant/references/database/
+- [database-data-model-index.md](pml-coding-assistant/references/database/database-data-model-index.md) — entry-point index for the data model; lists categories, element types, and line ranges so you can load only the relevant section.
+- [aveva_ue_design_database_data_model.md](pml-coding-assistant/references/database/aveva_ue_design_database_data_model.md) — full UE Design data model; element types, attributes, legal owners/members, hierarchy. Use the index first.
+- [database_navigation_query_syntax.md](pml-coding-assistant/references/database/database_navigation_query_syntax.md) — navigation via CE, DBREF, relative hierarchy, query syntaxes.
+- [database_modification.md](pml-coding-assistant/references/database/database_modification.md) — creating, copying, modifying, deleting, reorganising DB elements.
+- [aveva_introduction_to_attributes.md](pml-coding-assistant/references/database/aveva_introduction_to_attributes.md) — full A–Y alphabetical attribute listing with data types, qualifiers, descriptions.
+- [aveva_pseudo_attributes.md](pml-coding-assistant/references/database/aveva_pseudo_attributes.md) — computed/derived pseudo attributes by functional category (Piping, Branch, Cabling, Structural, etc.).
 
-### references/ui/
-- [forms-ui-reference.md](references/ui/forms-ui-reference.md) — form structure, form types, gadgets, callbacks, FMSYS, MENU, FORM, PML-only UI examples.
+### user-support/kpi-reports/references/
+- [kpi-definitions.md](user-support/kpi-reports/references/kpi-definitions.md) — KPI formulas, source fields, caveats, and default severity guidance for user-requested report generation.
 
-### references/utilities/
-- [command-line-queries.md](references/utilities/command-line-queries.md) — `Q` and `LIST` syntax for session/user/DB queries; marking and colouring commands.
-- [general_commands.md](references/utilities/general_commands.md) — General utility commands, units, tolerances, and precision control.
-- [AVEVA_PML_RVM_Export.md](references/utilities/AVEVA_PML_RVM_Export.md) — generating PML macros for `.rvm` Review exports.
+### pml-coding-assistant/references/ui/
+- [forms-ui-reference.md](pml-coding-assistant/references/ui/forms-ui-reference.md) — form structure, form types, gadgets, callbacks, FMSYS, MENU, FORM, PML-only UI examples.
 
-### examples/
-- [examples/README.md](examples/README.md) — Entry point for reusable and generated artifacts.
-- [pml-patterns/](examples/pml-patterns/README.md) — Small, self-contained, purpose-built PML/PML2 templates for new code generation.
-- [kpi-reports/](examples/kpi-reports/README.md) — Generated HTML KPI dashboards and interactive AVEVA E3D project/database reports. Use one self-contained package per report with a Markdown wrapper, `report.json`, an HTML dashboard, JSON data, `summary.md`, and CSV exports.
+### pml-coding-assistant/references/utilities/
+- [command-line-queries.md](pml-coding-assistant/references/utilities/command-line-queries.md) — `Q` and `LIST` syntax for session/user/DB queries; marking and colouring commands.
+- [general_commands.md](pml-coding-assistant/references/utilities/general_commands.md) — General utility commands, units, tolerances, and precision control.
+- [AVEVA_PML_RVM_Export.md](pml-coding-assistant/references/utilities/AVEVA_PML_RVM_Export.md) — generating PML macros for `.rvm` Review exports.
 
-### project-knowledge/
-- [project-knowledge/README.md](project-knowledge/README.md) — Project standards, naming rules, EPC good practices, bills of materials, engineering specifications, and client context used to ground generated work.
+### pml-coding-assistant/examples/
+- [pml-coding-assistant/examples/README.md](pml-coding-assistant/examples/README.md) — Entry point for reusable and generated artifacts.
+- [pml-patterns/](pml-coding-assistant/examples/pml-patterns/README.md) — Small, self-contained, purpose-built PML/PML2 templates for new code generation.
 
-### production-reference/
+### user-support/kpi-reports/
+- [user-support/kpi-reports/README.md](user-support/kpi-reports/README.md) — User-requested generated HTML KPI dashboards and interactive AVEVA E3D project/database reports. Use one self-contained package per report with a Markdown wrapper, `report.json`, an HTML dashboard, JSON data, `summary.md`, and CSV exports.
+
+### drawing-to-e3d/
+- [drawing-to-e3d/README.md](drawing-to-e3d/README.md) — Second core skill area for turning drawings and unstructured engineering inputs into auditable model intent and reviewable PML/PML2.
+- [input-interpretation/](drawing-to-e3d/input-interpretation/README.md) — Source evidence extraction rules.
+- [model-intent/](drawing-to-e3d/model-intent/README.md) — Neutral intermediate model intent structure.
+- [generation-recipes/](drawing-to-e3d/generation-recipes/README.md) — Mapping reviewed intent into PML/PML2.
+- [validation/](drawing-to-e3d/validation/README.md) — DBOUTPUT/DBLISTING confirmation and optional report linkage.
+
+### user-support/project-knowledge/
+- [user-support/project-knowledge/README.md](user-support/project-knowledge/README.md) — Optional project standards, naming rules, EPC good practices, bills of materials, engineering specifications, client context, and project-life decisions used to ground generated work.
+
+### user-support/prompt-library/
+- [user-support/prompt-library/README.md](user-support/prompt-library/README.md) — Reusable prompts for model-health reports, MTO readiness reports, PML reviews, discovery filing, and standard extraction.
+
+### pml-coding-assistant/production-reference/
 Real-world AVEVA production code and database dumps for pattern validation. **Consult, do not copy as templates.**
-- [DBListing-examples/](production-reference/DBListing-examples/) — Real E3D design database dumps across 9 disciplines (Piping, Cable, Civil, Equipment, Electrical, HVAC, Structural, Supports, Grids).
+- [DBListing-examples/](pml-coding-assistant/production-reference/DBListing-examples/) — Real E3D design database dumps across 9 disciplines (Piping, Cable, Civil, Equipment, Electrical, HVAC, Structural, Supports, Grids).
 - `PMLUI/` — UI customization patterns.
 - `commands/` — command-line macros and global commands.
 - `forms/` — production form definitions.

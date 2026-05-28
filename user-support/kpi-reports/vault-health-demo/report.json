@@ -1,0 +1,34 @@
+{
+  "title": "Vault Health Demo Dashboard",
+  "slug": "vault-health-demo",
+  "discipline": "vault",
+  "status": "demo",
+  "generatedAt": "2026-05-28T21:53:09.001Z",
+  "generator": "user-support/kpi-reports/scripts/report-generators/vault/generate_vault_health.js",
+  "sourceFiles": [
+    "."
+  ],
+  "formats": [
+    "README.md",
+    "vault-health-demo.html",
+    "vault-health-demo-data.json",
+    "summary.md",
+    "exports/*.csv"
+  ],
+  "views": [
+    "vault-health",
+    "package-completeness"
+  ],
+  "metrics": [
+    "markdownFiles",
+    "objectTypeReferences",
+    "kpiReferenceFiles",
+    "pmlPatternFiles",
+    "kpiReportPackages",
+    "promptLibraryEntries",
+    "projectKnowledgePages",
+    "drawingToE3DPages",
+    "reportIndexEntries",
+    "healthScore"
+  ]
+}

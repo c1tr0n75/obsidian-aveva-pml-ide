@@ -1,0 +1,35 @@
+{
+  "title": "MTO Readiness Demo Dashboard",
+  "slug": "mto-readiness-demo",
+  "discipline": "piping",
+  "status": "demo",
+  "generatedAt": "2026-05-28T21:56:02.207Z",
+  "generator": "user-support/kpi-reports/scripts/generate_demo_kpi_reports.js",
+  "sourceFiles": [
+    "pml-coding-assistant/production-reference/DBListing-examples/DBOutput_PIPING.txt"
+  ],
+  "formats": [
+    "README.md",
+    "mto-readiness-demo.html",
+    "mto-readiness-demo-data.json",
+    "summary.md",
+    "exports/*.csv"
+  ],
+  "views": [
+    "mto",
+    "fabrication",
+    "routes"
+  ],
+  "metrics": [
+    "components",
+    "shopComponents",
+    "fieldComponents",
+    "unsetShop",
+    "spoolRecords",
+    "welds",
+    "flanges",
+    "gaskets",
+    "valves",
+    "instruments"
+  ]
+}

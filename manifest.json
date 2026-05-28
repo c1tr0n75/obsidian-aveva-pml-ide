@@ -1,40 +1,72 @@
 {
-  "name": "aveva-pml-coding-in-design",
+  "name": "obsidian-aveva-pml-ide",
   "version": "2.0",
-  "description": "PML/PML2 coding for AVEVA Engineering, AVEVA E3D Design, and AVEVA Unified Engineering.",
+  "description": "PML/PML2 coding and Drawing-to-E3D automation for AVEVA Engineering, AVEVA E3D Design, and AVEVA Unified Engineering.",
   "scope": {
     "in": [
       "PML2 functions, objects, forms, macros, callbacks",
+      "Drawing-to-E3D workflows from AutoCAD 2D, P&ID, PFD, line list, PDF, table, and unstructured engineering inputs",
+      "Auditable model intent extraction before PML generation",
       "DBREF/COLLECTION navigation and queries",
       "Database listings and modifications",
+      "DBOUTPUT/DBLISTING generation and validation",
       "Gadget definitions, form layout, alerts",
-      "File I/O, error handling, RVM export"
+      "File I/O, error handling, RVM export",
+      "User-requested KPI dashboards and reports",
+      "Optional project knowledge used to constrain generated PML/forms/DBOUTPUT/DBLISTING and document project decisions"
     ],
     "out": [
       "Visual Studio projects",
-      "Generic programming unrelated to PML"
+      "Generic programming unrelated to PML or E3D model automation",
+      "Generic BI dashboards disconnected from PML, E3D, or project validation"
     ]
   },
-  "bundled_contents": {
-    "references": {
-      "top_level_files": 14,
-      "object_type_split_files": 87
+  "product_areas": {
+    "pml_coding_assistant": {
+      "path": "pml-coding-assistant/",
+      "references": {
+        "top_level_files": 1,
+        "object_type_split_files": 87,
+        "database_reference_files": 6,
+        "language_reference_files": 3,
+        "ui_reference_files": 1,
+        "utility_reference_files": 3
+      },
+      "examples": {
+        "pml_patterns": 9
+      },
+      "scripts": {
+        "validators": 1,
+        "pml_linters": 1
+      },
+      "production_reference": {
+        "commands": 2,
+        "forms": 4,
+        "functions": 3,
+        "objects": 2,
+        "PMLUI": 2,
+        "DBListing-examples": 9
+      }
     },
-    "examples": {
-      "pml_patterns": 9,
-      "kpi_reports": 3,
-      "kpi_report_indexes": 2
+    "drawing_to_e3d": {
+      "path": "drawing-to-e3d/",
+      "top_level_files": 1,
+      "workflow_reference_files": 4
     },
-    "project_knowledge": {
-      "documents": 1
-    },
-    "production_reference": {
-      "commands": 2,
-      "forms": 4,
-      "functions": 3,
-      "objects": 2,
-      "PMLUI": 2,
-      "DBListing-examples": 9
+    "user_support": {
+      "path": "user-support/",
+      "kpi_reports": {
+        "packages": 4,
+        "indexes": 2,
+        "reference_files": 2,
+        "report_generators": 3
+      },
+      "project_knowledge": {
+        "documents": 7
+      },
+      "prompt_library": {
+        "prompts": 5
+      }
     }
   }
 }

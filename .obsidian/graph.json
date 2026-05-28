@@ -8,56 +8,77 @@
   "collapse-color-groups": false,
   "colorGroups": [
     {
-      "query": "path:references/object-types/",
+      "query": "path:pml-coding-assistant/references/object-types/",
       "color": {
         "a": 1,
         "rgb": 1096065
       }
     },
     {
-      "query": "path:references/database/",
+      "query": "path:pml-coding-assistant/references/database/",
       "color": {
         "a": 1,
         "rgb": 440020
       }
     },
     {
-      "query": "path:references/language/ OR path:references/ui/ OR path:references/utilities/ OR path:references/object-type-index.md",
+      "query": "path:pml-coding-assistant/references/language/ OR path:pml-coding-assistant/references/ui/ OR path:pml-coding-assistant/references/utilities/ OR path:pml-coding-assistant/references/object-type-index.md",
       "color": {
         "a": 1,
         "rgb": 3899930
       }
     },
     {
-      "query": "path:examples/pml-patterns/",
+      "query": "path:user-support/kpi-reports/references/",
+      "color": {
+        "a": 1,
+        "rgb": 3983359
+      }
+    },
+    {
+      "query": "path:pml-coding-assistant/examples/pml-patterns/",
       "color": {
         "a": 1,
         "rgb": 3055683
       }
     },
     {
-      "query": "path:examples/kpi-reports/",
+      "query": "path:drawing-to-e3d/",
+      "color": {
+        "a": 1,
+        "rgb": 2666671
+      }
+    },
+    {
+      "query": "path:user-support/kpi-reports/",
       "color": {
         "a": 1,
         "rgb": 13801762
       }
     },
     {
-      "query": "path:project-knowledge/",
+      "query": "path:user-support/project-knowledge/",
       "color": {
         "a": 1,
         "rgb": 10711543
       }
     },
     {
-      "query": "path:production-reference/",
+      "query": "path:user-support/prompt-library/",
+      "color": {
+        "a": 1,
+        "rgb": 14512864
+      }
+    },
+    {
+      "query": "path:pml-coding-assistant/production-reference/",
       "color": {
         "a": 1,
         "rgb": 15680580
       }
     },
     {
-      "query": "file:log.md OR file:SKILL.md OR file:README.md OR file:LLM_WIKI_CONCEPT.md OR file:AURA.md OR file:OBSID.md OR path:examples/README.md",
+      "query": "file:log.md OR file:SKILL.md OR file:README.md OR file:LLM_WIKI_CONCEPT.md OR file:AURA.md OR file:OBSID.md OR path:pml-coding-assistant/README.md OR path:user-support/README.md",
       "color": {
         "a": 1,
         "rgb": 9133302

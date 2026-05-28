@@ -1,0 +1,114 @@
+{
+  "generatedAt": "2026-05-28T21:53:09.001Z",
+  "source": {
+    "path": ".",
+    "label": "Obsidian vault"
+  },
+  "summary": {
+    "markdownFiles": 143,
+    "objectTypeReferences": 87,
+    "kpiReferenceFiles": 2,
+    "pmlPatternFiles": 7,
+    "kpiReportPackages": 4,
+    "promptLibraryEntries": 5,
+    "projectKnowledgePages": 7,
+    "drawingToE3DPages": 5,
+    "reportIndexEntries": 4,
+    "healthScore": 100
+  },
+  "charts": {
+    "fileFamilies": [
+      {
+        "label": "Markdown",
+        "value": 143
+      },
+      {
+        "label": "Object refs",
+        "value": 87
+      },
+      {
+        "label": "PML patterns",
+        "value": 7
+      },
+      {
+        "label": "KPI packages",
+        "value": 4
+      },
+      {
+        "label": "Prompts",
+        "value": 5
+      },
+      {
+        "label": "Project pages",
+        "value": 7
+      },
+      {
+        "label": "Drawing-to-E3D",
+        "value": 5
+      }
+    ],
+    "packageCompleteness": [
+      {
+        "label": "model-health-demo",
+        "value": 6
+      },
+      {
+        "label": "mto-readiness-demo",
+        "value": 6
+      },
+      {
+        "label": "piping-demo",
+        "value": 6
+      },
+      {
+        "label": "vault-health-demo",
+        "value": 6
+      }
+    ]
+  },
+  "tables": {
+    "reportPackages": [
+      {
+        "slug": "model-health-demo",
+        "hasReadme": true,
+        "hasManifest": true,
+        "hasHtml": true,
+        "hasData": true,
+        "hasSummary": true,
+        "csvExports": 3
+      },
+      {
+        "slug": "mto-readiness-demo",
+        "hasReadme": true,
+        "hasManifest": true,
+        "hasHtml": true,
+        "hasData": true,
+        "hasSummary": true,
+        "csvExports": 3
+      },
+      {
+        "slug": "piping-demo",
+        "hasReadme": true,
+        "hasManifest": true,
+        "hasHtml": true,
+        "hasData": true,
+        "hasSummary": true,
+        "csvExports": 4
+      },
+      {
+        "slug": "vault-health-demo",
+        "hasReadme": true,
+        "hasManifest": true,
+        "hasHtml": true,
+        "hasData": true,
+        "hasSummary": true,
+        "csvExports": 3
+      }
+    ],
+    "packageIssues": [],
+    "notes": [
+      "Vault health reports inspect the repository structure, not AVEVA model data.",
+      "Structural validation remains the source of truth for pass/fail checks."
+    ]
+  }
+}
