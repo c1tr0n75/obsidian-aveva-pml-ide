@@ -45,6 +45,10 @@ All significant changes, ingests, queries, and refactoring actions are recorded 
 - Grounded the implementation in the production `rptoutput.pmlfrm` `PMLFILEBROWSER`, `ALPHA FILE`, `WRITEALPHAFILE`, and `OUTPUT` patterns.
 - Updated [manifest.json](manifest.json) example inventory.
 
+## [2026-05-28] ingest | Added P&ID visible equipment DBListing and nozzle CSV
+- Created [pid_visible_equipment_dblisting.txt](examples/pid_visible_equipment_dblisting.txt) for the visible `E03`, `E04`, `E06`, `E10`, `E12`, `E15`, `E16`, and `E18` equipment and their nozzles.
+- Used production catalog reference `CATR SPCOMPONENT /300lb_Ansi_Flanged/AAZFBD0TT` for every nozzle.
+- Created [pid_visible_equipment_nozzle_connections.csv](examples/pid_visible_equipment_nozzle_connections.csv) with leave and arrive nozzle pairs inferred from the P&ID crop.
 
 
 

@@ -1,0 +1,510 @@
+NEW SITE /PID_VISIBLE_EQUIPMENT
+DESC 'Equipment interpreted from attached P&ID crop'
+
+NEW ZONE /ZONE_PID_VISIBLE_EQUIPMENT
+DESC 'Only visible E-tagged equipment and nozzles'
+
+NEW EQUIPMENT /E03
+DESC 'Small vertical feed vessel from P&ID'
+FUNC 'Equipment'
+POS E 0mm N 0mm U 0mm
+ORI Y is N and Z is U
+BUIL false
+DSCO unset
+PTSP unset
+INSC unset
+
+NEW CYLINDER
+POS E 0mm N 0mm U 900mm
+ORI Y is U and Z is N
+DIAM 900mm
+HEIG 1800mm
+END
+NEW DISH
+POS E 0mm N 0mm U 1800mm
+ORI Y is U and Z is N
+DIAM 900mm
+HEIG 180mm
+RADI 60mm
+END
+NEW DISH
+POS E 0mm N 0mm U 0mm
+ORI Y is D and Z is N
+DIAM 900mm
+HEIG 180mm
+RADI 60mm
+END
+NEW NOZZLE /E03/N1
+POS W 450mm N 0mm U 1150mm
+ORI Y is W and Z is U
+TEMP 50degC
+PRES 0pascal
+TPRESS 0pascal
+HEIG 250mm
+DUTY 'ARRIVE'
+END
+NEW NOZZLE /E03/N2
+POS E 450mm N 0mm U 1150mm
+ORI Y is E and Z is U
+TEMP 50degC
+PRES 0pascal
+TPRESS 0pascal
+HEIG 250mm
+DUTY 'LEAVE'
+END
+END
+NEW EQUIPMENT /E04
+DESC 'Vertical vessel upstream of reactor'
+FUNC 'Equipment'
+POS E 3000mm N 700mm U 0mm
+ORI Y is N and Z is U
+BUIL false
+DSCO unset
+PTSP unset
+INSC unset
+
+NEW CYLINDER
+POS E 0mm N 0mm U 1200mm
+ORI Y is U and Z is N
+DIAM 1000mm
+HEIG 2400mm
+END
+NEW DISH
+POS E 0mm N 0mm U 2400mm
+ORI Y is U and Z is N
+DIAM 1000mm
+HEIG 220mm
+RADI 75mm
+END
+NEW DISH
+POS E 0mm N 0mm U 0mm
+ORI Y is D and Z is N
+DIAM 1000mm
+HEIG 220mm
+RADI 75mm
+END
+NEW NOZZLE /E04/N1
+POS W 500mm N 0mm U 1250mm
+ORI Y is W and Z is U
+TEMP 50degC
+PRES 0pascal
+TPRESS 0pascal
+HEIG 250mm
+DUTY 'ARRIVE'
+END
+NEW NOZZLE /E04/N2
+POS E 500mm N 0mm U 1250mm
+ORI Y is E and Z is U
+TEMP 50degC
+PRES 0pascal
+TPRESS 0pascal
+HEIG 250mm
+DUTY 'LEAVE'
+END
+NEW NOZZLE /E04/N3
+POS E 0mm N 0mm U 2620mm
+ORI Y is U and Z is N
+TEMP 50degC
+PRES 0pascal
+TPRESS 0pascal
+HEIG 250mm
+DUTY 'VENT'
+END
+END
+NEW EQUIPMENT /E10
+DESC 'Agitated reactor vessel'
+FUNC 'Equipment'
+POS E 7200mm N 500mm U 0mm
+ORI Y is N and Z is U
+BUIL false
+DSCO unset
+PTSP unset
+INSC unset
+
+NEW CYLINDER
+POS E 0mm N 0mm U 1800mm
+ORI Y is U and Z is N
+DIAM 1800mm
+HEIG 3600mm
+END
+NEW DISH
+POS E 0mm N 0mm U 3600mm
+ORI Y is U and Z is N
+DIAM 1800mm
+HEIG 350mm
+RADI 120mm
+END
+NEW DISH
+POS E 0mm N 0mm U 0mm
+ORI Y is D and Z is N
+DIAM 1800mm
+HEIG 350mm
+RADI 120mm
+END
+NEW CYLINDER
+POS E 0mm N 0mm U 4200mm
+ORI Y is U and Z is N
+DIAM 450mm
+HEIG 700mm
+END
+NEW BOX
+POS E 0mm N 0mm U 2100mm
+XLEN 80mm
+YLEN 950mm
+ZLEN 260mm
+END
+NEW NOZZLE /E10/N1
+POS W 900mm N 0mm U 2100mm
+ORI Y is W and Z is U
+TEMP 50degC
+PRES 0pascal
+TPRESS 0pascal
+HEIG 300mm
+DUTY 'ARRIVE'
+END
+NEW NOZZLE /E10/N2
+POS E 0mm S 900mm U 450mm
+ORI Y is S and Z is U
+TEMP 50degC
+PRES 0pascal
+TPRESS 0pascal
+HEIG 300mm
+DUTY 'LEAVE'
+END
+NEW NOZZLE /E10/N3
+POS E 450mm S 775mm U 600mm
+ORI Y is S and Z is U
+TEMP 50degC
+PRES 0pascal
+TPRESS 0pascal
+HEIG 300mm
+DUTY 'LEAVE'
+END
+NEW NOZZLE /E10/N4
+POS E 900mm N 350mm U 2350mm
+ORI Y is E and Z is U
+TEMP 50degC
+PRES 0pascal
+TPRESS 0pascal
+HEIG 300mm
+DUTY 'LEAVE'
+END
+NEW NOZZLE /E10/N5
+POS E 900mm N 0mm U 2050mm
+ORI Y is E and Z is U
+TEMP 50degC
+PRES 0pascal
+TPRESS 0pascal
+HEIG 300mm
+DUTY 'LEAVE'
+END
+NEW NOZZLE /E10/N6
+POS E 900mm S 350mm U 1750mm
+ORI Y is E and Z is U
+TEMP 50degC
+PRES 0pascal
+TPRESS 0pascal
+HEIG 300mm
+DUTY 'LEAVE'
+END
+NEW NOZZLE /E10/N7
+POS W 500mm N 0mm U 3900mm
+ORI Y is U and Z is N
+TEMP 50degC
+PRES 0pascal
+TPRESS 0pascal
+HEIG 250mm
+DUTY 'TOP'
+END
+NEW NOZZLE /E10/N8
+POS E 0mm N 0mm U 3950mm
+ORI Y is U and Z is N
+TEMP 50degC
+PRES 0pascal
+TPRESS 0pascal
+HEIG 250mm
+DUTY 'TOP'
+END
+NEW NOZZLE /E10/N9
+POS E 500mm N 0mm U 3900mm
+ORI Y is U and Z is N
+TEMP 50degC
+PRES 0pascal
+TPRESS 0pascal
+HEIG 250mm
+DUTY 'TOP'
+END
+END
+NEW EQUIPMENT /E06
+DESC 'Small pump or dosing package under E10'
+FUNC 'Equipment'
+POS E 6500mm S 2600mm U 0mm
+ORI Y is N and Z is U
+BUIL false
+DSCO unset
+PTSP unset
+INSC unset
+
+NEW BOX
+POS E 0mm N 0mm U 350mm
+XLEN 450mm
+YLEN 450mm
+ZLEN 700mm
+END
+NEW NOZZLE /E06/N1
+POS E 0mm N 225mm U 700mm
+ORI Y is N and Z is U
+TEMP 50degC
+PRES 0pascal
+TPRESS 0pascal
+HEIG 200mm
+DUTY 'ARRIVE'
+END
+END
+NEW EQUIPMENT /E12
+DESC 'Small receiver or hopper below reactor'
+FUNC 'Equipment'
+POS E 8800mm S 2600mm U 0mm
+ORI Y is N and Z is U
+BUIL false
+DSCO unset
+PTSP unset
+INSC unset
+
+NEW CYLINDER
+POS E 0mm N 0mm U 800mm
+ORI Y is U and Z is N
+DIAM 700mm
+HEIG 1000mm
+END
+NEW CONE
+POS E 0mm N 0mm U 150mm
+ORI Y is U and Z is N
+DTOP 700mm
+DBOT 200mm
+HEIG 500mm
+END
+NEW NOZZLE /E12/N1
+POS E 0mm N 350mm U 1450mm
+ORI Y is N and Z is U
+TEMP 50degC
+PRES 0pascal
+TPRESS 0pascal
+HEIG 220mm
+DUTY 'ARRIVE'
+END
+END
+NEW EQUIPMENT /E15
+DESC 'First compact vertical exchanger or filter'
+FUNC 'Equipment'
+POS E 12200mm N 500mm U 0mm
+ORI Y is N and Z is U
+BUIL false
+DSCO unset
+PTSP unset
+INSC unset
+
+NEW CYLINDER
+POS E 0mm N 0mm U 900mm
+ORI Y is U and Z is N
+DIAM 700mm
+HEIG 1800mm
+END
+NEW DISH
+POS E 0mm N 0mm U 1800mm
+ORI Y is U and Z is N
+DIAM 700mm
+HEIG 160mm
+RADI 50mm
+END
+NEW DISH
+POS E 0mm N 0mm U 0mm
+ORI Y is D and Z is N
+DIAM 700mm
+HEIG 160mm
+RADI 50mm
+END
+NEW NOZZLE /E15/N1
+POS W 350mm N 0mm U 1450mm
+ORI Y is W and Z is U
+TEMP 50degC
+PRES 0pascal
+TPRESS 0pascal
+HEIG 220mm
+DUTY 'ARRIVE'
+END
+NEW NOZZLE /E15/N2
+POS E 0mm S 350mm U 350mm
+ORI Y is S and Z is U
+TEMP 50degC
+PRES 0pascal
+TPRESS 0pascal
+HEIG 220mm
+DUTY 'LEAVE'
+END
+END
+NEW EQUIPMENT /E16
+DESC 'Second compact vertical exchanger or filter'
+FUNC 'Equipment'
+POS E 14700mm N 500mm U 0mm
+ORI Y is N and Z is U
+BUIL false
+DSCO unset
+PTSP unset
+INSC unset
+
+NEW CYLINDER
+POS E 0mm N 0mm U 900mm
+ORI Y is U and Z is N
+DIAM 700mm
+HEIG 1800mm
+END
+NEW DISH
+POS E 0mm N 0mm U 1800mm
+ORI Y is U and Z is N
+DIAM 700mm
+HEIG 160mm
+RADI 50mm
+END
+NEW DISH
+POS E 0mm N 0mm U 0mm
+ORI Y is D and Z is N
+DIAM 700mm
+HEIG 160mm
+RADI 50mm
+END
+NEW NOZZLE /E16/N1
+POS W 350mm N 0mm U 1450mm
+ORI Y is W and Z is U
+TEMP 50degC
+PRES 0pascal
+TPRESS 0pascal
+HEIG 220mm
+DUTY 'ARRIVE'
+END
+NEW NOZZLE /E16/N2
+POS E 0mm S 350mm U 350mm
+ORI Y is S and Z is U
+TEMP 50degC
+PRES 0pascal
+TPRESS 0pascal
+HEIG 220mm
+DUTY 'LEAVE'
+END
+END
+NEW EQUIPMENT /E18
+DESC 'Third compact vertical exchanger or filter'
+FUNC 'Equipment'
+POS E 17200mm N 500mm U 0mm
+ORI Y is N and Z is U
+BUIL false
+DSCO unset
+PTSP unset
+INSC unset
+
+NEW CYLINDER
+POS E 0mm N 0mm U 900mm
+ORI Y is U and Z is N
+DIAM 700mm
+HEIG 1800mm
+END
+NEW DISH
+POS E 0mm N 0mm U 1800mm
+ORI Y is U and Z is N
+DIAM 700mm
+HEIG 160mm
+RADI 50mm
+END
+NEW DISH
+POS E 0mm N 0mm U 0mm
+ORI Y is D and Z is N
+DIAM 700mm
+HEIG 160mm
+RADI 50mm
+END
+NEW NOZZLE /E18/N1
+POS W 350mm N 0mm U 1450mm
+ORI Y is W and Z is U
+TEMP 50degC
+PRES 0pascal
+TPRESS 0pascal
+HEIG 220mm
+DUTY 'ARRIVE'
+END
+NEW NOZZLE /E18/N2
+POS E 0mm S 350mm U 350mm
+ORI Y is S and Z is U
+TEMP 50degC
+PRES 0pascal
+TPRESS 0pascal
+HEIG 220mm
+DUTY 'LEAVE'
+END
+END
+END
+END
+OLD NOZZLE /E03/N1
+CATR SPCOMPONENT /300lb_Ansi_Flanged/AAZFBD0TT
+
+OLD NOZZLE /E03/N2
+CATR SPCOMPONENT /300lb_Ansi_Flanged/AAZFBD0TT
+
+OLD NOZZLE /E04/N1
+CATR SPCOMPONENT /300lb_Ansi_Flanged/AAZFBD0TT
+
+OLD NOZZLE /E04/N2
+CATR SPCOMPONENT /300lb_Ansi_Flanged/AAZFBD0TT
+
+OLD NOZZLE /E04/N3
+CATR SPCOMPONENT /300lb_Ansi_Flanged/AAZFBD0TT
+
+OLD NOZZLE /E10/N1
+CATR SPCOMPONENT /300lb_Ansi_Flanged/AAZFBD0TT
+
+OLD NOZZLE /E10/N2
+CATR SPCOMPONENT /300lb_Ansi_Flanged/AAZFBD0TT
+
+OLD NOZZLE /E10/N3
+CATR SPCOMPONENT /300lb_Ansi_Flanged/AAZFBD0TT
+
+OLD NOZZLE /E10/N4
+CATR SPCOMPONENT /300lb_Ansi_Flanged/AAZFBD0TT
+
+OLD NOZZLE /E10/N5
+CATR SPCOMPONENT /300lb_Ansi_Flanged/AAZFBD0TT
+
+OLD NOZZLE /E10/N6
+CATR SPCOMPONENT /300lb_Ansi_Flanged/AAZFBD0TT
+
+OLD NOZZLE /E10/N7
+CATR SPCOMPONENT /300lb_Ansi_Flanged/AAZFBD0TT
+
+OLD NOZZLE /E10/N8
+CATR SPCOMPONENT /300lb_Ansi_Flanged/AAZFBD0TT
+
+OLD NOZZLE /E10/N9
+CATR SPCOMPONENT /300lb_Ansi_Flanged/AAZFBD0TT
+
+OLD NOZZLE /E06/N1
+CATR SPCOMPONENT /300lb_Ansi_Flanged/AAZFBD0TT
+
+OLD NOZZLE /E12/N1
+CATR SPCOMPONENT /300lb_Ansi_Flanged/AAZFBD0TT
+
+OLD NOZZLE /E15/N1
+CATR SPCOMPONENT /300lb_Ansi_Flanged/AAZFBD0TT
+
+OLD NOZZLE /E15/N2
+CATR SPCOMPONENT /300lb_Ansi_Flanged/AAZFBD0TT
+
+OLD NOZZLE /E16/N1
+CATR SPCOMPONENT /300lb_Ansi_Flanged/AAZFBD0TT
+
+OLD NOZZLE /E16/N2
+CATR SPCOMPONENT /300lb_Ansi_Flanged/AAZFBD0TT
+
+OLD NOZZLE /E18/N1
+CATR SPCOMPONENT /300lb_Ansi_Flanged/AAZFBD0TT
+
+OLD NOZZLE /E18/N2
+CATR SPCOMPONENT /300lb_Ansi_Flanged/AAZFBD0TT

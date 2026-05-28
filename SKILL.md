@@ -92,9 +92,10 @@ Verify file extension and use the matching syntax.
 
 ### Comments
 
-- Full-line PML comment syntax: `$* <text>` — comment must start at the beginning of the line (after optional indentation).
-- **Never** place a comment on the same line as executable code. PML inline comments are unreliable across contexts and a frequent cause of obscure parse failures.
-- The same rule applies inside `DBLISTING` / `DBOUTPUT` blocks: comments go on their own line.
+- For newly generated PML, prefer full-line comments using `$* <text>`.
+- Existing production PML commonly uses `-- <text>` full-line comments; treat these as valid unless the target runtime/context is known to reject them.
+- Never place a comment on the same line as executable code. Inline comments are unreliable across contexts and can cause obscure parse failures.
+- Inside `DBLISTING` / `DBOUTPUT` blocks, comments go on their own line and should follow the syntax verified from production examples.
 
 ### String interpolation — do not evaluate methods inline
 
@@ -215,7 +216,7 @@ The only exception is pixmap (icon) buttons, where `height` and `width` modify t
 ### Error handling
 
 - Wrap likely-to-fail operations in `handle any ... endhandle`: DB navigation, file I/O, type conversions, collection evaluation, user input parsing.
-- Inside handlers, use `!!Error.Text`, `!!Error.Line`, `!!Error.Command` for diagnostics.
+- Inside handlers, use `!!error.text`, `!!error.line`, `!!error.command` for diagnostics.
 - Prefer explicit validation before executing DB changes — handlers are a safety net, not a substitute for checks.
 - See [AVEVA_PML_Error_Handling.md](references/language/AVEVA_PML_Error_Handling.md) for `handle`/`elsehandle`, `onerror` modes, and re-throwing patterns.
 
@@ -280,7 +281,7 @@ Final pass before returning code. Pure verification — all coding rules live ab
 ### references/language/
 - [pml2-language-reference.md](references/language/pml2-language-reference.md) — PML2 syntax, variables, types, operators, loops, error handling, string/array/real methods, file I/O, user-defined objects, PMLLIB organization.
 - [methods-available-to-all-objects.md](references/language/methods-available-to-all-objects.md) — full source for universal methods (`Attribute`, `Attributes`, `Delete`, `EQ`, `LT`, `Max`, `Min`, `NEQ`, `ObjectType`, `Set`, `String`, `Unset`).
-- [AVEVA_PML_Error_Handling.md](references/language/AVEVA_PML_Error_Handling.md) — `handle`/`elsehandle`, `onerror`, `!!Error.Text`, re-throwing.
+- [AVEVA_PML_Error_Handling.md](references/language/AVEVA_PML_Error_Handling.md) — `handle`/`elsehandle`, `onerror`, `!!error.text`, re-throwing.
 
 ### references/database/
 - [database-data-model-index.md](references/database/database-data-model-index.md) — entry-point index for the data model; lists categories, element types, and line ranges so you can load only the relevant section.

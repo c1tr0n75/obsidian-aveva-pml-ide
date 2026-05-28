@@ -1,0 +1,11 @@
+equipment_name,leave_nozzle_name,arrive_nozzle_name
+/E03,/E03/N2,/E04/N1
+/E04,/E04/N2,/E10/N1
+/E10,/E10/N2,/E06/N1
+/E10,/E10/N3,/E12/N1
+/E10,/E10/N4,/E15/N1
+/E10,/E10/N5,/E16/N1
+/E10,/E10/N6,/E18/N1
+/E15,/E15/N2,
+/E16,/E16/N2,
+/E18,/E18/N2,
