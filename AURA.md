@@ -28,7 +28,7 @@ To prevent hallucinations, ensure strict compliance with E3D database structures
                                    ▼
    ┌───────────────────────────────────────────────────────────────┐
    │                OBSIDIAN KNOWLEDGE BASE (VAULT)                │
-   │    references/  |  examples/  |  SKILL.md  |  log.md  |  OBSID.md  │
+   │ references/ | examples/ | project-knowledge/ | SKILL.md | log.md │
    └───────────────────────────────┬───────────────────────────────┘
                                    │
                      (2. Assemble Grounded Prompt)
@@ -63,7 +63,8 @@ The user prompts Aura inside E3D:
 Instead of sending this raw request directly to the LLM, Aura's local execution layer reads the vault files from a secure shared network folder:
 1. **Scans Indices**: It checks [database-data-model-index.md](references/database/database-data-model-index.md) to locate where `BRANCH` attributes are defined.
 2. **Drills Reference Sheet**: It loads the corresponding split reference files under `references/database/` and [aveva_introduction_to_attributes.md](references/database/aveva_introduction_to_attributes.md) for the `BRANCH` element type.
-3. **Retrieves Specific Rules**: It finds that:
+3. **Loads Project Context When Needed**: For project-specific requests, it can also load relevant naming rules, EPC practices, BOM conventions, or engineering specifications from [project-knowledge/](project-knowledge/README.md).
+4. **Retrieves Specific Rules**: It finds that:
    * `.spec` returns a `DBREF` and requires querying its `.name` property to resolve to a string.
    * `.bore` is an attribute accessed with bare dot-notation (no parentheses `()`).
 
@@ -71,6 +72,7 @@ Instead of sending this raw request directly to the LLM, Aura's local execution 
 Aura constructs the prompt payload sent to the LLM API provider. The prompt consists of:
 * **Base Constraints (System Prompt)**: The entirety of [SKILL.md](SKILL.md) containing strict PML variable scoping rules (`!local` vs `!!global`), comments syntax constraints, and the pre-commit checklist.
 * **Grounded Reference Context**: The specific database attribute rules extracted from Step 2.
+* **Reusable Patterns and Project Context**: Matching templates from [examples/pml-patterns/](examples/pml-patterns/README.md) and standards from [project-knowledge/](project-knowledge/README.md), when relevant.
 * **User Input**: The user's query and the active element reference.
 
 ### Step 4: LLM Response & Execution
@@ -93,6 +95,7 @@ Aura is a **learning agent**. During pair-programming sessions inside E3D, if Au
 2. Aura prompts the engineer inside E3D: *"I've successfully mapped this custom piping attribute. Should I ingest this rule back into our company's shared Vault?"*
 3. On approval, Aura's background file writer edits the shared Obsidian vault:
    * Updates [aveva_introduction_to_attributes.md](references/database/aveva_introduction_to_attributes.md) with the new mapping.
+   * Adds reusable PML templates under [examples/pml-patterns/](examples/pml-patterns/README.md), generated KPI dashboards under [examples/kpi-reports/](examples/kpi-reports/README.md), or project standards under [project-knowledge/](project-knowledge/README.md), depending on the discovery.
    * Appends an entry to [log.md](log.md) marking the action as `ingest`.
    * Automatically executes `python3 scripts/validate_skill_structure.py` to ensure the shared vault remains perfectly healthy and has zero broken paths.
 

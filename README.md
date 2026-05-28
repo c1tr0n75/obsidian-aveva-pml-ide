@@ -20,9 +20,9 @@ This repository is built on **Andrej Karpathy's "LLM Wiki" paradigm**, convertin
          ┌───────────────────────────┴───────────────────────────┐
          ▼                                                       ▼
 ┌─────────────────────────────────┐                     ┌─────────────────────────────────┐
-│     references/object-types/    │                     │      examples/ & log.md         │
-│  87 Granular Markdown Reference │                     │  Chronological Change Ledger    │
-│  Sheets (Clickable Graph Nodes) │                     │  & Reusable Code Templates      │
+│     references/object-types/    │                     │ examples/ + project-knowledge/ │
+│  87 Granular Markdown Reference │                     │  Reusable Artifacts, Reports,   │
+│  Sheets (Clickable Graph Nodes) │                     │  Standards, and log.md Ledger   │
 └─────────────────────────────────┘                     └─────────────────────────────────┘
 ```
 
@@ -44,6 +44,9 @@ Your repository implements a surgical three-layer architecture to minimize conte
   * `references/utilities/` — Command-line queries, session coordinates, and RVM exports.
 * **`references/object-types/`** — 87 highly granular split reference sheets representing each object type (e.g. `ARRAY`, `DBREF`, `COLLECTION`, `FILE`, `MENU`).
 * **Indices** — `references/object-type-index.md` (root references) and `references/database/database-data-model-index.md` enable surgical, index-and-drill retrieval.
+* **`examples/pml-patterns/`** — Curated, runnable PML/PML2 templates and small companion outputs used as known-good implementation patterns.
+* **`examples/kpi-reports/`** — On-demand generated HTML KPI dashboards and interactive reports derived from AVEVA E3D project/database context.
+* **`project-knowledge/`** — Project and engineering grounding material: naming rules, EPC practices, bills of materials, mechanical specifications, and client standards.
 
 ### 🔹 Layer 3: The Schema (AI Rules & Constraints)
 * **`SKILL.md`** — The skill entrypoint containing the file routing table, strict variable scoping rules, coordinate coordinate gadgets, and pre-commit checklists.
@@ -66,7 +69,7 @@ All indices and references are connected using **standard relative Markdown rela
 
 ### 🔄 A. The "File-Back" Ingest (Closed-Loop Growth)
 Whenever you solve a complex PML bug, discover an undocumented attribute, or write an elegant new UI form:
-1. **File it back**: Instruct the agent to write a new template under `examples/` or update the corresponding object file under `references/object-types/`.
+1. **File it back**: Instruct the agent to write a new PML template under `examples/pml-patterns/`, a generated HTML report under `examples/kpi-reports/`, project standards under `project-knowledge/`, or update the corresponding object file under `references/object-types/`.
 2. **Log the change**: Append a parseable record under the today's date in `log.md` using the Unix-friendly prefix format:
    ```markdown
    ## [YYYY-MM-DD] action | title
@@ -107,13 +110,13 @@ Hearing the trigger, the agent prompts you: *“We've resolved this branching sp
 #### 2. Agentic Automation (The Ingestion Process)
 Once you authorize the ingestion, the AI agent automates the entire process using its file-system manipulation tools:
 * **Updates Reference Sheets**: It updates [aveva_introduction_to_attributes.md](references/database/aveva_introduction_to_attributes.md) under the `BRANCH` attributes section to document that `.spec` returns a `DBREF` and requires `.name` for string extraction.
-* **Writes Curated Template**: It creates a clean, runnable template `query_branch_spec.pmlfnc` in `examples/`.
+* **Writes Curated Template**: It creates a clean, runnable template `query_branch_spec.pmlfnc` in `examples/pml-patterns/`.
 * **Syncs Indices**: It updates [database-data-model-index.md](references/database/database-data-model-index.md) to register the newly added template and documentation page.
 * **Appends to Ledger (`log.md`)**: It appends a parseable entry to the repository's [log.md](log.md):
   ```markdown
   ## [YYYY-MM-DD] ingest | Documented BRANCH Spec attribute parsing
   - Updated [aveva_introduction_to_attributes.md](references/database/aveva_introduction_to_attributes.md) to clarify .spec output type.
-  - Created runnable template `examples/query_branch_spec.pmlfnc`.
+  - Created runnable template `examples/pml-patterns/query_branch_spec.pmlfnc`.
   ```
 
 #### 3. Programmatic Guardrail Validation
@@ -133,8 +136,8 @@ Over weeks, months, and years, the `obsidian-aveva-pml-ide` repository will evol
 ### 🚀 Stage 1: Organic Compounding (Weeks 1 – 4)
 * **The Workflow**: As you actively pair with your agent to write PML scripts or resolve E3D design database modifications:
   * You will inevitably uncover undocumented E3D database attributes, custom piping specifications, or quirky PML constructor behaviors.
-  * Once resolved, you tell the agent: *"File this discovery under `references/database/` and write a clean functional script in `examples/`."*
-* **The Result**: The `examples/` folder gathers a highly optimized collection of canonical, company-vetted E3D PML scripts, and your database references capture hard-won, real-world E3D facts.
+  * Once resolved, you tell the agent: *"File this discovery under `references/database/` and write a clean functional script in `examples/pml-patterns/`."*
+* **The Result**: `examples/pml-patterns/` gathers canonical E3D PML scripts, `examples/kpi-reports/` stores generated project dashboards, `project-knowledge/` captures engineering standards, and your database references preserve hard-won E3D facts.
 
 ### 👥 Stage 2: Team Collaboration & CI/CD (Months 2 – 6)
 Because the entire repository is standard Markdown and Git-controlled, you can scale this across a team of engineers:
@@ -167,4 +170,3 @@ Over time, the vault becomes your team's ultimate competitive advantage. The AI 
 * *"Review this PML2 function and find syntax and scoping errors."*
 * *"Create a PML form with a list, a text input, and a run button."*
 * *"Explain this PML code line by line, stating variable scopes and methods used."*
-

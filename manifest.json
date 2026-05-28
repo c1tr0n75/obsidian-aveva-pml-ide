@@ -20,7 +20,13 @@
       "top_level_files": 14,
       "object_type_split_files": 87
     },
-    "examples": 9,
+    "examples": {
+      "pml_patterns": 9,
+      "kpi_reports": 0
+    },
+    "project_knowledge": {
+      "documents": 1
+    },
     "production_reference": {
       "commands": 2,
       "forms": 4,

@@ -14,6 +14,7 @@ Obsidian transforms this repository from a static set of text files into a **dyn
 This vault contains **87+ granular reference sheets** and dozens of database navigation docs. In Obsidian:
 * Opening the **Graph View** maps every markdown file as a node, and every relative link as a path.
 * You will instantly see central "hub" indices (like `object-type-index.md` or `database-data-model-index.md`) radiating links out to specific object sheets (`ARRAY.md`, `DBREF.md`, `COLLECTION.md`).
+* Artifact hubs such as [examples/README.md](examples/README.md), [examples/pml-patterns/README.md](examples/pml-patterns/README.md), [examples/kpi-reports/README.md](examples/kpi-reports/README.md), and [project-knowledge/README.md](project-knowledge/README.md) keep generated outputs, reusable PML, and engineering standards visible as first-class graph nodes.
 * When object sheets link to one another (e.g., `COLLECTION.md` referencing `DBREF.md` because collections store element references), Obsidian draws cross-connections, exposing the **exact logic and data dependency flow of the PML language** visually.
 
 #### 🔹 Surgical Backlink Tracking
@@ -33,7 +34,7 @@ In the Graph view, any files floating completely detached from the rest of the w
 The **Dataview** community plugin is highly recommended. It allows you to write SQL-like queries inside markdown pages to dynamically generate tables.
 * **Example**: You can create a page called `All Curated Templates.md` and write:
   ```dataview
-  LIST FROM "examples"
+  LIST FROM "examples/pml-patterns"
   SORT file.name ASC
   ```
   Obsidian will dynamically compile and render a clickable index of every PML template in the vault.
@@ -49,8 +50,10 @@ Install the **Obsidian-Git** community plugin.
 
 ### 📌 D. Customizing the Graph View
 * **Color-Code the Graph by Directory**: Open Graph Settings ➔ Groups. Add groups based on folder paths:
-  * Green for `examples/`
+  * Green for `examples/pml-patterns/`
+  * Gold for `examples/kpi-reports/`
   * Blue for `references/object-types/`
+  * Violet for `project-knowledge/`
   * Orange for `production-reference/`
   * This creates a gorgeous, color-coded "heatmap" showing where your PML and E3D engineering logic is concentrated.
 * **Embedded PML Previews**: Use Obsidian's multi-pane feature. Keep `SKILL.md` (the rules) pinned in a side panel, while writing your new PML scripts in the main pane. This lets you reference core scoping constraints and syntax rules side-by-side with zero friction.
@@ -76,6 +79,8 @@ For an LLM agent, this repository is not just a documentation folder—it is a *
 
 #### 3. Structured Grounding
 If the agent is asked to query database structures, it doesn't guess the schema. It reads from Layer 1 (`production-reference/DBListing-examples/`) to see exactly how E3D structures elements in practice. It grounds its output in real-world dump files, ensuring the code matches actual physical databases.
+
+For project-specific deliverables, the agent also distinguishes reusable artifacts from grounding knowledge: PML/PML2 implementation patterns come from [examples/pml-patterns/](examples/pml-patterns/README.md), generated HTML dashboards are written to [examples/kpi-reports/](examples/kpi-reports/README.md), and durable naming rules or engineering standards live in [project-knowledge/](project-knowledge/README.md).
 
 ---
 

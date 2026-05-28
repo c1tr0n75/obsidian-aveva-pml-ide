@@ -236,7 +236,7 @@ To transform this skill into a self-compounding expert system, follow these work
 Whenever you solve a complex PML bug, discover an undocumented E3D attribute behavior, or write an elegant new reusable gadget or macro:
 - **Do not let it vanish into the conversation history.**
 - Proactively offer to **file the pattern back** into the repository.
-- Write/update a file under `examples/` (for runnable templates) or under `references/` (e.g. updating [aveva_introduction_to_attributes.md](references/database/aveva_introduction_to_attributes.md) or a split file under `references/object-types/`).
+- Write/update runnable PML templates under [examples/pml-patterns/](examples/pml-patterns/README.md), generated HTML dashboards under [examples/kpi-reports/](examples/kpi-reports/README.md), project standards under [project-knowledge/](project-knowledge/README.md), or reference material under `references/` (e.g. updating [aveva_introduction_to_attributes.md](references/database/aveva_introduction_to_attributes.md) or a split file under `references/object-types/`).
 - If you add or modify a reference file, ensure you update [object-type-index.md](references/object-type-index.md) or [database-data-model-index.md](references/database/database-data-model-index.md) to keep all indexes synchronized.
 
 ### 2. The Append-Only Change Log (`log.md`)
@@ -247,7 +247,7 @@ On every successful knowledge ingest or significant refactoring action, append a
   ```markdown
   ## [2026-05-26] ingest | Added File I/O Error Handlers
   - Updated [AVEVA_PML_Error_Handling.md](references/language/AVEVA_PML_Error_Handling.md) with file permission handles.
-  - Added safe template `examples/safe_write_lines_to_file.pmlfnc`.
+  - Added safe template `examples/pml-patterns/safe_write_lines_to_file.pmlfnc`.
   ```
 
 ## Pre-commit checklist
@@ -300,7 +300,12 @@ Final pass before returning code. Pure verification — all coding rules live ab
 - [AVEVA_PML_RVM_Export.md](references/utilities/AVEVA_PML_RVM_Export.md) — generating PML macros for `.rvm` Review exports.
 
 ### examples/
-Small, self-contained, purpose-built templates for new code generation.
+- [examples/README.md](examples/README.md) — Entry point for reusable and generated artifacts.
+- [pml-patterns/](examples/pml-patterns/README.md) — Small, self-contained, purpose-built PML/PML2 templates for new code generation.
+- [kpi-reports/](examples/kpi-reports/README.md) — Generated HTML KPI dashboards and interactive AVEVA E3D project/database reports.
+
+### project-knowledge/
+- [project-knowledge/README.md](project-knowledge/README.md) — Project standards, naming rules, EPC good practices, bills of materials, engineering specifications, and client context used to ground generated work.
 
 ### production-reference/
 Real-world AVEVA production code and database dumps for pattern validation. **Consult, do not copy as templates.**

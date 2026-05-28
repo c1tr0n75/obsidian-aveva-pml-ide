@@ -29,10 +29,24 @@
       }
     },
     {
-      "query": "path:examples/",
+      "query": "path:examples/pml-patterns/",
       "color": {
         "a": 1,
-        "rgb": 16347926
+        "rgb": 3055683
+      }
+    },
+    {
+      "query": "path:examples/kpi-reports/",
+      "color": {
+        "a": 1,
+        "rgb": 13801762
+      }
+    },
+    {
+      "query": "path:project-knowledge/",
+      "color": {
+        "a": 1,
+        "rgb": 10711543
       }
     },
     {
@@ -43,7 +57,7 @@
       }
     },
     {
-      "query": "file:log.md OR file:SKILL.md OR file:README.md OR file:LLM_WIKI_CONCEPT.md",
+      "query": "file:log.md OR file:SKILL.md OR file:README.md OR file:LLM_WIKI_CONCEPT.md OR file:AURA.md OR file:OBSID.md OR path:examples/README.md",
       "color": {
         "a": 1,
         "rgb": 9133302

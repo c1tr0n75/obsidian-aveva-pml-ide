@@ -41,15 +41,20 @@ All significant changes, ingests, queries, and refactoring actions are recorded 
 - Executed local structure tests and audited relative link pathways (Linter exit code `0`).
 
 ## [2026-05-28] ingest | Added current element DB listing export example
-- Created [export_current_element_dblisting.pmlfnc](examples/export_current_element_dblisting.pmlfnc) to prompt for a local text output path and write a DB listing for `!!CE`.
+- Created [export_current_element_dblisting.pmlfnc](examples/pml-patterns/export_current_element_dblisting.pmlfnc) to prompt for a local text output path and write a DB listing for `!!CE`.
 - Grounded the implementation in the production `rptoutput.pmlfrm` `PMLFILEBROWSER`, `ALPHA FILE`, `WRITEALPHAFILE`, and `OUTPUT` patterns.
 - Updated [manifest.json](manifest.json) example inventory.
 
 ## [2026-05-28] ingest | Added P&ID visible equipment DBListing and nozzle CSV
-- Created [pid_visible_equipment_dblisting.txt](examples/pid_visible_equipment_dblisting.txt) for the visible `E03`, `E04`, `E06`, `E10`, `E12`, `E15`, `E16`, and `E18` equipment and their nozzles.
+- Created [pid_visible_equipment_dblisting.txt](examples/pml-patterns/pid_visible_equipment_dblisting.txt) for the visible `E03`, `E04`, `E06`, `E10`, `E12`, `E15`, `E16`, and `E18` equipment and their nozzles.
 - Used production catalog reference `CATR SPCOMPONENT /300lb_Ansi_Flanged/AAZFBD0TT` for every nozzle.
-- Created [pid_visible_equipment_nozzle_connections.csv](examples/pid_visible_equipment_nozzle_connections.csv) with leave and arrive nozzle pairs inferred from the P&ID crop.
+- Created [pid_visible_equipment_nozzle_connections.csv](examples/pml-patterns/pid_visible_equipment_nozzle_connections.csv) with leave and arrive nozzle pairs inferred from the P&ID crop.
 
+## [2026-05-28] lint | Split examples into patterns and generated reports
+- Moved reusable PML/PML2 artifacts into [examples/pml-patterns/](examples/pml-patterns/README.md).
+- Added [examples/kpi-reports/](examples/kpi-reports/README.md) for generated HTML KPI dashboards and interactive reports.
+- Added [project-knowledge/](project-knowledge/README.md) for naming rules, EPC practices, BOM conventions, engineering specifications, and project standards.
+- Updated vault documentation, validator paths, manifest metadata, and Obsidian graph color groups for the new structure.
 
 
 

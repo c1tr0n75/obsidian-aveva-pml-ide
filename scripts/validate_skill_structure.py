@@ -20,8 +20,12 @@ required = [
     'references/database/aveva_ue_design_database_data_model.md',
     'references/database/aveva_introduction_to_attributes.md',
     'references/database/aveva_pseudo_attributes.md',
-    'examples/get_equipment_creation_dates.pmlfnc',
-    'examples/safe_write_lines_to_file.pmlfnc',
+    'examples/README.md',
+    'examples/pml-patterns/README.md',
+    'examples/kpi-reports/README.md',
+    'project-knowledge/README.md',
+    'examples/pml-patterns/get_equipment_creation_dates.pmlfnc',
+    'examples/pml-patterns/safe_write_lines_to_file.pmlfnc',
 ]
 missing = [p for p in required if not (root / p).exists()]
 if missing:
@@ -34,6 +38,9 @@ if missing:
 required_dirs = [
     'references/object-types',
     'examples',
+    'examples/pml-patterns',
+    'examples/kpi-reports',
+    'project-knowledge',
     'production-reference/commands',
     'production-reference/forms',
     'production-reference/functions',
@@ -143,7 +150,13 @@ def verify_markdown_links(file_path):
 markdown_files_to_check = [
     root / 'SKILL.md',
     root / 'README.md',
+    root / 'AURA.md',
+    root / 'OBSID.md',
     root / 'LLM_WIKI_CONCEPT.md',
+    root / 'examples' / 'README.md',
+    root / 'examples' / 'pml-patterns' / 'README.md',
+    root / 'examples' / 'kpi-reports' / 'README.md',
+    root / 'project-knowledge' / 'README.md',
     root / 'references' / 'object-type-index.md',
     root / 'references' / 'database' / 'database-data-model-index.md',
 ]
@@ -157,8 +170,10 @@ for md_file in markdown_files_to_check:
         sys.exit(1)
 
 # --- Summary ---
-example_files = list((root / 'examples').glob('*.*'))
+pml_pattern_files = [p for p in (root / 'examples' / 'pml-patterns').glob('*.*') if p.name != 'README.md']
+kpi_report_files = [p for p in (root / 'examples' / 'kpi-reports').glob('*.html')]
 print('Skill structure OK')
 print(f'  Object/gadget reference files: {len(obj_files)}')
-print(f'  Curated examples: {len(example_files)}')
+print(f'  PML pattern examples: {len(pml_pattern_files)}')
+print(f'  KPI HTML reports: {len(kpi_report_files)}')
 print(f'  Production reference dirs: {len([d for d in required_dirs if "production" in d])}')
