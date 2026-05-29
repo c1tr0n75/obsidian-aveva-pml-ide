@@ -170,9 +170,27 @@ Applies to any method (`.String()`, `.Real()`, `.Substring()`, ...) and any comp
 ### Control flow and arrays
 
 - `if (...) then ... elseif ... else ... endif`.
-- `do !i from 1 to !arr.Size()` — indexed loop.
-- `do !item values !arr` — when index is not needed.
+- `!arrSize = !arr.Size()`, then `do !i from 1 to !arrSize` — indexed loop.
+- `do !item values !arr` — when index is not needed. `!arrSize` must be evaluated before the `do` construct.
 - `do !i indices !arr` — when the array may be sparse.
+- PML does **not** have a `while` loop. For while-like behaviour, use an open-ended `do !counter` loop and exit with `break` or `break if`. The counter keeps the value it had when the loop broke.
+
+```pml
+do !number
+    break if (!number GT 100)
+    !result = !result + !number
+enddo
+```
+
+```pml
+do !number
+    if (!number GT 100) then
+        break
+    endif
+    !result = !result + !number
+enddo
+```
+
 - ARRAY methods differ between making elements undefined vs re-indexing. Verify exact behaviour of `DeleteFrom`, `RemoveFrom`, `Compress`, `Unique`, `Sort`, and `SortedIndices` against [pml2-language-reference.md](pml-coding-assistant/references/language/pml2-language-reference.md) before relying on them.
 
 ### Database and collection operations

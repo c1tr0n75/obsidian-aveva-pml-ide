@@ -5,7 +5,8 @@ Based on Andrej Karpathy's conceptual design, the **LLM Wiki** is a stateful, pe
 Rather than treating the AI as a stateless chatbot (re-indexing raw sources from scratch on every turn), this repository compiles and keeps knowledge active, structured, and fully interlinked.
 
 In this vault, the LLM Wiki serves two core product outcomes:
-* **PML/PML2 coding assistance with near-zero syntax error** for AVEVA functions, objects, forms, DBOUTPUT/DBLISTING, database navigation, and safe model automation.
+* **PML/PML2 coding assistance with near-zero syntax error** for AVEVA functions, objects, forms, DBREF/COLLECTION usage, DBOUTPUT/DBLISTING, database navigation, and reviewable model automation.
+* **AVEVA Dabacon Design database interaction** for grounded navigation, query, extraction, element/attribute interpretation, and database evidence review.
 * **Drawing-to-E3D generation** where drawings, P&IDs, PFDs, line lists, tables, PDFs, and unstructured engineering inputs are converted into auditable model intent before any PML modifies the E3D database.
 
 KPI dashboards and project knowledge are optional user-support systems. Reports are generated when requested. Project knowledge can be loaded to constrain generated PML/forms/DBOUTPUT/DBLISTING and can record important project decisions or AI-agent modifications over the project life.
@@ -19,7 +20,7 @@ KPI dashboards and project knowledge are optional user-support systems. Reports 
 > — Andrej Karpathy
 
 To prevent wiki decay (the "bookkeeping tax" of linking, indexing, and updating pages), the paradigm splits responsibilities surgically:
-* **The Human (Director)**: Handles **curation, exploration, and intent**. You import new templates, ask deep design questions, provide drawing or P&ID/PFD evidence, and point the agent toward raw E3D design database modifications.
+* **The Human (Director)**: Handles **curation, exploration, and intent**. You import new templates, ask deep design questions, provide drawing or P&ID/PFD evidence, share DBOUTPUT/DBLISTING or other database context, and define the intended model/database changes.
 * **The LLM (Editor/Maintainer)**: Handles **organization, filing, cross-referencing, and indexing**. It does all the tedious filing, linking, and contradiction-matching.
 
 ---
@@ -29,7 +30,7 @@ To prevent wiki decay (the "bookkeeping tax" of linking, indexing, and updating 
 ### Ingest (Compounding)
 When a new E3D specification, PML object capability, drawing interpretation rule, model-intent pattern, project decision, or custom debugging solution is solved:
 1. The new information is added to the correct separated folder (e.g. creating/updating files under [pml-coding-assistant/references/](pml-coding-assistant/references/object-type-index.md), [drawing-to-e3d/](drawing-to-e3d/README.md), [pml-coding-assistant/examples/pml-patterns/](pml-coding-assistant/examples/pml-patterns/README.md), [user-support/kpi-reports/](user-support/kpi-reports/README.md), [user-support/project-knowledge/](user-support/project-knowledge/README.md), or [user-support/prompt-library/](user-support/prompt-library/README.md)).
-2. The agent automatically updates active links and index tables (like `pml-coding-assistant/references/object-type-index.md` or `pml-coding-assistant/references/database/database-data-model-index.md`).
+2. The agent updates the required active links and index tables (like `pml-coding-assistant/references/object-type-index.md` or `pml-coding-assistant/references/database/database-data-model-index.md`) as part of the authorized ingest workflow.
 3. An entry is appended to [log.md](log.md) following the Unix-parseable ledger format: `## [YYYY-MM-DD] action | title`.
 
 ### Query (Surgical Precision)
@@ -40,9 +41,12 @@ When asking a complex PML or Drawing-to-E3D question:
 
 ### Lint (Health Auditing)
 Periodically, running [validate_skill_structure.py](pml-coding-assistant/scripts/validate_skill_structure.py) will check:
+* **Required Skill Shape**: Ensuring required files, directories, frontmatter, and removed/stale files are in the expected state.
+* **Index Integrity**: Ensuring indexed object files physically exist and every physical object-type file is registered.
 * **Orphans**: Ensuring every physical file in `pml-coding-assistant/references/object-types/` is cataloged in the index.
 * **Broken Links**: Ensuring all standard relative links (e.g. `[text] (path.md)`) inside `SKILL.md` are active and physically exist.
 * **Log Formats**: Verifying all chronological ledger entries follow strict syntax patterns.
+* **Generated Report Packages**: Verifying KPI report package files, data, exports, manifests, and report indexes remain synchronized.
 
 ---
 

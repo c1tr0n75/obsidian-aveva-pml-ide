@@ -1,0 +1,66 @@
+$* Print a compact report for the PIPE owning the current element.
+
+define function !!PipePocketReport()
+    if (!!CE.Unset()) then
+        !!Alert.Error('Current element is unset.')
+        return
+    endif
+    if (!!CE.BadRef()) then
+        !!Alert.Error('Current element is a bad DBREF.')
+        return
+    endif
+
+    !probe = !!CE
+    !probeType = !probe.type
+
+    do !steps
+        break if (!probeType EQ 'PIPE')
+        break if (!steps GT 12)
+        !probe = !probe.Owner()
+        if (!probe.IsNull()) then
+            !!Alert.Warning('No owning PIPE found.')
+            return
+        endif
+        !probeType = !probe.type
+    enddo
+    if (!probeType NE 'PIPE') then
+        !!Alert.Warning('No owning PIPE found.')
+        return
+    endif
+
+    !pipe = !probe
+    !pipeName = !pipe.name
+    !pipeBore = !pipe.bore.String()
+    !pipeSpec = !pipe.pspe.String()
+    !memberCount = !pipe.MCount()
+
+    $P ----------------------------------------
+    $P Pipe pocket report
+    $P Pipe      : $!pipeName
+    $P Bore      : $!pipeBore
+    $P Spec      : $!pipeSpec
+    $P Members   : $!memberCount
+    $P ----------------------------------------
+
+    !branchCount = 0
+    !members = !pipe.members
+
+    do !member values !members
+        !memberType = !member.type
+        if (!memberType EQ 'BRAN' OR !memberType EQ 'BRANCH') then
+            !branchCount = !branchCount + 1
+            !branchName = !member.name
+            !headPos = !member.hpos.String()
+            !tailPos = !member.tpos.String()
+            $P Branch $!branchCount : $!branchName
+            $P   Head : $!headPos
+            $P   Tail : $!tailPos
+        endif
+    enddo
+
+    if (!branchCount EQ 0) then
+        $P No branch members were found directly under this pipe.
+    else
+        $P Branches reported: $!branchCount
+    endif
+endfunction

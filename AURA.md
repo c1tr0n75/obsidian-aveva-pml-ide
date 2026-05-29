@@ -3,7 +3,8 @@
 This document details the system architecture, prompt lifecycle, and operational workflow of **Aura**—the AI Agent embedded directly inside **AVEVA E3D Design**—and how it uses this Obsidian repository as its core knowledge graph and grounding engine.
 
 Aura is centered on two product pillars:
-* **High-precision AVEVA PML/PML2 coding assistance** for functions, forms, DBOUTPUT/DBLISTING, database navigation, and model automation.
+* **High-precision AVEVA PML/PML2 coding assistance** for functions, forms, DBREF/COLLECTION usage, DBOUTPUT/DBLISTING, database navigation, and reviewable model automation.
+* **AVEVA Dabacon Design database interaction** for grounded navigation, query, extraction, element/attribute interpretation, and database evidence review.
 * **Drawing-to-E3D automation** that turns AutoCAD 2D drawings, P&IDs, PFDs, line lists, PDFs, and unstructured engineering data into auditable model intent and then reviewable PML/PML2.
 
 KPI dashboards and project knowledge pages are optional user-support areas. KPI dashboards are generated when the user asks for reports, exports, or visual status. Project knowledge is loaded when the user asks Aura to respect project documentation, when existing project rules should constrain generated PML/forms/DBOUTPUT/DBLISTING, or when important AI-assisted project decisions and modifications should be traced.
@@ -71,7 +72,7 @@ Instead of sending this raw request directly to the LLM, Aura's local execution 
 2. **Drills Reference Sheet**: It loads the corresponding split reference files under `pml-coding-assistant/references/database/` and [aveva_introduction_to_attributes.md](pml-coding-assistant/references/database/aveva_introduction_to_attributes.md) for the `BRANCH` element type.
 3. **Loads Drawing, KPI, and Project Context When Needed**: For Drawing-to-E3D requests, it loads [drawing-to-e3d/](drawing-to-e3d/README.md) to identify source evidence, extracted model intent, missing data, and traceability before generating PML. For user-requested reporting, it can load KPI definitions from [user-support/kpi-reports/references/kpi-definitions.md](user-support/kpi-reports/references/kpi-definitions.md). For project-specific PML/forms/DBOUTPUT/DBLISTING, it can load naming rules, EPC practices, BOM conventions, engineering specifications, and project decisions from [user-support/project-knowledge/](user-support/project-knowledge/README.md).
 4. **Retrieves Specific Rules**: It finds that:
-   * `.spec` returns a `DBREF` and requires querying its `.name` property to resolve to a string.
+   * The referenced attribute documentation for this `BRANCH` context identifies `.pspec` as a `DBREF`, so Aura queries its `.name` property to resolve to a string.
    * `.bore` is an attribute accessed with bare dot-notation (no parentheses `()`).
 
 ### Step 3: Payload Assembly & LLM API Call
@@ -88,7 +89,8 @@ $* Safe branch query
 !branchSpecRef = !!CE.spec
 !branchSpec    = !branchSpecRef.name
 !branchBore    = !!CE.bore
-$P Spec is |!branchSpec| and Bore is |!branchBore|
+!branchBoreText = !branchBore.String()
+$P Spec is |!branchSpec| and Bore is |!branchBoreText|
 ```
 Aura's embedded execution engine runs this PML script directly inside the active AVEVA E3D session in-process, outputting the result instantly onto Aura's UI chat panel.
 
@@ -103,7 +105,7 @@ Aura is a **learning agent**. During pair-programming sessions inside E3D, if Au
    * Updates [aveva_introduction_to_attributes.md](pml-coding-assistant/references/database/aveva_introduction_to_attributes.md) with the new mapping.
    * Adds reusable PML templates under [pml-coding-assistant/examples/pml-patterns/](pml-coding-assistant/examples/pml-patterns/README.md), Drawing-to-E3D interpretation patterns under [drawing-to-e3d/](drawing-to-e3d/README.md) when they improve model generation, generated dashboard packages under [user-support/kpi-reports/](user-support/kpi-reports/README.md) when requested, or project standards/decisions under [user-support/project-knowledge/](user-support/project-knowledge/README.md), depending on the discovery. KPI packages use a Markdown wrapper, `report.json`, an interactive HTML dashboard, JSON data, static summary, and CSV exports.
    * Appends an entry to [log.md](log.md) marking the action as `ingest`.
-   * Automatically executes `python3 pml-coding-assistant/scripts/validate_skill_structure.py` to ensure the shared vault remains perfectly healthy and has zero broken paths.
+   * Runs or schedules `python3 pml-coding-assistant/scripts/validate_skill_structure.py` as part of the repository workflow to keep the shared vault structurally healthy and free of broken links.
 
 ---
 
@@ -115,5 +117,5 @@ If AVEVA E3D updates its core engine, or your company adds custom user attribute
 ### 🛡️ B. Offline and Private Deployment
 For engineering companies with strict IP requirements, the shared Obsidian vault and the LLM API provider can be hosted 100% locally. By pointing Aura to a local **Ollama** or **LM Studio** server (running an offline coding model like Qwen-2.5-Coder), Aura remains fully functional without sending a single byte of proprietary piping specifications or code outside the corporate network.
 
-### 📊 C. Auditing & Safety
-Because every script generated by Aura traces back to a specific markdown reference in the vault, engineering managers can review, edit, and restrict the knowledge base. If Aura writes an unsafe macro, editing that specific Markdown page instantly prevents Aura from generating that mistake again across the entire company.
+### 📊 C. Auditability & Correction
+Because every script generated by Aura traces back to specific markdown references in the vault, engineering managers can review, edit, and restrict the knowledge base. If Aura produces an incorrect PML pattern, correcting the relevant Markdown reference and rerunning the validation workflow helps prevent the same mistake from being reintroduced through vault-grounded generation. Runtime execution policy, permissions, and destructive-action controls remain the responsibility of the host application layer.

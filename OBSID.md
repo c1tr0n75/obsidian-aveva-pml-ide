@@ -1,9 +1,10 @@
-# Obsidian & LLM Integration for AVEVA PML IDE
+# Obsidian & LLM Integration for AVEVA PML and Dabacon Design Databases
 
-This document details how Obsidian acts as a highly visual, interactive "second brain" for your AVEVA E3D/PML custom coding skill repository, and how this architecture operates as a highly scalable engine for AI/LLM coding agents.
+This document details how Obsidian acts as a highly visual, interactive "second brain" for your AVEVA E3D/PML custom coding skill repository, including AVEVA Dabacon Design database knowledge, and how this architecture operates as a highly scalable engine for AI/LLM coding agents.
 
 The vault should be read with a clear product hierarchy:
 * Core: AVEVA PML/PML2 coding assistance with near-zero syntax error.
+* Core: AVEVA Dabacon Design database navigation, query, extraction, DBREF/COLLECTION usage, and DBOUTPUT/DBLISTING grounding.
 * Core: Drawing-to-E3D workflows that convert drawings, P&IDs, PFDs, line lists, PDFs, and unstructured engineering data into traceable model intent and reviewable PML/PML2.
 * On-demand user support: KPI dashboards and project knowledge pages. Reports are generated when requested; project knowledge can constrain generated PML/forms/DBOUTPUT/DBLISTING and document important project decisions or modifications.
 
@@ -18,9 +19,9 @@ Obsidian transforms this repository from a static set of text files into a **dyn
 #### 🔹 Visual Knowledge Graph (Graph View)
 This vault contains **87+ granular reference sheets** and dozens of database navigation docs. In Obsidian:
 * Opening the **Graph View** maps every markdown file as a node, and every relative link as a path.
-* You will instantly see central "hub" indices (like `object-type-index.md` or `database-data-model-index.md`) radiating links out to specific object sheets (`ARRAY.md`, `DBREF.md`, `COLLECTION.md`).
+* You will instantly see central "hub" indices (like `object-type-index.md` or `database-data-model-index.md`) radiating links out to specific object sheets (`array-object.md`, `dbref-object.md`, `collection-object.md`).
 * Artifact hubs such as [pml-coding-assistant/examples/README.md](pml-coding-assistant/examples/README.md), [pml-coding-assistant/examples/pml-patterns/README.md](pml-coding-assistant/examples/pml-patterns/README.md), [drawing-to-e3d/README.md](drawing-to-e3d/README.md), [user-support/kpi-reports/README.md](user-support/kpi-reports/README.md), [user-support/project-knowledge/README.md](user-support/project-knowledge/README.md), [user-support/kpi-reports/references/README.md](user-support/kpi-reports/references/README.md), and [user-support/prompt-library/README.md](user-support/prompt-library/README.md) keep reusable PML, drawing/model-intent workflows, generated reports, engineering standards, KPI definitions, and reusable prompts visible as first-class graph nodes.
-* When object sheets link to one another (e.g., `COLLECTION.md` referencing `DBREF.md` because collections store element references), Obsidian draws cross-connections, exposing the **exact logic and data dependency flow of the PML language** visually.
+* When object sheets link to one another (e.g., `collection-object.md` referencing `dbref-object.md` because collections store element references), Obsidian draws cross-connections, exposing the **exact logic and data dependency flow of the PML language** visually.
 
 #### 🔹 Surgical Backlink Tracking
 When you are looking at a specific object sheet—say, `FILE.md`—you can open Obsidian’s **Backlinks & Mentions** panel. This will immediately show you every page in the vault that references or links to `FILE.md`. 
@@ -51,7 +52,7 @@ Obsidian Canvas is an interactive digital whiteboard where you can drag, drop, a
 
 ### 📌 C. Seamless Team Syncing with `Obsidian-Git`
 Install the **Obsidian-Git** community plugin. 
-* This automates the background committing and pushing of the vault. As you or your local AI agent make updates, document attributes, and log entries, Obsidian-Git pushes the changes silently to your repository. The rest of the engineering team instantly pulls the updated knowledge base.
+* This can automate background commit and push workflows for the vault, depending on your authentication, branch, and conflict settings. As you or your local AI agent make updates, document attributes, and log entries, Obsidian-Git can help publish those changes into the same Git workflow used by the rest of the engineering team.
 
 ### 📌 D. Customizing the Graph View
 * **Color-Code the Graph by Directory**: Open Graph Settings ➔ Groups. Add groups based on folder paths:
@@ -78,7 +79,7 @@ For an LLM agent, this repository is not just a documentation folder—it is a *
 * **The Problem**: Shoving a 1,000-page AVEVA manual or a massive database schema into an LLM's context window makes it slow, incredibly expensive, and prone to hallucinations or "lost-in-the-middle" confusion.
 * **The Solution**: The vault uses an **"Index-and-Drill"** architecture. `SKILL.md` acts as a routing table:
   1. The LLM agent is instructed to load *only* the specific index related to the user's task (e.g., `object-type-index.md`).
-  2. The agent reads the index, identifies the exact file it needs (e.g., `pml-coding-assistant/references/object-types/collection.md`), and **loads only that specific node**.
+  2. The agent reads the index, identifies the exact file it needs (e.g., `pml-coding-assistant/references/object-types/collection-object.md`), and **loads only that specific node**.
   3. Instead of eating up 100,000+ tokens, the agent solves the problem using less than 5,000 tokens, guaranteeing **ultra-high precision, lower latency, and zero hallucinated methods**.
 
 #### 2. Declarative Coding Constraints (Self-Correction Loop)
@@ -86,7 +87,7 @@ For an LLM agent, this repository is not just a documentation folder—it is a *
 * When executing agentically, the LLM runs a **cognitive self-correction loop**: it generates the PML code, parses its own output against this checklist, and fixes any scoping or syntax violations *before* presenting the code to you.
 
 #### 3. Structured Grounding
-If the agent is asked to query database structures, it doesn't guess the schema. It reads from Layer 1 (`pml-coding-assistant/production-reference/DBListing-examples/`) to see exactly how E3D structures elements in practice. It grounds its output in real-world dump files, ensuring the code matches actual physical databases.
+If the agent is asked to query database structures, it doesn't guess the schema. It starts from [database-data-model-index.md](pml-coding-assistant/references/database/database-data-model-index.md) and the matching section of [aveva_ue_design_database_data_model.md](pml-coding-assistant/references/database/aveva_ue_design_database_data_model.md) to confirm legal element types, attributes, and hierarchy. It then uses Layer 1 (`pml-coding-assistant/production-reference/DBListing-examples/`) as real-world evidence for observed database shape, attribute formats, and DBOUTPUT/DBLISTING output.
 
 For project-specific deliverables, the agent also distinguishes reusable artifacts from grounding knowledge: PML/PML2 implementation patterns come from [pml-coding-assistant/examples/pml-patterns/](pml-coding-assistant/examples/pml-patterns/README.md), Drawing-to-E3D work lives under [drawing-to-e3d/](drawing-to-e3d/README.md) and should preserve source evidence, model intent, assumptions, and traceability before producing modifying PML, generated HTML dashboards are written to [user-support/kpi-reports/](user-support/kpi-reports/README.md) when requested, and durable naming rules, engineering standards, and project decisions live in [user-support/project-knowledge/](user-support/project-knowledge/README.md).
 

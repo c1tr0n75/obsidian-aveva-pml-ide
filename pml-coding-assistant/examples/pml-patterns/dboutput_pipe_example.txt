@@ -1,0 +1,75 @@
+$S-  -- Synonym translation OFF
+-- ----------------------------------------------------------------
+-- Minimal DBOUTPUT example for a single pipe and one branch.
+-- Replace names, specification, coordinates, bore, temperature, and pressure
+-- with project-approved values before loading into a live database.
+
+ONERROR GOLABEL /ERROR3
+
+INPUT BEGIN
+NEW SITE /SITE-DBOUTPUT-EXAMPLE
+PURP PIPE
+
+NEW ZONE /ZONE-DBOUTPUT-EXAMPLE
+DESC 'Example piping zone'
+FUNC 'Piping'
+PURP PIPE
+
+NEW PIPE /100-P-DBOUT-001
+BUIL false
+SHOP false
+BORE 100mm
+TEMP 50degC
+PRES 0pascal
+TPRESS 0pascal
+PSPE SPECIFICATION /A3B
+CCEN 0
+CCLA 0
+LNTP B
+DUTY unset
+DSCO unset
+PTSP unset
+INSC unset
+DELDSG FALS
+PLANU unset
+
+NEW BRANCH /100-P-DBOUT-001/B1
+BUIL false
+SHOP false
+HPOS W 1000mm N 2000mm U 3000mm
+TPOS W 5000mm N 2000mm U 3000mm
+HDIR E
+TDIR W
+LHEA true
+LTAI true
+HBOR 100mm
+TBOR 100mm
+HCON BWD
+TCON FBD
+LNTP unset
+TEMP 50degC
+PRES 0pascal
+TPRESS 0pascal
+HSTU SPCOMPONENT /A3B/PA100
+CCEN 0
+CCLA 0
+PSPE SPECIFICATION /A3B
+DUTY unset
+DSCO unset
+PTSP unset
+INSC unset
+PLANU unset
+DELDSG FALS
+
+END
+END
+END
+END
+INPUT END
+
+GOLABEL /FINISH
+
+LABEL /ERROR3
+$P DBOUTPUT pipe example failed while loading input.
+
+LABEL /FINISH

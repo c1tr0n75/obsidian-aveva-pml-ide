@@ -194,6 +194,9 @@
   },
   "active": "b698590f07326bee",
   "lastOpenFiles": [
+    "pml-coding-assistant/examples/pml-patterns/pipepocketreport.pmlfnc",
+    "pml-coding-assistant/examples/pml-patterns/cornerbuttons.pmlfrm",
+    "pml-coding-assistant/examples/pml-patterns/dboutput_pipe_example.txt",
     "user-support/README.md",
     "pml-coding-assistant/README.md",
     "user-support/kpi-reports/references/kpi-definitions.md",
@@ -215,7 +218,6 @@
     "user-support/prompt-library/file-back-discovery.md",
     "user-support/prompt-library/extract-project-standards.md",
     "user-support/prompt-library/README.md",
-    "user-support/prompt-library",
     "user-support/project-knowledge/project-decisions.md",
     "user-support/project-knowledge/piping-good-practices.md",
     "user-support/project-knowledge/naming-rules.md",
@@ -223,13 +225,11 @@
     "user-support/project-knowledge/mto-rules.md",
     "user-support/project-knowledge/dashboard-kpi-standards.md",
     "user-support/project-knowledge/README.md",
-    "user-support/project-knowledge",
     "user-support/kpi-reports/vault-health-demo/summary.md",
     "user-support/kpi-reports/vault-health-demo/README.md",
     "user-support/kpi-reports/piping-demo/summary.md",
     "user-support/kpi-reports/piping-demo/README.md",
     "user-support/kpi-reports/mto-readiness-demo/summary.md",
-    "user-support/kpi-reports/mto-readiness-demo/README.md",
     "Untitled.canvas"
   ]
 }

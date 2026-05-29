@@ -1,0 +1,41 @@
+$* ============================================================
+$* File   : cornerbuttons.pmlfrm
+$* Form   : !!CornerButtons
+$* Purpose: Small form with buttons at each corner and one in the center
+$* Reload : pml rehash form !!CornerButtons
+$* Show   : show !!CornerButtons
+$* ============================================================
+
+setup form !!CornerButtons dialog size 40 14
+    title 'Corner Buttons'
+
+    button .TopLeft 'Top Left' at x 1 y 0.5 callback '!this.topLeft()' width 8
+    button .TopRight 'Top Right' at x 30 y 0.5 callback '!this.topRight()' width 9
+    button .BottomLeft 'Bottom L' at x 1 y 12 callback '!this.bottomLeft()' width 8
+    button .BottomRight 'Bottom R' at x 30 y 12 callback '!this.bottomRight()' width 9
+    button .Center 'Center' at x 16 y 6 callback '!this.center()' width 8
+
+exit
+
+define method .CornerButtons()
+endmethod
+
+define method .topLeft()
+    $P Top-left button pressed
+endmethod
+
+define method .topRight()
+    $P Top-right button pressed
+endmethod
+
+define method .bottomLeft()
+    $P Bottom-left button pressed
+endmethod
+
+define method .bottomRight()
+    $P Bottom-right button pressed
+endmethod
+
+define method .center()
+    $P Center button pressed
+endmethod
