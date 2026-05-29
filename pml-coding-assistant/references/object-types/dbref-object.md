@@ -56,17 +56,6 @@ do !m values !members
 enddo
 ```
 
-### Checking for Null References
-```pml
-!owner = !!CE.owner
-if (!owner.IsNull()) then
-    $p The Current Element is at the top of the hierarchy.
-endif
-```
-
 ## Best Practices
-1.  **Validation**: Always check `.BadRef()` or `.IsNull()` before accessing attributes to avoid runtime errors.
-2.  **Performance**: Querying attributes from a `DBREF` is much faster than using global commands (like `Q NAME`). Use `DBREF` objects whenever possible for data processing.
-3.  **Pseudo-attributes**: Leverage pseudo-attributes like `!!CE.db` or `!!CE.owner` for quick navigation without needing complex command syntax.
-4.  **Implicit Conversion**: PML often automatically converts strings starting with `/` or `=` into `DBREF` objects when assigned to a variable of that type.
+**Implicit Conversion**: PML often automatically converts strings starting with `/` or `=` into `DBREF` objects when assigned to a variable of that type.
 
