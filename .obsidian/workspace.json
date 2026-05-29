@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "user-support/kpi-reports/references/kpi-definitions.md",
-                "mode": "source",
+                "file": "user-support/kpi-reports/piping-demo/README.md",
+                "mode": "preview",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "kpi-definitions"
+              "title": "README"
             }
           }
         ]
@@ -194,6 +194,12 @@
   },
   "active": "b698590f07326bee",
   "lastOpenFiles": [
+    "user-support/kpi-reports/piping-demo/summary.md",
+    "user-support/kpi-reports/piping-demo/README.md",
+    "Untitled 1.canvas",
+    "user-support/kpi-reports/references/kpi-definitions.md",
+    "user-support/kpi-reports/model-health-demo/summary.md",
+    "user-support/kpi-reports/model-health-demo/README.md",
     "examples/kpi-reports/piping-demo/report.json",
     "examples/kpi-reports/piping-demo",
     "examples/kpi-reports",
@@ -204,14 +210,12 @@
     "pml-coding-assistant/examples/pml-patterns/dboutput_pipe_example.txt",
     "user-support/README.md",
     "pml-coding-assistant/README.md",
-    "user-support/kpi-reports/references/kpi-definitions.md",
     "user-support/kpi-reports/references/README.md",
     "user-support/kpi-reports/scripts/report-generators/vault/generate_vault_health.js",
     "user-support/kpi-reports/scripts/report-generators/vault/README.md",
     "user-support/kpi-reports/scripts/report-generators/piping/compare_dboutput_piping.js",
     "user-support/kpi-reports/scripts/report-generators/piping/README.md",
     "user-support/kpi-reports/scripts/report-generators/vault",
-    "user-support/kpi-reports/scripts/report-generators/piping",
     "user-support/kpi-reports/scripts/report-generators/README.md",
     "user-support/prompt-library/review-pml-code.md",
     "user-support/prompt-library/generate-mto-readiness-report.md",
@@ -227,9 +231,6 @@
     "user-support/project-knowledge/dashboard-kpi-standards.md",
     "user-support/project-knowledge/README.md",
     "user-support/kpi-reports/vault-health-demo/summary.md",
-    "user-support/kpi-reports/vault-health-demo/README.md",
-    "user-support/kpi-reports/piping-demo/summary.md",
-    "user-support/kpi-reports/piping-demo/README.md",
     "Untitled.canvas"
   ]
 }

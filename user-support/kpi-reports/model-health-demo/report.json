@@ -3,7 +3,7 @@
   "slug": "model-health-demo",
   "discipline": "piping",
   "status": "demo",
-  "generatedAt": "2026-05-28T21:56:02.206Z",
+  "generatedAt": "2026-05-29T14:16:19.641Z",
   "generator": "user-support/kpi-reports/scripts/generate_demo_kpi_reports.js",
   "sourceFiles": [
     "pml-coding-assistant/production-reference/DBListing-examples/DBOutput_PIPING.txt"

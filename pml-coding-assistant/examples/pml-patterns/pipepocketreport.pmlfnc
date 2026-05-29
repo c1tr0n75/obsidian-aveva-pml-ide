@@ -16,7 +16,7 @@ define function !!PipePocketReport()
     do !steps
         break if (!probeType EQ 'PIPE')
         break if (!steps GT 12)
-        !probe = !probe.Owner()
+        !probe = !probe.owner
         if (!probe.IsNull()) then
             !!Alert.Warning('No owning PIPE found.')
             return

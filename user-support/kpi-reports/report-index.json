@@ -4,7 +4,7 @@
     "slug": "model-health-demo",
     "status": "demo",
     "discipline": "piping",
-    "generatedAt": "2026-05-28T21:56:02.206Z",
+    "generatedAt": "2026-05-29T14:16:19.641Z",
     "source": "pml-coding-assistant/production-reference/DBListing-examples/DBOutput_PIPING.txt"
   },
   {
@@ -12,7 +12,7 @@
     "slug": "mto-readiness-demo",
     "status": "demo",
     "discipline": "piping",
-    "generatedAt": "2026-05-28T21:56:02.207Z",
+    "generatedAt": "2026-05-29T14:16:19.645Z",
     "source": "pml-coding-assistant/production-reference/DBListing-examples/DBOutput_PIPING.txt"
   },
   {
@@ -20,7 +20,7 @@
     "slug": "piping-demo",
     "status": "demo",
     "discipline": "piping",
-    "generatedAt": "2026-05-28T21:56:02.174Z",
+    "generatedAt": "2026-05-29T14:16:19.597Z",
     "source": "pml-coding-assistant/production-reference/DBListing-examples/DBOutput_PIPING.txt"
   },
   {
