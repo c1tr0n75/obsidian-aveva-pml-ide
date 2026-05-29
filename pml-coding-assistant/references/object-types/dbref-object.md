@@ -26,7 +26,7 @@ The `DBREF` object represents a reference to an element in the AVEVA database. I
 !ref = !!CE
 -- Query attribute
 !name = !ref.name
--- Navigate to owner
+-- query owner
 !parent = !ref.owner
 ```
 ## Code Examples
