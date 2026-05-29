@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "SKILL.md",
+                "file": "user-support/kpi-reports/references/kpi-definitions.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "SKILL"
+              "title": "kpi-definitions"
             }
           }
         ]
@@ -194,6 +194,11 @@
   },
   "active": "b698590f07326bee",
   "lastOpenFiles": [
+    "examples/kpi-reports/piping-demo/report.json",
+    "examples/kpi-reports/piping-demo",
+    "examples/kpi-reports",
+    "examples",
+    "SKILL.md",
     "pml-coding-assistant/examples/pml-patterns/pipepocketreport.pmlfnc",
     "pml-coding-assistant/examples/pml-patterns/cornerbuttons.pmlfrm",
     "pml-coding-assistant/examples/pml-patterns/dboutput_pipe_example.txt",
@@ -208,10 +213,6 @@
     "user-support/kpi-reports/scripts/report-generators/vault",
     "user-support/kpi-reports/scripts/report-generators/piping",
     "user-support/kpi-reports/scripts/report-generators/README.md",
-    "user-support/kpi-reports/scripts/report-generators",
-    "user-support/kpi-reports/scripts/generate_demo_kpi_reports.js",
-    "pml-coding-assistant/scripts/validate_skill_structure.py",
-    "pml-coding-assistant/scripts/lint_pml_examples.py",
     "user-support/prompt-library/review-pml-code.md",
     "user-support/prompt-library/generate-mto-readiness-report.md",
     "user-support/prompt-library/generate-model-health-report.md",
@@ -229,7 +230,6 @@
     "user-support/kpi-reports/vault-health-demo/README.md",
     "user-support/kpi-reports/piping-demo/summary.md",
     "user-support/kpi-reports/piping-demo/README.md",
-    "user-support/kpi-reports/mto-readiness-demo/summary.md",
     "Untitled.canvas"
   ]
 }

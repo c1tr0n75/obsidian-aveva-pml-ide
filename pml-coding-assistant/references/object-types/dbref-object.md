@@ -1,23 +1,26 @@
 # DBREF Object
 
-The `DBREF` object represents a reference to an element in the AVEVA database. It is the primary way to interact with design data, allowing attribute querying and model navigation.
+The `DBREF` object represents a reference to an element in the AVEVA database. It is the primary way to interact with design data, allowing attribute querying.
 
 ## Methods
 
 | Name | Result | Purpose |
 | :--- | :--- | :--- |
-| `Dbref(id)` | DBREF | Constructor. `id` can be a name (e.g., `'/SITE-1'`) or a RefNo (e.g., `'=123/456'`). |
-| `Attribute(name)` | ANY | Returns the value of the named attribute or pseudo-attribute. |
-| `Attributes()` | ARRAY | Returns a list of all valid attribute names for the referenced element. |
-| `BadRef()` | BOOLEAN | Returns TRUE if the reference is invalid or cannot be resolved. |
-| `IsNull()` | BOOLEAN | Returns TRUE if the reference is `'NULREF'`. |
-| `Db()` | DB | Returns the `DB` object containing the referenced element. |
-| `Owner()` | DBREF | Returns the parent (owner) of the referenced element. |
-| `MCount()` | REAL | Returns the number of child members of the element. |
-| `String()` | STRING | Returns the string representation (Name or RefNo). |
+| `Dbref( STRING )` | DBREF | Creates a DBREF object with value set to the given STRING. |
+| `Dbref( STRING, FORMAT )` | DBREF | As above, FORMAT argument required for consistency by Forms and Menus. |
+| `Attribute(STRING Name)` | ANY | Returns the value of the named attribute. |
+| `Attributes()` | ARRAY OF STRING | A DBREF appears to have the attributes of whatever DB elements it is pointing to. |
+| `BadRef()` | BOOLEAN | TRUE if DBREF is not valid (cannot navigate to it). |
+| `Delete()` | NO RESULT | Deletes the PML DBREF (not the database element it is pointing to). |
+| `MCount()` | REAL | Count of number of members of element referenced. |
+| `MCount(STRING type)` | REAL | Count of number of members of element referenced of type specified. |
+| `String(FORMAT)` | STRING | Convert to STRING using settings in Global FORMAT object. |
+| `Line([CUT/UNCUT])` | LINE | Returns the cut/uncut pline of a SCTN/GENSEC element as a bounded line. |
+| `PPosition(REAL)` | POSITION | Returns the position of the specified ppoint of a database element. |
+| `PDirection(REAL)` | DIRECTION | Returns the direction of the specified ppoint of a database element. |
 
-## Navigation & Attribute Access
-`DBREF` objects support direct attribute access via dot notation and relative navigation:
+## Attribute Access
+`DBREF` objects support direct attribute access via dot notation:
 
 ```pml
 !ref = !!CE
@@ -25,12 +28,7 @@ The `DBREF` object represents a reference to an element in the AVEVA database. I
 !name = !ref.name
 -- Navigate to owner
 !parent = !ref.owner
--- Navigate to next sibling
-!next = !ref.next
--- Navigate to first child
-!first = !ref.first
 ```
-
 ## Code Examples
 
 ### Querying the Current Element (CE)
