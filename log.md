@@ -75,7 +75,7 @@ All significant changes, ingests, queries, and refactoring actions are recorded 
 ## [2026-05-28] ingest | Added productization layer for KPI and PML workflows
 - Added [kpi-definitions.md](user-support/kpi-reports/references/kpi-definitions.md) with reusable KPI formulas, source fields, caveats, and severity guidance.
 - Added project-knowledge starters for naming rules, piping practices, MTO rules, dashboard KPI standards, and EPC deliverables.
-- Added [prompt-library](user-support/prompt-library/README.md) for repeatable Aura/agent workflows.
+- Added [prompt-library](user-support/prompt-library/README.md) for repeatable agent-assisted workflows.
 - Added [report-generators](user-support/kpi-reports/scripts/report-generators/README.md), including a piping before/after DB output diff generator.
 - Added [vault-health-demo](user-support/kpi-reports/vault-health-demo/README.md) and a vault-health generator for monitoring report package completeness and knowledge cluster coverage.
 - Added [lint_pml_examples.py](pml-coding-assistant/scripts/lint_pml_examples.py) for lightweight static checks of curated PML examples.

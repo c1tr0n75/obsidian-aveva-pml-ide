@@ -78,7 +78,7 @@
       }
     },
     {
-      "query": "file:log.md OR file:SKILL.md OR file:README.md OR file:LLM_WIKI_CONCEPT.md OR file:AURA.md OR file:OBSID.md OR path:pml-coding-assistant/README.md OR path:user-support/README.md",
+      "query": "file:log.md OR file:SKILL.md OR file:README.md OR file:LLM_WIKI_CONCEPT.md OR file:OBSID.md OR path:pml-coding-assistant/README.md OR path:user-support/README.md",
       "color": {
         "a": 1,
         "rgb": 9133302

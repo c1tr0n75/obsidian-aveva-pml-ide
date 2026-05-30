@@ -194,7 +194,6 @@ def verify_markdown_links(file_path):
 markdown_files_to_check = [
     root / 'SKILL.md',
     root / 'README.md',
-    root / 'AURA.md',
     root / 'OBSID.md',
     root / 'LLM_WIKI_CONCEPT.md',
     root / 'pml-coding-assistant' / 'README.md',

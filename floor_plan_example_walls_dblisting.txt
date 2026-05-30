@@ -1,0 +1,594 @@
+$S-  -- Synonym translation OFF
+-- ----------------------------------------------------------------
+-- Data Listing    Date : 30 May 2026
+-- Source drawing : /Users/c1tr0n75/Downloads/2D_floor_plan_example.avif
+--
+-- Model intent:
+--   - Create walls only from the attached 2D floor plan.
+--   - Origin is the south-west outside corner of the plan footprint.
+--   - E axis follows drawing right, N axis follows drawing up, U is vertical.
+--   - Overall footprint interpreted from drawing dimensions:
+--       Width  = 12ft 9in + 26ft 5 3/4in + 12ft 9in = 15843mm.
+--       Depth  = 30ft 0in = 9144mm.
+--   - All wall bases are at U 0mm and all wall heights are 3000mm.
+--   - Wall thickness is not dimensioned on the source drawing; 150mm is assumed.
+--   - Doors, windows, labels, furniture, porch annotation, and dimensions are not created.
+--   - Interior wall runs are simplified from visible centreline evidence.
+-- ----------------------------------------------------------------
+
+ONERROR GOLABEL /ERROR3
+
+INPUT BEGIN
+NEW SITE /FLOOR_PLAN_EXAMPLE_SITE
+FUNC 'Structural'
+PURP WALL
+
+NEW ZONE /FLOOR_PLAN_EXAMPLE_ZONE
+DESC 'Wall-only model from 2D floor plan'
+FUNC 'Structural'
+PURP WALL
+
+NEW STRUCTURE /FLOOR_PLAN_EXAMPLE_STRUCTURE
+DESC 'Wall-only floor plan structure'
+FUNC 'Structural'
+PURP WALL
+BUIL false
+PDNAME unset
+
+NEW FRMWORK /FLOOR_PLAN_EXAMPLE_WALLS
+DESC 'Floor plan walls, height 3000mm'
+PURP WALL
+BUIL false
+SHOP false
+GRADE 0
+FIRE 0
+DUNION 2
+PTSP unset
+INSC unset
+PDNAME unset
+
+NEW CWALL /FLOOR_PLAN_EXAMPLE_EXT_WALLS
+DESC 'External wall runs'
+PURP WALL
+BUIL false
+SHOP false
+GRADE 0
+FIRE 0
+DUNION 2
+PTSP unset
+INSC unset
+
+NEW STWALL
+DESC 'EXT-W01 north external wall'
+STRUCL 'WALL'
+GTYP WALL
+DESP 150mm 3000mm
+BUIL false
+SHOP false
+DRNS W
+DRNE E
+POSS E 0mm N 9144mm U 0mm
+POSE E 15843mm N 9144mm U 0mm
+JLIN NA
+JUSL NA
+CTYS NULL
+CTYE NULL
+GRADE 0
+FIRE 0
+SPRE SPCOMPONENT /SINGLE-SPCO
+MEML NA
+
+END
+NEW STWALL
+DESC 'EXT-W02 west external wall'
+STRUCL 'WALL'
+GTYP WALL
+DESP 150mm 3000mm
+BUIL false
+SHOP false
+DRNS S
+DRNE N
+POSS E 0mm N 0mm U 0mm
+POSE E 0mm N 9144mm U 0mm
+JLIN NA
+JUSL NA
+CTYS NULL
+CTYE NULL
+GRADE 0
+FIRE 0
+SPRE SPCOMPONENT /SINGLE-SPCO
+MEML NA
+
+END
+NEW STWALL
+DESC 'EXT-W03 east external wall'
+STRUCL 'WALL'
+GTYP WALL
+DESP 150mm 3000mm
+BUIL false
+SHOP false
+DRNS S
+DRNE N
+POSS E 15843mm N 0mm U 0mm
+POSE E 15843mm N 9144mm U 0mm
+JLIN NA
+JUSL NA
+CTYS NULL
+CTYE NULL
+GRADE 0
+FIRE 0
+SPRE SPCOMPONENT /SINGLE-SPCO
+MEML NA
+
+END
+NEW STWALL
+DESC 'EXT-W04 south external wall'
+STRUCL 'WALL'
+GTYP WALL
+DESP 150mm 3000mm
+BUIL false
+SHOP false
+DRNS W
+DRNE E
+POSS E 0mm N 0mm U 0mm
+POSE E 15843mm N 0mm U 0mm
+JLIN NA
+JUSL NA
+CTYS NULL
+CTYE NULL
+GRADE 0
+FIRE 0
+SPRE SPCOMPONENT /SINGLE-SPCO
+MEML NA
+
+END
+END
+NEW CWALL /FLOOR_PLAN_EXAMPLE_INT_WALLS
+DESC 'Internal wall runs'
+PURP WALL
+BUIL false
+SHOP false
+GRADE 0
+FIRE 0
+DUNION 2
+PTSP unset
+INSC unset
+
+NEW STWALL
+DESC 'INT-W01 left block to great room upper partition'
+STRUCL 'WALL'
+GTYP WALL
+DESP 150mm 3000mm
+BUIL false
+SHOP false
+DRNS S
+DRNE N
+POSS E 3886mm N 6130mm U 0mm
+POSE E 3886mm N 9144mm U 0mm
+JLIN NA
+JUSL NA
+CTYS NULL
+CTYE NULL
+GRADE 0
+FIRE 0
+SPRE SPCOMPONENT /SINGLE-SPCO
+MEML NA
+
+END
+NEW STWALL
+DESC 'INT-W02 left block to kitchen/living lower partition'
+STRUCL 'WALL'
+GTYP WALL
+DESP 150mm 3000mm
+BUIL false
+SHOP false
+DRNS S
+DRNE N
+POSS E 3886mm N 0mm U 0mm
+POSE E 3886mm N 5260mm U 0mm
+JLIN NA
+JUSL NA
+CTYS NULL
+CTYE NULL
+GRADE 0
+FIRE 0
+SPRE SPCOMPONENT /SINGLE-SPCO
+MEML NA
+
+END
+NEW STWALL
+DESC 'INT-W03 master bedroom to dressing wall'
+STRUCL 'WALL'
+GTYP WALL
+DESP 150mm 3000mm
+BUIL false
+SHOP false
+DRNS W
+DRNE E
+POSS E 1350mm N 5020mm U 0mm
+POSE E 3886mm N 5020mm U 0mm
+JLIN NA
+JUSL NA
+CTYS NULL
+CTYE NULL
+GRADE 0
+FIRE 0
+SPRE SPCOMPONENT /SINGLE-SPCO
+MEML NA
+
+END
+NEW STWALL
+DESC 'INT-W04 dressing room to master bathroom wall'
+STRUCL 'WALL'
+GTYP WALL
+DESP 150mm 3000mm
+BUIL false
+SHOP false
+DRNS W
+DRNE E
+POSS E 1350mm N 2415mm U 0mm
+POSE E 3886mm N 2415mm U 0mm
+JLIN NA
+JUSL NA
+CTYS NULL
+CTYE NULL
+GRADE 0
+FIRE 0
+SPRE SPCOMPONENT /SINGLE-SPCO
+MEML NA
+
+END
+NEW STWALL
+DESC 'INT-W05 dressing room west wall'
+STRUCL 'WALL'
+GTYP WALL
+DESP 150mm 3000mm
+BUIL false
+SHOP false
+DRNS S
+DRNE N
+POSS E 1350mm N 2415mm U 0mm
+POSE E 1350mm N 5020mm U 0mm
+JLIN NA
+JUSL NA
+CTYS NULL
+CTYE NULL
+GRADE 0
+FIRE 0
+SPRE SPCOMPONENT /SINGLE-SPCO
+MEML NA
+
+END
+NEW STWALL
+DESC 'INT-W06 kitchen partition stub'
+STRUCL 'WALL'
+GTYP WALL
+DESP 150mm 3000mm
+BUIL false
+SHOP false
+DRNS W
+DRNE E
+POSS E 3886mm N 3955mm U 0mm
+POSE E 4600mm N 3955mm U 0mm
+JLIN NA
+JUSL NA
+CTYS NULL
+CTYE NULL
+GRADE 0
+FIRE 0
+SPRE SPCOMPONENT /SINGLE-SPCO
+MEML NA
+
+END
+NEW STWALL
+DESC 'INT-W07 great room to service block upper partition'
+STRUCL 'WALL'
+GTYP WALL
+DESP 150mm 3000mm
+BUIL false
+SHOP false
+DRNS S
+DRNE N
+POSS E 9920mm N 3750mm U 0mm
+POSE E 9920mm N 9144mm U 0mm
+JLIN NA
+JUSL NA
+CTYS NULL
+CTYE NULL
+GRADE 0
+FIRE 0
+SPRE SPCOMPONENT /SINGLE-SPCO
+MEML NA
+
+END
+NEW STWALL
+DESC 'INT-W08 great room to technical room lower partition'
+STRUCL 'WALL'
+GTYP WALL
+DESP 150mm 3000mm
+BUIL false
+SHOP false
+DRNS S
+DRNE N
+POSS E 9920mm N 0mm U 0mm
+POSE E 9920mm N 2415mm U 0mm
+JLIN NA
+JUSL NA
+CTYS NULL
+CTYE NULL
+GRADE 0
+FIRE 0
+SPRE SPCOMPONENT /SINGLE-SPCO
+MEML NA
+
+END
+NEW STWALL
+DESC 'INT-W09 bathroom to toilet wall'
+STRUCL 'WALL'
+GTYP WALL
+DESP 150mm 3000mm
+BUIL false
+SHOP false
+DRNS W
+DRNE E
+POSS E 9920mm N 5915mm U 0mm
+POSE E 10920mm N 5915mm U 0mm
+JLIN NA
+JUSL NA
+CTYS NULL
+CTYE NULL
+GRADE 0
+FIRE 0
+SPRE SPCOMPONENT /SINGLE-SPCO
+MEML NA
+
+END
+NEW STWALL
+DESC 'INT-W10 toilet and clearance divider'
+STRUCL 'WALL'
+GTYP WALL
+DESP 150mm 3000mm
+BUIL false
+SHOP false
+DRNS S
+DRNE N
+POSS E 10920mm N 3955mm U 0mm
+POSE E 10920mm N 5915mm U 0mm
+JLIN NA
+JUSL NA
+CTYS NULL
+CTYE NULL
+GRADE 0
+FIRE 0
+SPRE SPCOMPONENT /SINGLE-SPCO
+MEML NA
+
+END
+NEW STWALL
+DESC 'INT-W11 toilet to lower clearance wall'
+STRUCL 'WALL'
+GTYP WALL
+DESP 150mm 3000mm
+BUIL false
+SHOP false
+DRNS W
+DRNE E
+POSS E 9920mm N 5020mm U 0mm
+POSE E 10920mm N 5020mm U 0mm
+JLIN NA
+JUSL NA
+CTYS NULL
+CTYE NULL
+GRADE 0
+FIRE 0
+SPRE SPCOMPONENT /SINGLE-SPCO
+MEML NA
+
+END
+NEW STWALL
+DESC 'INT-W12 toilet to technical room wall'
+STRUCL 'WALL'
+GTYP WALL
+DESP 150mm 3000mm
+BUIL false
+SHOP false
+DRNS W
+DRNE E
+POSS E 9920mm N 3955mm U 0mm
+POSE E 10920mm N 3955mm U 0mm
+JLIN NA
+JUSL NA
+CTYS NULL
+CTYE NULL
+GRADE 0
+FIRE 0
+SPRE SPCOMPONENT /SINGLE-SPCO
+MEML NA
+
+END
+NEW STWALL
+DESC 'INT-W13 right bedrooms and service block upper wall'
+STRUCL 'WALL'
+GTYP WALL
+DESP 150mm 3000mm
+BUIL false
+SHOP false
+DRNS S
+DRNE N
+POSS E 11957mm N 5780mm U 0mm
+POSE E 11957mm N 9144mm U 0mm
+JLIN NA
+JUSL NA
+CTYS NULL
+CTYE NULL
+GRADE 0
+FIRE 0
+SPRE SPCOMPONENT /SINGLE-SPCO
+MEML NA
+
+END
+NEW STWALL
+DESC 'INT-W14 bedroom 2 to clearance wall'
+STRUCL 'WALL'
+GTYP WALL
+DESP 150mm 3000mm
+BUIL false
+SHOP false
+DRNS S
+DRNE N
+POSS E 11957mm N 3630mm U 0mm
+POSE E 11957mm N 4875mm U 0mm
+JLIN NA
+JUSL NA
+CTYS NULL
+CTYE NULL
+GRADE 0
+FIRE 0
+SPRE SPCOMPONENT /SINGLE-SPCO
+MEML NA
+
+END
+NEW STWALL
+DESC 'INT-W15 bedroom 3 to technical room wall'
+STRUCL 'WALL'
+GTYP WALL
+DESP 150mm 3000mm
+BUIL false
+SHOP false
+DRNS S
+DRNE N
+POSS E 11957mm N 0mm U 0mm
+POSE E 11957mm N 2750mm U 0mm
+JLIN NA
+JUSL NA
+CTYS NULL
+CTYE NULL
+GRADE 0
+FIRE 0
+SPRE SPCOMPONENT /SINGLE-SPCO
+MEML NA
+
+END
+NEW STWALL
+DESC 'INT-W16 technical room north wall west segment'
+STRUCL 'WALL'
+GTYP WALL
+DESP 150mm 3000mm
+BUIL false
+SHOP false
+DRNS W
+DRNE E
+POSS E 9920mm N 2415mm U 0mm
+POSE E 10200mm N 2415mm U 0mm
+JLIN NA
+JUSL NA
+CTYS NULL
+CTYE NULL
+GRADE 0
+FIRE 0
+SPRE SPCOMPONENT /SINGLE-SPCO
+MEML NA
+
+END
+NEW STWALL
+DESC 'INT-W17 technical room north wall east segment'
+STRUCL 'WALL'
+GTYP WALL
+DESP 150mm 3000mm
+BUIL false
+SHOP false
+DRNS W
+DRNE E
+POSS E 11000mm N 2415mm U 0mm
+POSE E 11957mm N 2415mm U 0mm
+JLIN NA
+JUSL NA
+CTYS NULL
+CTYE NULL
+GRADE 0
+FIRE 0
+SPRE SPCOMPONENT /SINGLE-SPCO
+MEML NA
+
+END
+NEW STWALL
+DESC 'INT-W18 bedroom 2 to bedroom 3 west segment'
+STRUCL 'WALL'
+GTYP WALL
+DESP 150mm 3000mm
+BUIL false
+SHOP false
+DRNS W
+DRNE E
+POSS E 11957mm N 3105mm U 0mm
+POSE E 13820mm N 3105mm U 0mm
+JLIN NA
+JUSL NA
+CTYS NULL
+CTYE NULL
+GRADE 0
+FIRE 0
+SPRE SPCOMPONENT /SINGLE-SPCO
+MEML NA
+
+END
+NEW STWALL
+DESC 'INT-W19 bedroom divider return'
+STRUCL 'WALL'
+GTYP WALL
+DESP 150mm 3000mm
+BUIL false
+SHOP false
+DRNS S
+DRNE N
+POSS E 13820mm N 3105mm U 0mm
+POSE E 13820mm N 3955mm U 0mm
+JLIN NA
+JUSL NA
+CTYS NULL
+CTYE NULL
+GRADE 0
+FIRE 0
+SPRE SPCOMPONENT /SINGLE-SPCO
+MEML NA
+
+END
+NEW STWALL
+DESC 'INT-W20 bedroom 2 to bedroom 3 east segment'
+STRUCL 'WALL'
+GTYP WALL
+DESP 150mm 3000mm
+BUIL false
+SHOP false
+DRNS W
+DRNE E
+POSS E 13820mm N 3955mm U 0mm
+POSE E 15843mm N 3955mm U 0mm
+JLIN NA
+JUSL NA
+CTYS NULL
+CTYE NULL
+GRADE 0
+FIRE 0
+SPRE SPCOMPONENT /SINGLE-SPCO
+MEML NA
+
+END
+END
+END
+END
+END
+END
+INPUT END SITE /FLOOR_PLAN_EXAMPLE_SITE
+INPUT FINISH
+
+-- Switch synonyms back on if an error occurs.
+LABEL /ERROR3
+handle ANY
+$S+
+RETURN ERROR
+endhandle
+
+-- End Data Listing    Date : 30 May 2026
+$S+  -- Synonym translation ON
+-- ----------------------------------------------------------------

@@ -1,0 +1,381 @@
+$S-  -- Synonym translation OFF
+-- ----------------------------------------------------------------
+-- Data Listing    Date : 29 May 2026
+-- Source drawing : /Users/c1tr0n75/Downloads/9x8m-house.webp
+--
+-- Model intent:
+--   - Create walls only from the attached 9m x 8m house plan.
+--   - Origin is the south-west extent of the plan footprint.
+--   - E axis follows drawing right, N axis follows drawing up, U is vertical.
+--   - All wall bases are at U 0mm and all wall heights are 3000mm.
+--   - Wall thickness is not dimensioned on the source drawing; 150mm is assumed.
+--   - Doors, windows, furniture, fixtures, symbols, and dimensions are not created.
+--   - Wall runs are simplified centerlines from the principal visible wall grid.
+-- ----------------------------------------------------------------
+
+ONERROR GOLABEL /ERROR3
+
+INPUT BEGIN
+NEW SITE /HOUSE_9X8_SITE
+FUNC 'Structural'
+PURP WALL
+
+NEW ZONE /HOUSE_9X8_ZONE
+DESC '9x8m house wall-only model from 2D plan'
+FUNC 'Structural'
+PURP WALL
+
+NEW STRUCTURE /HOUSE_9X8_STRUCTURE
+DESC 'Wall-only house structure'
+FUNC 'Structural'
+PURP WALL
+BUIL false
+PDNAME unset
+
+NEW FRMWORK /HOUSE_9X8_WALLS
+DESC 'House walls, height 3000mm'
+PURP WALL
+BUIL false
+SHOP false
+GRADE 0
+FIRE 0
+DUNION 2
+PTSP unset
+INSC unset
+PDNAME unset
+
+NEW CWALL /HOUSE_9X8_EXT_WALLS
+DESC 'External wall runs'
+PURP WALL
+BUIL false
+SHOP false
+GRADE 0
+FIRE 0
+DUNION 2
+PTSP unset
+INSC unset
+
+NEW STWALL
+DESC 'EXT-W01 top external wall'
+STRUCL 'WALL'
+GTYP WALL
+DESP 150mm 3000mm
+BUIL false
+SHOP false
+DRNS W
+DRNE E
+POSS E 0mm N 8000mm U 0mm
+POSE E 9000mm N 8000mm U 0mm
+JLIN NA
+JUSL NA
+CTYS NULL
+CTYE NULL
+GRADE 0
+FIRE 0
+SPRE SPCOMPONENT /SINGLE-SPCO
+MEML NA
+
+END
+NEW STWALL
+DESC 'EXT-W02 left external wall'
+STRUCL 'WALL'
+GTYP WALL
+DESP 150mm 3000mm
+BUIL false
+SHOP false
+DRNS S
+DRNE N
+POSS E 0mm N 1000mm U 0mm
+POSE E 0mm N 8000mm U 0mm
+JLIN NA
+JUSL NA
+CTYS NULL
+CTYE NULL
+GRADE 0
+FIRE 0
+SPRE SPCOMPONENT /SINGLE-SPCO
+MEML NA
+
+END
+NEW STWALL
+DESC 'EXT-W03 right external wall'
+STRUCL 'WALL'
+GTYP WALL
+DESP 150mm 3000mm
+BUIL false
+SHOP false
+DRNS S
+DRNE N
+POSS E 9000mm N 1000mm U 0mm
+POSE E 9000mm N 8000mm U 0mm
+JLIN NA
+JUSL NA
+CTYS NULL
+CTYE NULL
+GRADE 0
+FIRE 0
+SPRE SPCOMPONENT /SINGLE-SPCO
+MEML NA
+
+END
+NEW STWALL
+DESC 'EXT-W04 left wing bottom wall'
+STRUCL 'WALL'
+GTYP WALL
+DESP 150mm 3000mm
+BUIL false
+SHOP false
+DRNS W
+DRNE E
+POSS E 0mm N 1000mm U 0mm
+POSE E 3000mm N 1000mm U 0mm
+JLIN NA
+JUSL NA
+CTYS NULL
+CTYE NULL
+GRADE 0
+FIRE 0
+SPRE SPCOMPONENT /SINGLE-SPCO
+MEML NA
+
+END
+NEW STWALL
+DESC 'EXT-W05 west wall of front projection'
+STRUCL 'WALL'
+GTYP WALL
+DESP 150mm 3000mm
+BUIL false
+SHOP false
+DRNS S
+DRNE N
+POSS E 3000mm N 0mm U 0mm
+POSE E 3000mm N 1000mm U 0mm
+JLIN NA
+JUSL NA
+CTYS NULL
+CTYE NULL
+GRADE 0
+FIRE 0
+SPRE SPCOMPONENT /SINGLE-SPCO
+MEML NA
+
+END
+NEW STWALL
+DESC 'EXT-W06 front projection bottom wall'
+STRUCL 'WALL'
+GTYP WALL
+DESP 150mm 3000mm
+BUIL false
+SHOP false
+DRNS W
+DRNE E
+POSS E 3000mm N 0mm U 0mm
+POSE E 6000mm N 0mm U 0mm
+JLIN NA
+JUSL NA
+CTYS NULL
+CTYE NULL
+GRADE 0
+FIRE 0
+SPRE SPCOMPONENT /SINGLE-SPCO
+MEML NA
+
+END
+NEW STWALL
+DESC 'EXT-W07 east wall of front projection'
+STRUCL 'WALL'
+GTYP WALL
+DESP 150mm 3000mm
+BUIL false
+SHOP false
+DRNS S
+DRNE N
+POSS E 6000mm N 0mm U 0mm
+POSE E 6000mm N 1000mm U 0mm
+JLIN NA
+JUSL NA
+CTYS NULL
+CTYE NULL
+GRADE 0
+FIRE 0
+SPRE SPCOMPONENT /SINGLE-SPCO
+MEML NA
+
+END
+NEW STWALL
+DESC 'EXT-W08 right wing bottom wall'
+STRUCL 'WALL'
+GTYP WALL
+DESP 150mm 3000mm
+BUIL false
+SHOP false
+DRNS W
+DRNE E
+POSS E 6000mm N 1000mm U 0mm
+POSE E 9000mm N 1000mm U 0mm
+JLIN NA
+JUSL NA
+CTYS NULL
+CTYE NULL
+GRADE 0
+FIRE 0
+SPRE SPCOMPONENT /SINGLE-SPCO
+MEML NA
+
+END
+END
+NEW CWALL /HOUSE_9X8_INT_WALLS
+DESC 'Internal wall runs'
+PURP WALL
+BUIL false
+SHOP false
+GRADE 0
+FIRE 0
+DUNION 2
+PTSP unset
+INSC unset
+
+NEW STWALL
+DESC 'INT-W01 top-left room east wall'
+STRUCL 'WALL'
+GTYP WALL
+DESP 150mm 3000mm
+BUIL false
+SHOP false
+DRNS S
+DRNE N
+POSS E 2000mm N 6000mm U 0mm
+POSE E 2000mm N 8000mm U 0mm
+JLIN NA
+JUSL NA
+CTYS NULL
+CTYE NULL
+GRADE 0
+FIRE 0
+SPRE SPCOMPONENT /SINGLE-SPCO
+MEML NA
+
+END
+NEW STWALL
+DESC 'INT-W02 top-left room south wall, door opening omitted'
+STRUCL 'WALL'
+GTYP WALL
+DESP 150mm 3000mm
+BUIL false
+SHOP false
+DRNS W
+DRNE E
+POSS E 900mm N 6000mm U 0mm
+POSE E 2000mm N 6000mm U 0mm
+JLIN NA
+JUSL NA
+CTYS NULL
+CTYE NULL
+GRADE 0
+FIRE 0
+SPRE SPCOMPONENT /SINGLE-SPCO
+MEML NA
+
+END
+NEW STWALL
+DESC 'INT-W03 upper partition to right bedroom zone'
+STRUCL 'WALL'
+GTYP WALL
+DESP 150mm 3000mm
+BUIL false
+SHOP false
+DRNS S
+DRNE N
+POSS E 6000mm N 6000mm U 0mm
+POSE E 6000mm N 8000mm U 0mm
+JLIN NA
+JUSL NA
+CTYS NULL
+CTYE NULL
+GRADE 0
+FIRE 0
+SPRE SPCOMPONENT /SINGLE-SPCO
+MEML NA
+
+END
+NEW STWALL
+DESC 'INT-W04 wall between right bedrooms'
+STRUCL 'WALL'
+GTYP WALL
+DESP 150mm 3000mm
+BUIL false
+SHOP false
+DRNS W
+DRNE E
+POSS E 6000mm N 5000mm U 0mm
+POSE E 9000mm N 5000mm U 0mm
+JLIN NA
+JUSL NA
+CTYS NULL
+CTYE NULL
+GRADE 0
+FIRE 0
+SPRE SPCOMPONENT /SINGLE-SPCO
+MEML NA
+
+END
+NEW STWALL
+DESC 'INT-W05 lower partition to right bedroom zone, door opening omitted'
+STRUCL 'WALL'
+GTYP WALL
+DESP 150mm 3000mm
+BUIL false
+SHOP false
+DRNS S
+DRNE N
+POSS E 6000mm N 1000mm U 0mm
+POSE E 6000mm N 4000mm U 0mm
+JLIN NA
+JUSL NA
+CTYS NULL
+CTYE NULL
+GRADE 0
+FIRE 0
+SPRE SPCOMPONENT /SINGLE-SPCO
+MEML NA
+
+END
+NEW STWALL
+DESC 'INT-W06 lower internal return near kitchen/living area'
+STRUCL 'WALL'
+GTYP WALL
+DESP 150mm 3000mm
+BUIL false
+SHOP false
+DRNS S
+DRNE N
+POSS E 3000mm N 1000mm U 0mm
+POSE E 3000mm N 2500mm U 0mm
+JLIN NA
+JUSL NA
+CTYS NULL
+CTYE NULL
+GRADE 0
+FIRE 0
+SPRE SPCOMPONENT /SINGLE-SPCO
+MEML NA
+
+END
+END
+END
+END
+END
+END
+INPUT END SITE /HOUSE_9X8_SITE
+INPUT FINISH
+
+-- Switch synonyms back on if an error occurs.
+LABEL /ERROR3
+handle ANY
+$S+
+RETURN ERROR
+endhandle
+
+-- End Data Listing    Date : 29 May 2026
+$S+  -- Synonym translation ON
+-- ----------------------------------------------------------------

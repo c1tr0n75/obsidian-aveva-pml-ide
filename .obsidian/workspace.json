@@ -194,6 +194,10 @@
   },
   "active": "b698590f07326bee",
   "lastOpenFiles": [
+    "house_9x8_walls_dblisting.txt",
+    "floor_plan_example_walls_dblisting.txt",
+    "examples/house_9x8_walls_dblisting.txt",
+    "examples/floor_plan_example_walls_dblisting.txt",
     "user-support/kpi-reports/piping-demo/summary.md",
     "user-support/kpi-reports/piping-demo/README.md",
     "Untitled 1.canvas",
@@ -211,11 +215,8 @@
     "user-support/README.md",
     "pml-coding-assistant/README.md",
     "user-support/kpi-reports/references/README.md",
-    "user-support/kpi-reports/scripts/report-generators/vault/generate_vault_health.js",
     "user-support/kpi-reports/scripts/report-generators/vault/README.md",
-    "user-support/kpi-reports/scripts/report-generators/piping/compare_dboutput_piping.js",
     "user-support/kpi-reports/scripts/report-generators/piping/README.md",
-    "user-support/kpi-reports/scripts/report-generators/vault",
     "user-support/kpi-reports/scripts/report-generators/README.md",
     "user-support/prompt-library/review-pml-code.md",
     "user-support/prompt-library/generate-mto-readiness-report.md",
@@ -230,7 +231,6 @@
     "user-support/project-knowledge/mto-rules.md",
     "user-support/project-knowledge/dashboard-kpi-standards.md",
     "user-support/project-knowledge/README.md",
-    "user-support/kpi-reports/vault-health-demo/summary.md",
     "Untitled.canvas"
   ]
 }
