@@ -102,6 +102,32 @@ In PML 2, never use the unadorned `CE` keyword in variable assignments or method
 - **Wrong (mixing PML 1 and 2):** `!x = CE` or `!collection.Scope(CE)`
 - **Right (clean PML 2):** `!x = !!CE` or `!collection.Scope(!!CE)`
 
+#### PML 1 `var` — what the right-hand side accepts
+
+`var !x <expr>` stores the result of `<expr>` as a STRING. Two routes work; two common-looking forms do not.
+
+```pml
+$* WORKS — native command-line query expression
+var !x CE
+var !x MDB
+var !x TYPE OF CE
+var !x NAME OF CE
+var !x DESC OF OWNER
+var !x BORE OF CE
+
+$* WORKS — $ command-expansion evaluates the PML 2 value to text BEFORE var runs
+var !x $!!ce.type
+var !x $!!ce.name
+
+$* FAILS — PML 2 dot-notation with no $ ; PML 1 gets the raw token, not a value
+var !x !!ce.type
+
+$* FAILS — arithmetic is not command-expanded ; stored literally as "(!x + 1)"
+var !x (!x + 1)
+```
+
+`$` performs command expansion as a pre-pass, so `$!!ce.type` is already a finished string by the time `var` sees it. `var !x $!!ce.type` and `var !x TYPE OF CE` are equivalent. Without `$`, PML 1 does not evaluate dot-notation, and it never evaluates parenthesised arithmetic. For typed arithmetic or logic, use PML 2 where `!x = !x + 1` works correctly.
+
 Verify file extension and use the matching syntax.
 
 ### Comments
