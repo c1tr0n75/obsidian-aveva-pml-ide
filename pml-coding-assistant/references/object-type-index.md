@@ -82,6 +82,7 @@
 | TEXT Gadget | [text-gadget.md](object-types/text-gadget.md) |
 | TEXTPANE Gadget | [textpane-gadget.md](object-types/textpane-gadget.md) |
 | TOGGLE Gadget | [toggle-gadget.md](object-types/toggle-gadget.md) |
+| UNDOABLE Object | [undoable-object.md](object-types/undoable-object.md) |
 | UNIT Object | [unit-object.md](object-types/unit-object.md) |
 | USER Object | [user-object.md](object-types/user-object.md) |
 | VERIFY | [verify.md](object-types/verify.md) |

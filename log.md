@@ -110,3 +110,7 @@ All significant changes, ingests, queries, and refactoring actions are recorded 
 - Created [edgpacket-object.md](pml-coding-assistant/references/object-types/edgpacket-object.md) documenting EDGPACKET properties, methods, and callback return values.
 - Created [edgcntrl-object.md](pml-coding-assistant/references/object-types/edgcntrl-object.md) documenting !!edgCntrl methods and usage.
 - Registered new objects in [object-type-index.md](pml-coding-assistant/references/object-type-index.md) and updated [manifest.json](manifest.json).
+
+## [2026-06-22] ingest | Documented UNDOABLE object
+- Created [undoable-object.md](pml-coding-assistant/references/object-types/undoable-object.md) documenting the `UNDOABLE` object methods (`description`, `add`, `endundoable`, `undoAction`, `redoAction`, `clearAction`), usage pattern, and code examples. Sourced from official AVEVA Hull and Outfitting SP5 documentation.
+- Registered in [object-type-index.md](pml-coding-assistant/references/object-type-index.md) between TOGGLE Gadget and UNIT Object.
