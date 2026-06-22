@@ -40,6 +40,7 @@ When the user asks for PML code:
    | Real attribute values in practice (formats, hierarchy)     | [DBListing-examples/](pml-coding-assistant/production-reference/DBListing-examples/) (raw database listings)    |
    | Command-line `Q` / `LIST` queries, marking, colouring      | [command-line-queries.md](pml-coding-assistant/references/utilities/command-line-queries.md)                       |
    | General utility commands, units, tolerances, precision     | [general_commands.md](pml-coding-assistant/references/utilities/general_commands.md)                           |
+   | Undo/redo system: MARKDB, UNDODB, REDODB, UNDOABLE, POSTEVENTS | [undo-redo-system.md](pml-coding-assistant/references/utilities/undo-redo-system.md)                        |
    | PML error handling (`handle`/`elsehandle`, `onerror`)      | [AVEVA_PML_Error_Handling.md](pml-coding-assistant/references/language/AVEVA_PML_Error_Handling.md)                   |
    | RVM export macros                                          | [AVEVA_PML_RVM_Export.md](pml-coding-assistant/references/utilities/AVEVA_PML_RVM_Export.md)                       |
    | Production patterns when curated examples are insufficient | `pml-coding-assistant/production-reference/` (see Bundled reference map for subdirectories) |
@@ -368,6 +369,7 @@ Final pass before returning code. Pure verification — all coding rules live ab
 ### pml-coding-assistant/references/utilities/
 - [command-line-queries.md](pml-coding-assistant/references/utilities/command-line-queries.md) — `Q` and `LIST` syntax for session/user/DB queries; marking and colouring commands.
 - [general_commands.md](pml-coding-assistant/references/utilities/general_commands.md) — General utility commands, units, tolerances, and precision control.
+- [undo-redo-system.md](pml-coding-assistant/references/utilities/undo-redo-system.md) — Full E3D undo/redo system: MARKDB/ENDMARKDB, UNDODB/REDODB, UNDOABLE object, POSTEVENTS integration, and how the stacks work.
 - [AVEVA_PML_RVM_Export.md](pml-coding-assistant/references/utilities/AVEVA_PML_RVM_Export.md) — generating PML macros for `.rvm` Review exports.
 
 ### pml-coding-assistant/examples/

@@ -114,3 +114,9 @@ All significant changes, ingests, queries, and refactoring actions are recorded 
 ## [2026-06-22] ingest | Documented UNDOABLE object
 - Created [undoable-object.md](pml-coding-assistant/references/object-types/undoable-object.md) documenting the `UNDOABLE` object methods (`description`, `add`, `endundoable`, `undoAction`, `redoAction`, `clearAction`), usage pattern, and code examples. Sourced from official AVEVA Hull and Outfitting SP5 documentation.
 - Registered in [object-type-index.md](pml-coding-assistant/references/object-type-index.md) between TOGGLE Gadget and UNIT Object.
+
+## [2026-06-22] ingest | Documented E3D Undo/Redo system
+- Created [undo-redo-system.md](pml-coding-assistant/references/utilities/undo-redo-system.md) covering the full E3D undo/redo system: MARKDB/ENDMARKDB, UNDODB/REDODB, the UNDOABLE PML object, automatic graphical editor marks, and POSTEVENTS integration.
+- Added §8 (Database Undo/Redo Commands) to [general_commands.md](pml-coding-assistant/references/utilities/general_commands.md) with MARKDB/ENDMARKDB/UNDODB/REDODB entries and a cross-ref to the new file.
+- Added "See Also" section to [undoable-object.md](pml-coding-assistant/references/object-types/undoable-object.md) pointing to undo-redo-system.md and postevents-object.md.
+- Registered in the SKILL.md routing table and bundled reference map.

@@ -67,3 +67,10 @@ enddo
 
 !undo.endundoable()
 ```
+
+---
+
+## See Also
+
+- [undo-redo-system.md](../utilities/undo-redo-system.md) — Full E3D undo/redo system overview: MARKDB/ENDMARKDB commands, UNDODB/REDODB, how the stacks work, and POSTEVENTS integration.
+- [postevents-object.md](postevents-object.md) — Hook into undo/redo events with the POSTEVENTS object.

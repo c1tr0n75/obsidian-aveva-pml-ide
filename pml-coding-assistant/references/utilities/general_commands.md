@@ -277,3 +277,29 @@ Example:
 ```pml
 Q ALL BRANCH WHERE (HBORE GT 100) FOR /ATEST   $* Queries branches under /ATEST with HBORE > 100
 ```
+
+---
+
+## 8. Database Undo / Redo Commands
+
+AVEVA E3D exposes the undo/redo stack to the command line. See [undo-redo-system.md](undo-redo-system.md) for the full system overview including the PML `UNDOABLE` object and `POSTEVENTS` integration.
+
+| Command | Purpose |
+| :--- | :--- |
+| `MARKDB 'text'` | Sets a database mark with an optional description. Pushes an entry to the undo stack. |
+| `ENDMARKDB` | Closes the current mark, recording the end of the change block. |
+| `MARKDB` (no args) | PML function — returns an ARRAY of all current mark descriptions on the undo stack. |
+| `UNDODB` | Undoes to the last mark. |
+| `UNDODB n` | Undoes `n` steps at once. |
+| `REDODB` | Redoes to the next mark. Only valid after an undo; any DB change clears the redo stack. |
+
+```pml
+MARKDB 'Move pump'
+pos E 1000 N 2000 U 500
+ENDMARKDB
+
+UNDODB          $* Reverts to position before the mark
+REDODB          $* Re-applies the move
+```
+
+> **Note**: The undo and redo stacks are cleared automatically after `SAVEWORK` or `GETWORK`.
