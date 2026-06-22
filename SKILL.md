@@ -271,6 +271,16 @@ The only exception is pixmap (icon) buttons, where `height` and `width` modify t
 
 **User interaction**: use `!!Alert.Error`, `!!Alert.Warning`, `!!Alert.Message`, `!!Alert.Confirm`, or `!!Alert.Question`.
 
+**Dynamic gadget access** — when the gadget name is in a variable at runtime, use command expansion:
+
+```pml
+$* !gadgetName holds the short name of the gadget (e.g. 'filename')
+!gadgetName = 'filename'
+!this.$!gadgetName.val = !value   $* correct — $ expands the variable as a token
+```
+
+Never write `!this.$!<gadget>.val` (angle brackets are documentation notation, not valid PML) and never write `!this.!gadgetName.val` (missing `$` expansion). If reviewing code that uses this pattern, it is correct PML2 — do not flag it as a syntax error.
+
 ### Error handling
 
 - Wrap likely-to-fail operations in `handle any ... endhandle`: DB navigation, file I/O, type conversions, collection evaluation, user input parsing.

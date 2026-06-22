@@ -24,6 +24,8 @@
 | DBREF Object | [dbref-object.md](object-types/dbref-object.md) |
 | DBSESS Object | [dbsess-object.md](object-types/dbsess-object.md) |
 | DIRECTION Object | [direction-object.md](object-types/direction-object.md) |
+| EDGCNTRL Object | [edgcntrl-object.md](object-types/edgcntrl-object.md) |
+| EDGPACKET Object | [edgpacket-object.md](object-types/edgpacket-object.md) |
 | EXPRESSION Object | [expression-object.md](object-types/expression-object.md) |
 | FILE Object | [file-object.md](object-types/file-object.md) |
 | FMSYS Object | [fmsys-object.md](object-types/fmsys-object.md) |

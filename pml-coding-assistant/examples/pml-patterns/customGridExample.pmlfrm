@@ -1,0 +1,224 @@
+------------------------------------------------------------------------
+--
+-- File:            customgridexample.pmlfrm
+-- Type:            Form Definition
+-- Description:     Boilerplate form demonstrating hosting a .NET Grid 
+--                  control with both database and custom data bindings.
+--
+------------------------------------------------------------------------
+
+import 'GridControl'
+handle any
+endhandle
+
+-- Define the form layout
+layout form !!customgridexample dialog docking
+  using namespace 'Aveva.Core.Presentation'
+
+  !!customgridexample.formTitle   = 'Custom .NET Grid Example'
+  !!customgridexample.initcall    = '!this.initialise()'
+
+  path down
+
+  -- Top actions frame
+  frame .actionsFrame 'Actions' anchor l+r
+    path right
+    button .loadDb 'Load DB Elements' callback '!this.loadDbData()' width 18
+    button .loadCustom 'Load Custom Data' callback '!this.loadCustomData()' width 18
+    button .clear 'Clear Grid' callback '!this.clearGrid()' width 12
+    button .export 'Export to Excel' callback '!this.exportToExcel()' width 15
+  exit
+
+  -- Container frame to host the C# Grid control
+  frame .gridFrame 'Grid View' dock fill width 60 height 15
+    container .netGridContainer noBox PMLNETCONTROL |Grid Container| dock fill
+  exit
+
+  -- Grid member variable and Popup menu
+  member .grid is NETGRIDCONTROL
+  menu .gridPopup popup
+
+exit
+-- End of form definition
+
+------------------------------------------------------------------------
+-- Constructor Method
+------------------------------------------------------------------------
+define method .customgridexample()
+  using namespace 'Aveva.Core.Presentation'
+
+  -- Instantiate the C# Grid Control
+  !this.grid = object NETGRIDCONTROL()
+
+  -- Register PML event handlers on the C# control
+  !this.grid.addeventhandler('AfterSelectChange', !this, 'gridSelect')
+  !this.grid.addeventhandler('OnPopup', !this, 'gridRightClick')
+
+  -- Bind C# grid handle to PML container gadget
+  !this.netGridContainer.control = !this.grid.handle()
+
+  -- Configure general grid behavior
+  !this.grid.columnExcelFilter(TRUE)
+  !this.grid.outlookGroupStyle(TRUE)
+  !this.grid.fixedHeaders(FALSE)
+  !this.grid.fixedRows(FALSE)
+  !this.grid.gridHeight(1000.0)
+  !this.grid.columnSummaries(TRUE)
+
+  -- Define the right-click context menu structure
+  !this.gridPopup.add('callback', 'Print Preview...', '!this.printPreview()')
+  !this.gridPopup.add('callback', 'Export to Excel...', '!this.exportToExcel()')
+endmethod
+
+------------------------------------------------------------------------
+-- Form Initialisation
+------------------------------------------------------------------------
+define method .initialise()
+  -- Default to loading custom data on show
+  !this.loadCustomData()
+endmethod
+
+------------------------------------------------------------------------
+-- Loading Custom Data (Non-Database Rows)
+------------------------------------------------------------------------
+define method .loadCustomData()
+  using namespace 'Aveva.Pdms.Presentation'
+
+  -- Reset grid structures
+  !this.grid.ClearGrid()
+
+  -- Create column list
+  !columns = object ARRAY()
+  !columns[1] = 'ItemName'
+  !columns[2] = 'ComponentType'
+  !columns[3] = 'Material'
+  !columns[4] = 'Status'
+
+  -- Create rows list (Array of Arrays)
+  !rows = object ARRAY()
+
+  !row1 = object ARRAY()
+  !row1[1] = 'Vessel-001'
+  !row1[2] = 'EQUI'
+  !row1[3] = 'Carbon Steel'
+  !row1[4] = 'Approved'
+  !rows[1] = !row1
+
+  !row2 = object ARRAY()
+  !row2[1] = 'Pump-102A'
+  !row2[2] = 'EQUI'
+  !row2[3] = 'Stainless Steel'
+  !row2[4] = 'Under Review'
+  !rows[2] = !row2
+
+  !row3 = object ARRAY()
+  !row3[1] = 'Line-10-CS-005'
+  !row3[2] = 'PIPE'
+  !row3[3] = 'Carbon Steel'
+  !row3[4] = 'Approved'
+  !rows[3] = !row3
+
+  -- Instanciate data source and bind it
+  !source = object NetDataSource('CustomData', !columns, !rows)
+  !this.grid.BindToDataSource(!source)
+  
+  -- Auto-fit columns dynamically to text size
+  !this.grid.AutoFitColumns()
+endmethod
+
+------------------------------------------------------------------------
+-- Loading Database Elements (Dabacon-Backed Rows)
+------------------------------------------------------------------------
+define method .loadDbData()
+  using namespace 'Aveva.Pdms.Presentation'
+
+  !this.grid.ClearGrid()
+
+  -- Get scope from Current Element members
+  !ceMembers = !!CE.Members
+
+  if (!ceMembers.Empty()) then
+    !!Alert.Warning('Current element has no members to load into the grid.')
+    return
+  endif
+
+  -- Define database attributes to extract
+  !attributes = object ARRAY()
+  !attributes[1] = 'TYPE'
+  !attributes[2] = 'NAME'
+  !attributes[3] = 'OWNER'
+
+  -- Define user-friendly column titles
+  !titles = object ARRAY()
+  !titles[1] = 'Element Type'
+  !titles[2] = 'Name'
+  !titles[3] = 'Owner Ref'
+
+  -- Create NetDataSource with elements collection
+  !source = object NetDataSource('DbElements', !attributes, !titles, !ceMembers)
+  !this.grid.BindToDataSource(!source)
+
+  -- Enable standard icons for element types in the NAME column
+  !this.grid.setNameColumnImage()
+  !this.grid.AutoFitColumns()
+endmethod
+
+------------------------------------------------------------------------
+-- Actions
+------------------------------------------------------------------------
+define method .clearGrid()
+  !this.grid.ClearGrid()
+endmethod
+
+define method .printPreview()
+  !this.grid.PrintPreview()
+endmethod
+
+define method .exportToExcel()
+  !browser = object PMLFILEBROWSER('SAVE')
+  !browser.show('C:\temp', 'GridExport.xls', 'Export Grid to Excel', FALSE, 'Excel Files (*.xls)|*.xls', 1)
+  !filePath = !browser.file()
+
+  if (not !filePath.Empty()) then
+    handle any
+      !errText = !!error.text
+      !!Alert.Error('Failed to export: ' + !errText)
+    elsehandle
+      !this.grid.SaveGridToExcel(!filePath)
+      !!Alert.Message('Grid exported successfully to: ' + !filePath)
+    endhandle
+  endif
+endmethod
+
+------------------------------------------------------------------------
+-- Grid Event Handlers
+------------------------------------------------------------------------
+
+-- Triggered by 'AfterSelectChange' event
+define method .gridSelect(!args is ARRAY)
+  !selectedTags = !args[1]
+  if (!selectedTags.Empty()) then
+    return
+  endif
+
+  -- Grab the first selected row tag
+  !firstTag = !selectedTags[1]
+  
+  -- Try converting the row tag back to a DBREF
+  !dbrefObj = !firstTag.dbref()
+  handle any
+  elsehandle
+    if (not !dbrefObj.BadRef()) then
+      !!CE = !dbrefObj
+    endif
+  endhandle
+endmethod
+
+-- Triggered by 'OnPopup' event
+define method .gridRightClick(!args is ARRAY)
+  !posX = !args[1]
+  !posY = !args[2]
+  
+  -- Show the context menu at mouse position coordinates
+  !this.showPopup(!posX, !posY, !this.gridPopup)
+endmethod

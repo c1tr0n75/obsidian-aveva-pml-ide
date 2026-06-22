@@ -1,0 +1,113 @@
+$* ============================================================
+$* File   : simplegrid.pmlfrm
+$* Form   : !!SimpleGrid
+$* Purpose: Basic grid demo – collects members of CE into a
+$*          NETGRIDCONTROL table via NetDataSource
+$* Reload : pml rehash form !!SimpleGrid
+$* Show   : show !!SimpleGrid
+$*
+$* Layout (form width 50, height 24, units = char cells):
+$*
+$*   +------------------------------------------------+
+$*   |  [ Refresh ]                    [ Export XLSX ] |   y = 0.5
+$*   |                                                |
+$*   |  +--------------------------------------------+|
+$*   |  |                                            ||
+$*   |  |           Grid (container)                 ||   y = 2  (height 18)
+$*   |  |                                            ||
+$*   |  +--------------------------------------------+|
+$*   |                                                |
+$*   |  [ Close ]                                     |   y = 21
+$*   +------------------------------------------------+
+$* ============================================================
+
+setup form !!SimpleGrid dialog size 50 24
+    title 'Simple Grid Demo'
+
+    $* Refresh button (top-left)
+    button .RefreshBtn 'Refresh' at x 1 y 0.5 callback '!this.refresh()' width 10
+
+    $* Export button (top-right)
+    button .ExportBtn 'Export XLSX' at x 35 y 0.5 callback '!this.exportXlsx()' width 14
+
+    $* Grid container – hosts the .NET GridControl
+    container .GridContainer PmlNetControl 'SimpleGridCtrl' at x 1 y 2 dock fill width 48 height 18
+
+    $* Close button (bottom)
+    button .CloseBtn 'Close' at x 1 y 21 callback '!this.close()' width 10
+
+    $* Member to hold the grid object
+    member .Grid is NETGRIDCONTROL
+
+exit
+
+$* ============================================================
+$* Constructor – create and bind the grid control
+$* ============================================================
+define method .SimpleGrid()
+    import 'gridControl'
+    using namespace 'Aveva.Pdms.Presentation'
+    !this.Grid = object NETGRIDCONTROL()
+    !this.GridContainer.control = !this.Grid.handle()
+
+    $* Grid appearance settings
+    !this.Grid.FixedHeaders(TRUE)
+    !this.Grid.HeaderSort(TRUE)
+    !this.Grid.EditableGrid(FALSE)
+    !this.Grid.setAlternateRowColor('LightCyan')
+    !this.Grid.setLabelVisibility(TRUE)
+
+    $* Load data on first show
+    !this.refresh()
+endmethod
+
+$* ============================================================
+$* Refresh – rebuild the grid from current element members
+$* ============================================================
+define method .refresh()
+    !this.Grid.ClearGrid()
+
+    $* Column headings
+    !columns = ARRAY()
+    !columns[1] = 'Name'
+    !columns[2] = 'Type'
+    !columns[3] = 'Owner'
+
+    $* Collect rows from CE members
+    !rows = ARRAY()
+    !members = !!CE.members
+    !memSize = !members.Size()
+
+    do !i from 1 to !memSize
+        !elem = !members[!i]
+        !row = ARRAY()
+        !row[1] = !elem.flnn
+        !elemType = !elem.type
+        !row[2] = !elemType.String()
+        !row[3] = !elem.owner.flnn
+        !rows.Append(!row)
+    enddo
+
+    $* Create data source and bind
+    !source = object NetDataSource('CEMembers', !columns, !rows)
+    !this.Grid.BindToDataSource(!source)
+    !this.Grid.AutoFitColumns()
+
+    !countStr = !memSize.String()
+    !this.formTitle = 'Simple Grid Demo – ' & !countStr & ' elements'
+endmethod
+
+$* ============================================================
+$* Export grid to Excel
+$* ============================================================
+define method .exportXlsx()
+    !this.Grid.SaveGridToExcel('C:\Temp\simplegrid_export.xlsx', 'CE Members')
+    !!Alert.Message('Export completed to C:\Temp\simplegrid_export.xlsx')
+endmethod
+
+$* ============================================================
+$* Close the form
+$* ============================================================
+define method .close()
+    !this.hide()
+endmethod

@@ -8,7 +8,7 @@ $*
 $* Layout (form width 32, height 16, units = char cells):
 $*
 $*   +--------------------------------+
-$*   |          [   CE   ]            |   y = 0.5
+$*   |   [   CE   ]                   |   y = 0.5
 $*   |                                |
 $*   |   +------------------------+   |
 $*   |   |                        |   |
@@ -22,6 +22,7 @@ $* ============================================================
 
 setup form !!CEForm dialog size 32 16
     title 'CE Selector'
+    !this.initCall   = |!this.init()|
 
     $* CE button (top, centered) -> triggers .load()
     button .CEButton 'CE' at x 2 y 0.5 callback '!this.load()' width 6

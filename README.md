@@ -198,14 +198,107 @@ Over time, the vault becomes your team's ultimate competitive advantage. The AI 
 
 ---
 
-## ─── 5. Install & Recommended Prompts ───
+## ─── 5. Installation & Deployment ───
 
-### Install
+Deploying this custom skill makes its highly specialized AVEVA PML and Drawing-to-E3D capabilities directly accessible to the AI agents powering your **Antigravity IDE** and **VS Code IDE** (via the Gemini Code Assist / Antigravity extension).
+
+---
+
+### 🔍 How Custom Skills are Loaded
+Both Antigravity IDE and VS Code scan directories dynamically to discover skills. 
+- **The Trigger**: The loader searches for any folder containing a `SKILL.md` file.
+- **The Metadata**: It reads the **YAML frontmatter** at the top of [SKILL.md](SKILL.md) to register the skill's `name` and `description`.
+- **The Scope**: When you ask a query relating to AVEVA, PML, or E3D, the AI recognizes the skill's scope and pulls in the reference guides, patterns, and rules automatically.
+
+---
+
+### 💻 Windows Deployment Options
+
+You can install this skill **Globally** (available to all your workspaces and projects) or **Workspace-Locally** (available only inside a specific project).
+
+#### 🌐 Option A: Global Deployment (Recommended)
+Installing globally allows both Antigravity IDE and VS Code to access the AVEVA skill regardless of which folder or project you have open.
+
+* **Target Path**: `C:\Users\<YourUsername>\.gemini\config\skills\obsidian-aveva-pml-ide\`
+
+**Step-by-Step Installation:**
+1. **Prepare the folders**:
+   Open File Explorer and navigate to your user home directory: `C:\Users\<YourUsername>`.
+   Ensure the following directory structure exists: `.gemini\config\skills\`. If either `config` or `skills` is missing under `.gemini`, create them.
+   *(Quick shortcut: Press `Win + R`, type `%USERPROFILE%\.gemini\config\skills`, and hit Enter).*
+2. **Deploy the files**:
+   Create a folder named `obsidian-aveva-pml-ide` directly inside `skills`.
+   Copy all repository contents (including `SKILL.md`, `manifest.json`, `pml-coding-assistant/`, `drawing-to-e3d/`, etc.) into that folder.
+
+> [!IMPORTANT]
+> **Avoid the "Nested Folder" Trap!**
+> When extracting zip files, Windows or extraction utilities often create a nested folder structure like `.../skills/obsidian-aveva-pml-ide/obsidian-aveva-pml-ide/SKILL.md`. 
+> **Make sure `SKILL.md` is located directly inside the root of the skill folder**: `.../skills/obsidian-aveva-pml-ide/SKILL.md`.
+
+---
+
+#### 📂 Option B: Workspace-Local Deployment (VS Code only)
+Use this option if you want the skill restricted to a specific workspace or project.
+
+* **Target Path**: `<your-workspace-root>\.gemini\config\skills\obsidian-aveva-pml-ide\`
+
+**Step-by-Step Installation:**
+1. Open your project folder in VS Code.
+2. In the root directory, create a new folder structure: `.gemini\config\skills\`.
+3. Copy the entire `obsidian-aveva-pml-ide` folder into that `skills` folder.
+
+---
+
+### ⚡ Fast PowerShell Deployment (Windows)
+To deploy this skill instantly without manual copying, open **PowerShell** and run the following command (assuming you are currently in the root of the cloned `obsidian-aveva-pml-ide` repository):
+
+```powershell
+# 1. Define target global path
+$targetDir = "$HOME\.gemini\config\skills\obsidian-aveva-pml-ide"
+
+# 2. Create the directory tree (forces creation if it doesn't exist)
+New-Item -ItemType Directory -Force -Path $targetDir
+
+# 3. Copy all files recursively, excluding git or temporary files
+Copy-Item -Path .\* -Destination $targetDir -Recurse -Force -ErrorAction SilentlyContinue
+
+Write-Host "Skill successfully deployed to: $targetDir" -ForegroundColor Green
+```
+
+---
+
+### ✅ How to Verify the Skill is Active
+Once deployed, you can verify that the IDE agent has successfully loaded the skill:
+
+1. **Restart/Reload**:
+   - For **Antigravity IDE**: Simply restart the application.
+   - For **VS Code**: Press `Ctrl + Shift + P` (or `Cmd + Shift + P` on Mac), type `Developer: Reload Window`, and press Enter.
+2. **Test the Agent**:
+   - Open the AI Chat panel and ask:
+     > *"What custom skills do you have access to?"* or *"List my custom skills."*
+   - The agent should respond by listing **obsidian-aveva-pml-ide** alongside its description, indicating it is loaded and ready.
+
+---
+
+### 🛠️ Troubleshooting
+- **Skill not listed**: Double-check the path. The `.gemini` folder must be in your user home directory (e.g. `C:\Users\YourName\.gemini\`).
+- **YAML Frontmatter Error**: Ensure that the first line of [SKILL.md](SKILL.md) starts exactly with `---`, followed by `name:` and `description:`, and ends with `---`. Do not add any text before the opening `---`.
+- **Linter Failures**: If you make modifications to the skill files, run the structural validator programmatically to ensure it passes integrity checks:
+  ```bash
+  python pml-coding-assistant/scripts/validate_skill_structure.py
+  ```
+
+---
+
+### 🦉 Deploying in Claude Code (Alternative CLI)
 * **Claude Code (Project-Local)**: Place the unzipped folder under `<project>/.claude/skills/obsidian-aveva-pml-ide/`.
 * **Claude Code (Personal)**: Place the unzipped folder under `~/.claude/skills/obsidian-aveva-pml-ide/`.
 * **Claude.ai / Claude Desktop**: Zip the repository and upload the archive via the Skills UI.
 
-### Recommended Prompts
+---
+
+## ─── 6. Recommended Prompts ───
+
 * *"Write a PML function that collects all EQUI elements under the current element using COLLECTION."*
 * *"Review this PML2 function and find syntax and scoping errors."*
 * *"Create a PML form with a list, a text input, and a run button."*

@@ -1,0 +1,101 @@
+$*
+$* File: edgdemo.pmlfrm
+$* Description: Demonstration form for Event Driven Graphics (EDG) in AVEVA PML
+$*
+setup form !!edgDemo
+  title 'Event Driven Graphics Demo'
+  path down
+
+  button .btnSinglePick 'Single Pick (Element)' callback '!this.startSinglePick()' width 25
+  button .btnMultiPick 'Multi Pick (Positions)' callback '!this.startMultiPick()' width 25
+  button .btnCancel 'Cancel Active Pick' callback '!this.cancelPick()' width 25
+  
+  text .txtResult 'Result:' width 35
+exit
+
+$*
+$* Method to start single element selection mode
+$*
+define method .startSinglePick()
+  $* Clean up any active pick packet first
+  !!edgCntrl.remove('EDG_Demo_Single_Pick')
+
+  $* Create a new pick packet
+  !packet = object EDGPACKET()
+  !packet.elementPick('Pick an element from the 3D view')
+  !packet.description = 'EDG_Demo_Single_Pick'
+  
+  $* Automatically remove packet after a single pick
+  !packet.remove = true
+
+  $* Callbacks
+  !packet.action = '!!edgDemo.handleSinglePick(!this.return[1].item)'
+  !packet.close  = '!!edgDemo.handleClose()'
+
+  $* Register packet to start the interaction
+  !!edgCntrl.add(!packet)
+  !this.txtResult.val = 'Single pick started...'
+endmethod
+
+$*
+$* Callback method triggered when an element is picked
+$*
+define method .handleSinglePick(!item is DBREF)
+  if (!item.BadRef()) then
+    !this.txtResult.val = 'Error: Bad element picked.'
+    return
+  endif
+
+  $* Access database element attributes with bare dot-notation (no parentheses)
+  !name = !item.name
+  !type = !item.type
+  !this.txtResult.val = 'Picked: ' & !name & ' (' & !type & ')'
+endmethod
+
+$*
+$* Method to start continuous position picking mode
+$*
+define method .startMultiPick()
+  $* Clean up any active pick packet first
+  !!edgCntrl.remove('EDG_Demo_Multi_Pick')
+
+  $* Create a new pick packet
+  !packet = object EDGPACKET()
+  !packet.definePosition('Pick coordinates in 3D view [ESC to finish]')
+  !packet.description = 'EDG_Demo_Multi_Pick'
+  
+  $* Keep the packet active for continuous picking
+  !packet.remove = false
+
+  $* Callbacks
+  !packet.action = '!!edgDemo.handleMultiPick(!this.return[1].position)'
+  !packet.close  = '!!edgDemo.handleClose()'
+
+  $* Register packet to start the interaction
+  !!edgCntrl.add(!packet)
+  !this.txtResult.val = 'Multi pick started...'
+endmethod
+
+$*
+$* Callback method triggered on each position pick
+$*
+define method .handleMultiPick(!pos is POSITION)
+  !posStr = !pos.String()
+  !this.txtResult.val = 'Coordinates: ' & !posStr
+endmethod
+
+$*
+$* Callback method triggered when pick session is closed (ESC pressed or cancelled)
+$*
+define method .handleClose()
+  !this.txtResult.val = 'Picking session finished.'
+endmethod
+
+$*
+$* Method to manually cancel/remove any active pick packets
+$*
+define method .cancelPick()
+  !!edgCntrl.remove('EDG_Demo_Single_Pick')
+  !!edgCntrl.remove('EDG_Demo_Multi_Pick')
+  !this.txtResult.val = 'Pick cancelled.'
+endmethod

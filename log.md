@@ -91,3 +91,22 @@ All significant changes, ingests, queries, and refactoring actions are recorded 
 - Kept Drawing-to-E3D interpretation, model intent, generation recipes, and validation workflows under [drawing-to-e3d](drawing-to-e3d/README.md).
 - Moved user-requested KPI reports, KPI definitions, project knowledge, project decisions, prompts, and report generators under [user-support](user-support/README.md).
 - Updated root documentation, Obsidian graph groups, generators, report metadata, and validation scripts for the new paths.
+
+## [2026-06-02] ingest | Added IDE Deployment Instructions to README.md
+- Updated [README.md](README.md) with comprehensive Windows deployment instructions.
+- Documented Global Deployment steps for Antigravity IDE and VS Code under the `%USERPROFILE%\.gemini\config\skills\` path.
+- Documented Workspace-Local Deployment steps for VS Code under the project `.gemini\config\skills\` folder.
+- Executed local structure validator and lightweight PML linters to ensure absolute vault integrity.
+
+## [2026-06-09] ingest | Documented dynamic gadget access syntax and false-positive fix
+- Added section `5.1 Dynamic Gadget Access (Command Expansion)` to [forms-ui-reference.md](pml-coding-assistant/references/ui/forms-ui-reference.md).
+- Added inline rule to [SKILL.md](SKILL.md) Forms and UI section: `!this.$!gadgetName.val` is correct PML2 for dynamic gadget access; angle-bracket form `!this.$!<gadget>.val` is documentation notation only — do not flag as syntax error.
+- Fix addresses agent false-positive where dynamic gadget access with `$!variable` was incorrectly reported as invalid syntax.
+
+## [2026-06-17] ingest | Added Event Driven Graphics demo form
+- Created [edgdemo.pmlfrm](pml-coding-assistant/examples/pml-patterns/edgdemo.pmlfrm) illustrating single element selection and continuous coordinate selection using `EDGPACKET` and `!!edgCntrl`.
+
+## [2026-06-17] ingest | Documented Event Driven Graphics objects
+- Created [edgpacket-object.md](pml-coding-assistant/references/object-types/edgpacket-object.md) documenting EDGPACKET properties, methods, and callback return values.
+- Created [edgcntrl-object.md](pml-coding-assistant/references/object-types/edgcntrl-object.md) documenting !!edgCntrl methods and usage.
+- Registered new objects in [object-type-index.md](pml-coding-assistant/references/object-type-index.md) and updated [manifest.json](manifest.json).

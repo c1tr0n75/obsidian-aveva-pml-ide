@@ -4,11 +4,11 @@ The `BLOCK` object holds an expression string for deferred evaluation. It is use
 
 ## Methods
 
-| Name | Result | Purpose |
-| :--- | :--- | :--- |
-| `Block(expression)` | BLOCK | Constructor. Creates a block holding the given expression string. |
-| `Evaluate()` | ANY | Evaluates the expression and returns the result. |
-| `Evaluate(type)` | ANY | Evaluates the expression and checks if the result is of the specified type. |
+| Name                | Result | Purpose                                                                     |
+| :------------------ | :----- | :-------------------------------------------------------------------------- |
+| `Block(expression)` | BLOCK  | Constructor. Creates a block holding the given expression string.           |
+| `Evaluate()`        | ANY    | Evaluates the expression and returns the result.                            |
+| `Evaluate(type)`    | ANY    | Evaluates the expression and checks if the result is of the specified type. |
 
 ## Code Examples
 

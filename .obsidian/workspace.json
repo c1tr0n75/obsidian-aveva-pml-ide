@@ -11,10 +11,14 @@
             "id": "8c21eaf162f1daef",
             "type": "leaf",
             "state": {
-              "type": "empty",
-              "state": {},
+              "type": "markdown",
+              "state": {
+                "file": "pml-coding-assistant/references/language/pml2-language-reference.md",
+                "mode": "source",
+                "source": false
+              },
               "icon": "lucide-file",
-              "title": "New tab"
+              "title": "pml2-language-reference"
             }
           }
         ]
@@ -173,8 +177,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 644.5,
-    "collapsed": true
+    "width": 301.5
   },
   "left-ribbon": {
     "hiddenItems": {
@@ -190,43 +193,43 @@
   },
   "active": "8c21eaf162f1daef",
   "lastOpenFiles": [
+    "LLM_WIKI_CONCEPT.md",
+    "pml-coding-assistant/references/object-type-index.md",
+    "pml-coding-assistant/references/utilities/general_commands.md",
+    "pml-coding-assistant/references/utilities/command-line-queries.md",
+    "pml-coding-assistant/references/ui/forms-ui-reference.md",
+    "pml-coding-assistant/references/object-types/button-gadget.md",
+    "pml-coding-assistant/references/object-types/block-object.md",
+    "pml-coding-assistant/references/object-types/array-object.md",
+    "pml-coding-assistant/references/object-types/alert-object.md",
+    "pml-coding-assistant/references/language/AVEVA_PML_Error_Handling.md",
+    "pml-coding-assistant/references/database/database_navigation_query_syntax.md",
+    "pml-coding-assistant/references/database/database_modification.md",
+    "pml-coding-assistant/references/database/aveva_ue_design_database_data_model.md",
+    "pml-coding-assistant/references/database/aveva_pseudo_attributes.md",
+    "pml-coding-assistant/references/database/aveva_introduction_to_attributes.md",
+    "SKILL.md",
+    "README.md",
+    "log.md",
+    "drawing-to-e3d/model-intent/README.md",
+    "drawing-to-e3d/input-interpretation/README.md",
+    "drawing-to-e3d/generation-recipes/README.md",
+    "pml-coding-assistant/references/object-types/collection-object.md",
+    "pml-coding-assistant/references/object-types/location-object.md",
+    "pml-coding-assistant/references/language/pml2-language-reference.md",
+    "pml-coding-assistant/references/language/methods-available-to-all-objects.md",
+    "user-support/project-knowledge/README.md",
     "pml-coding-assistant/examples/pml-patterns/house_9x8_walls_dblisting.txt",
     "pml-coding-assistant/examples/pml-patterns/floor_plan_example_walls_dblisting.txt",
-    "AURA.md",
-    "user-support/kpi-reports/piping-demo/README.md",
     "house_9x8_walls_dblisting.txt",
     "floor_plan_example_walls_dblisting.txt",
     "examples/house_9x8_walls_dblisting.txt",
     "examples/floor_plan_example_walls_dblisting.txt",
-    "user-support/kpi-reports/piping-demo/summary.md",
     "Untitled 1.canvas",
-    "user-support/kpi-reports/references/kpi-definitions.md",
-    "user-support/kpi-reports/model-health-demo/summary.md",
-    "user-support/kpi-reports/model-health-demo/README.md",
     "examples/kpi-reports/piping-demo/report.json",
     "examples/kpi-reports/piping-demo",
     "examples/kpi-reports",
     "examples",
-    "SKILL.md",
-    "pml-coding-assistant/examples/pml-patterns/pipepocketreport.pmlfnc",
-    "user-support/README.md",
-    "pml-coding-assistant/README.md",
-    "user-support/kpi-reports/references/README.md",
-    "user-support/kpi-reports/scripts/report-generators/vault/README.md",
-    "user-support/kpi-reports/scripts/report-generators/piping/README.md",
-    "user-support/kpi-reports/scripts/report-generators/README.md",
-    "user-support/prompt-library/review-pml-code.md",
-    "user-support/prompt-library/generate-mto-readiness-report.md",
-    "user-support/prompt-library/generate-model-health-report.md",
-    "user-support/prompt-library/file-back-discovery.md",
-    "user-support/prompt-library/extract-project-standards.md",
-    "user-support/prompt-library/README.md",
-    "user-support/project-knowledge/project-decisions.md",
-    "user-support/project-knowledge/piping-good-practices.md",
-    "user-support/project-knowledge/naming-rules.md",
-    "user-support/project-knowledge/epc-deliverables.md",
-    "user-support/project-knowledge/mto-rules.md",
-    "user-support/project-knowledge/dashboard-kpi-standards.md",
     "Untitled.canvas"
   ]
 }
