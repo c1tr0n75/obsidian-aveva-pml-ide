@@ -229,6 +229,27 @@ enddo
 - **No `UNDOABLE` blocks**: Do not use `UNDOABLE` blocks or the `UNDOABLE` object in any PML code or deliverables. Undo/redo logic is managed externally by the host C# application.
 - Prefer string/object methods over `EXPRESSION` for filtering. Only use `EXPRESSION` when no other route works.
 
+### .NET namespace migration — `Aveva.Pdms` → `Aveva.Core`
+
+The legacy `Aveva.Pdms.*` namespaces (e.g., `Aveva.Pdms.Presentation`) are from older AVEVA PDMS/E3D releases and **fail in most current environments** (Unified Engineering, recent E3D patches). Always use the modern `Aveva.Core.*` equivalents:
+
+| Legacy (do NOT use)              | Modern (use this)                |
+|----------------------------------|----------------------------------|
+| `Aveva.Pdms.Presentation`       | `Aveva.Core.Presentation`        |
+| `Aveva.Pdms.Presentation.*`     | `Aveva.Core.Presentation.*`      |
+
+```pml
+$* WRONG — legacy namespace, will fail in most environments
+using namespace 'Aveva.Pdms.Presentation'
+
+$* RIGHT — modern namespace
+using namespace 'Aveva.Core.Presentation'
+```
+
+**Exception**: SDK sample assemblies such as `AVEVA.PDMS.PMLNetExample` retain their original namespace because they ship as fixed sample DLLs. Do not rename those unless the user confirms a replacement assembly exists.
+
+When reviewing or migrating existing code that contains `Aveva.Pdms.*`, flag it as a potential failure point and suggest the `Aveva.Core.*` replacement.
+
 ### DBListing, DBOutput, and `datals` operations
 
 **Trigger:** any request involving `DBLISTING`, `DBOUTPUT`, `DATAL` / `datals`, or creating/modifying elements in the design database — whether generating new output, reading existing listings, or troubleshooting syntax.

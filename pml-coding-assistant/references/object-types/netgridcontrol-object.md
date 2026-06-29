@@ -17,7 +17,7 @@ container .exampleContainer PmlNetControl 'example' dock fill width 30 height 20
 For a control instance, the pattern is:
 
 ```pml
-using namespace 'Aveva.Pdms.Presentation'
+using namespace 'Aveva.Core.Presentation'
 !this.exampleControl = object PMLNetExampleControl()
 !this.exampleContainer.control = !this.exampleControl.handle()
 ```
@@ -207,7 +207,7 @@ endmethod
 This pattern follows the documented `NetDataSource` signatures. Confirm exact constructor names/imports with the installed `PMLGridExample` sample.
 
 ```pml
-using namespace 'Aveva.Pdms.Presentation'
+using namespace 'Aveva.Core.Presentation'
 
 !columns = object ARRAY()
 !columns[1] = 'Name'

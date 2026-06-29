@@ -82,7 +82,7 @@ endmethod
 -- Loading Custom Data (Non-Database Rows)
 ------------------------------------------------------------------------
 define method .loadCustomData()
-  using namespace 'Aveva.Pdms.Presentation'
+  using namespace 'Aveva.Core.Presentation'
 
   -- Reset grid structures
   !this.grid.ClearGrid()
@@ -130,7 +130,7 @@ endmethod
 -- Loading Database Elements (Dabacon-Backed Rows)
 ------------------------------------------------------------------------
 define method .loadDbData()
-  using namespace 'Aveva.Pdms.Presentation'
+  using namespace 'Aveva.Core.Presentation'
 
   !this.grid.ClearGrid()
 

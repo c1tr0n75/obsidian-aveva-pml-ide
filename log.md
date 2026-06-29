@@ -120,3 +120,12 @@ All significant changes, ingests, queries, and refactoring actions are recorded 
 - Added §8 (Database Undo/Redo Commands) to [general_commands.md](pml-coding-assistant/references/utilities/general_commands.md) with MARKDB/ENDMARKDB/UNDODB/REDODB entries and a cross-ref to the new file.
 - Added "See Also" section to [undoable-object.md](pml-coding-assistant/references/object-types/undoable-object.md) pointing to undo-redo-system.md and postevents-object.md.
 - Registered in the SKILL.md routing table and bundled reference map.
+
+## [2026-06-29] ingest | Migrated legacy Aveva.Pdms.Presentation → Aveva.Core.Presentation
+- Added `.NET namespace migration` rule to [SKILL.md](SKILL.md) under PML coding rules, documenting that `Aveva.Pdms.*` is legacy and `Aveva.Core.*` is the modern replacement.
+- Updated [netgridcontrol-object.md](pml-coding-assistant/references/object-types/netgridcontrol-object.md) — 2 instances.
+- Updated [pmlfilebrowser-object.md](pml-coding-assistant/references/object-types/pmlfilebrowser-object.md) — 2 instances.
+- Updated [pmlnetexamplecontrol-object.md](pml-coding-assistant/references/object-types/pmlnetexamplecontrol-object.md) — 2 instances.
+- Updated [customGridExample.pmlfrm](pml-coding-assistant/examples/pml-patterns/customGridExample.pmlfrm) — 2 instances.
+- Updated [simplegrid.pmlfrm](pml-coding-assistant/examples/pml-patterns/simplegrid.pmlfrm) — 1 instance.
+- Kept `AVEVA.PDMS.PMLNetExample` as-is in netobject, netcallback, and pmlnetexample references (fixed SDK sample assembly name).

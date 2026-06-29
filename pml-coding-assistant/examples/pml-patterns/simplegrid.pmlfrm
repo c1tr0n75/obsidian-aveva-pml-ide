@@ -46,7 +46,7 @@ $* Constructor – create and bind the grid control
 $* ============================================================
 define method .SimpleGrid()
     import 'gridControl'
-    using namespace 'Aveva.Pdms.Presentation'
+    using namespace 'Aveva.Core.Presentation'
     !this.Grid = object NETGRIDCONTROL()
     !this.GridContainer.control = !this.Grid.handle()
 

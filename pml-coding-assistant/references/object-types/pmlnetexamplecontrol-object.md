@@ -15,7 +15,7 @@ The expected flow:
 ## Prerequisites
 
 ```pml
-USING NAMESPACE 'Aveva.Pdms.Presentation'
+using namespace 'Aveva.Core.Presentation'
 ```
 
 There is no separate `IMPORT` line for this control in the hosting example. If your environment requires it, import the assembly that exposes `PMLNetExampleControl` before instantiation.
@@ -50,7 +50,7 @@ setup form !!ExampleControlForm dialog size 400 300
 exit
 
 define method .ExampleControlForm()
-    using namespace 'Aveva.Pdms.Presentation'
+    using namespace 'Aveva.Core.Presentation'
 
     !this.exampleControl = object PMLNetExampleControl()
     !this.exampleContainer.control = !this.exampleControl.handle()

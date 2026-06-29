@@ -8,7 +8,7 @@
 
 ```pml
 import 'PMLFileBrowser'
-using namespace 'Aveva.Pdms.Presentation'
+using namespace 'Aveva.Core.Presentation'
 ```
 
 ## Constructors
@@ -41,7 +41,7 @@ using namespace 'Aveva.Pdms.Presentation'
 
 ```pml
 import 'PMLFileBrowser'
-using namespace 'Aveva.Pdms.Presentation'
+using namespace 'Aveva.Core.Presentation'
 
 !browser = object PMLFileBrowser('OPEN')
 
