@@ -204,31 +204,30 @@ Common methods available on most gadgets: `FullName()`, `Name()`, `Owner()`, `Sh
 
 ## 5.1 Dynamic Gadget Access (Command Expansion)
 
-When the gadget name is stored in a STRING variable at runtime, use the `$` command-expansion operator to resolve it before the dot access. This is the **only** correct syntax for dynamic gadget access in PML2.
+When the gadget name is stored in a STRING variable at runtime, use the `$` command-expansion operator to resolve it before the dot access. Both the simple form `$!variableName` and the bracketed evaluation form `$!<variableName>` (which evaluates the expression within `< >` and expands it as a token) are fully valid and accepted in AVEVA PML.
 
 ```pml
 $* !gadgetName is a STRING variable holding the gadget's short name (e.g. 'filename')
 !gadgetName = 'filename'
-!this.$!gadgetName.val = ''          $* read/write .val dynamically
-!this.$!gadgetName.active = FALSE    $* any member works the same way
+
+$* Both of the following are correct ways to access the member dynamically:
+!this.$!gadgetName.val = ''
+!this.$!<gadgetName>.val = ''
 ```
 
 **Rules:**
-- `$!variableName` expands the variable's string value as a token before PML processes the dot-member access.
-- The variable must hold the **short name** of the gadget (the part after the `.` in the form definition, without the leading dot).
-- Do **not** write `!this.$!<gadget>.val` — angle brackets `< >` are documentation placeholders only, not valid PML characters. That form will trigger a syntax error.
-- Do **not** write `!this.!variableName.val` (no `$`) — without command expansion the parser sees a nested variable reference, not a gadget name.
+- `$!variableName` expands the variable's string value as a token.
+- `$!<variableName>` evaluates the expression within the angle brackets `< >` and expands the result as a token. This is standard PML syntax (e.g. `kill !!comPropEdit$!<this.pointer>`).
+- Do **not** write `!this.!variableName.val` (missing `$`) — without command expansion the parser sees a nested variable reference, not a gadget name.
 
 ```pml
-$* Wrong — angle brackets are not PML syntax
-!this.$!<gadget>.val = !filename
-
 $* Wrong — missing $ expansion
 !this.!gadgetName.val = !filename
 
-$* Correct
+$* Correct — either form works
 !gadgetName = 'filename'
 !this.$!gadgetName.val = !filename
+!this.$!<gadgetName>.val = !filename
 ```
 
 ## 6. Form Callbacks

@@ -293,15 +293,18 @@ The only exception is pixmap (icon) buttons, where `height` and `width` modify t
 
 **User interaction**: use `!!Alert.Error`, `!!Alert.Warning`, `!!Alert.Message`, `!!Alert.Confirm`, or `!!Alert.Question`.
 
-**Dynamic gadget access** — when the gadget name is in a variable at runtime, use command expansion:
+**Dynamic gadget access** — when the gadget name is in a variable at runtime, use command expansion. Both `$!gadgetName` and the bracketed evaluation form `$!<gadgetName>` (which evaluates the expression inside the angle brackets and expands it as a token) are fully valid and accepted in AVEVA PML:
 
 ```pml
 $* !gadgetName holds the short name of the gadget (e.g. 'filename')
 !gadgetName = 'filename'
-!this.$!gadgetName.val = !value   $* correct — $ expands the variable as a token
+
+$* Both of the following are correct and valid PML:
+!this.$!gadgetName.val = !value
+!this.$!<gadgetName>.val = !value
 ```
 
-Never write `!this.$!<gadget>.val` (angle brackets are documentation notation, not valid PML) and never write `!this.!gadgetName.val` (missing `$` expansion). If reviewing code that uses this pattern, it is correct PML2 — do not flag it as a syntax error.
+Never write `!this.!gadgetName.val` (missing `$` expansion). If reviewing code, do not flag either `$!var` or `$!<var>` as a syntax error.
 
 ### Error handling
 

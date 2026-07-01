@@ -129,3 +129,7 @@ All significant changes, ingests, queries, and refactoring actions are recorded 
 - Updated [customGridExample.pmlfrm](pml-coding-assistant/examples/pml-patterns/customGridExample.pmlfrm) — 2 instances.
 - Updated [simplegrid.pmlfrm](pml-coding-assistant/examples/pml-patterns/simplegrid.pmlfrm) — 1 instance.
 - Kept `AVEVA.PDMS.PMLNetExample` as-is in netobject, netcallback, and pmlnetexample references (fixed SDK sample assembly name).
+
+## [2026-07-01] ingest | Corrected dynamic gadget access rule for bracketed expression expansion
+- Updated [SKILL.md](SKILL.md) and [forms-ui-reference.md](pml-coding-assistant/references/ui/forms-ui-reference.md) to recognize the bracketed evaluation form `$!<gadget>` as correct and valid AVEVA PML syntax.
+- Stopped flagging literal angle brackets `<>` in `$!<...>` expressions as documentation notation or syntax errors, since `$!<expression>` is standard token expansion behavior in PML.
